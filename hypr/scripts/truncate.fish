@@ -24,7 +24,7 @@ if test (get-width $font $size $string) -gt $max_width
             if test (math abs $st - $ed) -le 1
                 set done
                 set string (string sub -e $idx $string)
-            else 
+            else
                 set st $idx
             end
         end
