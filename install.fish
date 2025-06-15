@@ -45,6 +45,7 @@ function confirm-overwrite -a path
     if test -e $path -o -L $path
         # No prompt if noconfirm
         if set -q noconfirm
+            input "$path already exists. Overwrite? [Y/n]"
             log 'Removing...'
             rm -rf $path
         else
@@ -138,6 +139,7 @@ yay -S caelestia-meta $noconfirm
 if confirm-overwrite $config/hypr
     log 'Installing hypr* configs...'
     ln -s (realpath hypr) $config/hypr
+    hyprctl reload
 end
 
 # Starship
@@ -179,7 +181,16 @@ end
 # Install spicetify
 if set -q _flag_spotify
     log 'Installing spotify (spicetify)...'
+
+    set -l has_spicetify (pacman -Q spicetify-cli 2> /dev/null)
     yay -S --needed spotify spicetify-cli spicetify-marketplace-bin $noconfirm
+
+    # Set permissions and init if new install
+    if test -z "$has_spicetify"
+        sudo chmod a+wr /opt/spotify
+        sudo chmod a+wr /opt/spotify/Apps -R
+        spicetify backup apply
+    end
 
     # Install configs
     if confirm-overwrite $config/spicetify

@@ -6,3 +6,10 @@
 /spicetify/Themes/caelestia/color.ini
 
 /btop/btop.log
+
+/fish/fish_variables
+
+/vscode/*
+!/vscode/User/settings.json
+!/vscode/User/keybindings.json
+!/vscode/caelestia-vscode-integration/
