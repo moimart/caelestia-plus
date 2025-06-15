@@ -170,6 +170,12 @@ if confirm-overwrite $config/uwsm
     ln -s uwsm $config/uwsm
 end
 
+# Btop
+if confirm-overwrite $config/btop
+    log 'Installing btop config...'
+    ln -s btop $config/btop
+end
+
 # Install spicetify
 if set -q _flag_spotify
     log 'Installing spotify (spicetify)...'
