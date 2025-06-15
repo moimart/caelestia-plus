@@ -137,43 +137,43 @@ yay -S caelestia-meta $noconfirm
 # Install hypr* configs
 if confirm-overwrite $config/hypr
     log 'Installing hypr* configs...'
-    ln -s hypr $config/hypr
+    ln -s (realpath hypr) $config/hypr
 end
 
 # Starship
 if confirm-overwrite $config/starship.toml
     log 'Installing starship config...'
-    ln -s starship.toml $config/starship.toml
+    ln -s (realpath starship.toml) $config/starship.toml
 end
 
 # Foot
 if confirm-overwrite $config/foot
     log 'Installing foot config...'
-    ln -s foot $config/foot
+    ln -s (realpath foot) $config/foot
 end
 
 # Fish
 if confirm-overwrite $config/fish
     log 'Installing fish config...'
-    ln -s fish $config/fish
+    ln -s (realpath fish) $config/fish
 end
 
 # Fastfetch
 if confirm-overwrite $config/fastfetch
     log 'Installing fastfetch config...'
-    ln -s fastfetch $config/fastfetch
+    ln -s (realpath fastfetch) $config/fastfetch
 end
 
 # Uwsm
 if confirm-overwrite $config/uwsm
     log 'Installing uwsm config...'
-    ln -s uwsm $config/uwsm
+    ln -s (realpath uwsm) $config/uwsm
 end
 
 # Btop
 if confirm-overwrite $config/btop
     log 'Installing btop config...'
-    ln -s btop $config/btop
+    ln -s (realpath btop) $config/btop
 end
 
 # Install spicetify
@@ -184,7 +184,7 @@ if set -q _flag_spotify
     # Install configs
     if confirm-overwrite $config/spicetify
         log 'Installing spicetify config...'
-        ln -s spicetify $config/spicetify
+        ln -s (realpath spicetify) $config/spicetify
 
         # Set spicetify configs
         spicetify config current_theme caelestia color_scheme caelestia custom_apps marketplace 2> /dev/null
@@ -204,7 +204,7 @@ if set -q _flag_vscode
     # Install configs
     if confirm-overwrite $config/$folder
         log "Installing vs$prog config..."
-        ln -s $folder $config/$folder
+        ln -s (realpath vscode) $config/$folder
 
         # Install extension
         $prog --install-extension $config/$folder/caelestia-vscode-integration/caelestia-vscode-integration-*.vsix
