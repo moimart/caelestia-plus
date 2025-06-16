@@ -208,17 +208,19 @@ if set -q _flag_vscode
     test "$_flag_vscode" = 'code' && set -l prog 'code' || set -l prog 'codium'
     test "$_flag_vscode" = 'code' && set -l packages 'code' || set -l packages 'vscodium-bin' 'vscodium-bin-marketplace'
     test "$_flag_vscode" = 'code' && set -l folder 'Code' || set -l folder 'VSCodium'
+    set -l folder $config/$folder/User
 
     log "Installing vs$prog..."
     yay -S --needed $packages $noconfirm
 
     # Install configs
-    if confirm-overwrite $config/$folder
+    if confirm-overwrite $folder/settings.json && confirm-overwrite $folder/keybindings.json
         log "Installing vs$prog config..."
-        ln -s (realpath vscode) $config/$folder
+        ln -s (realpath vscode/settings.json) $folder/settings.json
+        ln -s (realpath vscode/keybindings.json) $folder/keybindings.json
 
         # Install extension
-        $prog --install-extension $config/$folder/caelestia-vscode-integration/caelestia-vscode-integration-*.vsix
+        $prog --install-extension vscode/caelestia-vscode-integration/caelestia-vscode-integration-*.vsix
     end
 end
 
