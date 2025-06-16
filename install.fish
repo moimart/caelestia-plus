@@ -6,6 +6,7 @@ argparse -n 'install.fish' -X 0 \
     'spotify' \
     'vscode=?!contains -- "$_flag_value" codium code' \
     'discord' \
+    'zen' \
     -- $argv
 or exit
 
@@ -20,6 +21,7 @@ if set -q _flag_h
     echo '  --spotify                   install Spotify (Spicetify)'
     echo '  --vscode=[codium|code]      install VSCodium (or VSCode)'
     echo '  --discord                   install Discord (OpenAsar + Equicord)'
+    echo '  --zen                       install Zen browser'
 
     exit
 end
@@ -133,7 +135,7 @@ end
 
 # Install metapackage for deps
 log 'Installing metapackage...'
-yay -S caelestia-meta $noconfirm
+yay -S --needed caelestia-meta $noconfirm
 
 # Install hypr* configs
 if confirm-overwrite $config/hypr
@@ -235,6 +237,39 @@ if set -q _flag_discord
 
     # Remove installer
     yay -Rns equicord-installer-bin $noconfirm
+end
+
+# Install zen
+if set -q _flag_zen
+    log 'Installing zen...'
+    yay -S --needed zen-browser-bin $noconfirm
+
+    # Install userChrome css
+    set -l chrome $HOME/.zen/*/chrome
+    if confirm-overwrite $chrome/userChrome.css
+        log 'Installing zen userChrome...'
+        ln -s (realpath zen/userChrome.css) $chrome/userChrome.css
+    end
+
+    # Install native app
+    set -l hosts $HOME/.zen/native-messaging-hosts
+    set -l lib $HOME/.local/lib/caelestia
+
+    if confirm-overwrite $hosts/caelestiafox.json
+        log 'Installing zen native app manifest...'
+        mkdir -p $hosts
+        cp zen/native_app/manifest.json $hosts/caelestiafox.json
+        sed -i "s|{{ \$lib }}|$lib|g" $hosts/caelestiafox.json
+    end
+
+    if confirm-overwrite $lib/caelestiafox
+        log 'Installing zen native app...'
+        mkdir -p $lib
+        ln -s (realpath zen/native_app/app.fish) $lib/caelestiafox
+    end
+
+    # Prompt user to install extension
+    log 'Please install the CaelestiaFox extension from https://addons.mozilla.org/en-US/firefox/addon/caelestiafox if you have not already done so.'
 end
 
 log 'Done!'
