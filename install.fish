@@ -71,6 +71,7 @@ end
 # Variables
 set -q _flag_noconfirm && set noconfirm '--noconfirm'
 set -q XDG_CONFIG_HOME && set -l config $XDG_CONFIG_HOME || set -l config $HOME/.config
+set -q XDG_STATE_HOME && set -l state $XDG_STATE_HOME || set -l state $HOME/.local/state
 
 # Startup prompt
 set_color magenta
@@ -136,6 +137,9 @@ end
 # Install metapackage for deps
 log 'Installing metapackage...'
 yay -S --needed caelestia-meta $noconfirm
+
+# Cd into dir
+cd (dirname (status filename)) || exit 1
 
 # Install hypr* configs
 if confirm-overwrite $config/hypr
@@ -271,5 +275,11 @@ if set -q _flag_zen
     # Prompt user to install extension
     log 'Please install the CaelestiaFox extension from https://addons.mozilla.org/en-US/firefox/addon/caelestiafox if you have not already done so.'
 end
+
+# Generate scheme stuff if needed
+test -f $state/caelestia/scheme.json || caelestia scheme set -n shadotheme
+
+# Start the shell
+caelestia shell -d > /dev/null
 
 log 'Done!'
