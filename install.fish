@@ -220,10 +220,11 @@ if set -q _flag_vscode
     yay -S --needed $packages $noconfirm
 
     # Install configs
-    if confirm-overwrite $folder/settings.json && confirm-overwrite $folder/keybindings.json
+    if confirm-overwrite $folder/settings.json && confirm-overwrite $folder/keybindings.json && confirm-overwrite $config/$prog-flags.conf
         log "Installing vs$prog config..."
         ln -s (realpath vscode/settings.json) $folder/settings.json
         ln -s (realpath vscode/keybindings.json) $folder/keybindings.json
+        ln -s (realpath vscode/flags.conf) $config/$prog-flags.conf
 
         # Install extension
         $prog --install-extension vscode/caelestia-vscode-integration/caelestia-vscode-integration-*.vsix
