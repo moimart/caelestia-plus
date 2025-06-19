@@ -7,4 +7,4 @@ end
 set -l position (caelestia shell mpris getActive position)
 set -l length (caelestia shell mpris getActive length)
 
-test $position != 'No media' && echo "$(fmt-time $position)/$(fmt-time $length)"
+test $position != 'No media' -a $position != 'No active player' && echo "$(fmt-time $position)/$(fmt-time $length)"
