@@ -278,7 +278,11 @@ if set -q _flag_zen
 end
 
 # Generate scheme stuff if needed
-test -f $state/caelestia/scheme.json || caelestia scheme set -n shadotheme
+if ! test -f $state/caelestia/scheme.json
+    caelestia scheme set -n shadotheme
+    sleep .1
+    hyprctl reload
+end
 
 # Start the shell
 caelestia shell -d > /dev/null
