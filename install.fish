@@ -280,7 +280,7 @@ end
 # Generate scheme stuff if needed
 if ! test -f $state/caelestia/scheme.json
     caelestia scheme set -n shadotheme
-    sleep .1
+    sleep .5
     hyprctl reload
 end
 
