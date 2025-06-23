@@ -52,7 +52,7 @@ function confirm-overwrite -a path
             rm -rf $path
         else
             # Prompt user
-            read -l -p "input '$path already exists. Overwrite? [Y/n] ' -n" confirm
+            read -l -p "input '$path already exists. Overwrite? [Y/n] ' -n" confirm || exit 1
 
             if test "$confirm" = 'n' -o "$confirm" = 'N'
                 log 'Skipping...'
@@ -90,14 +90,14 @@ log 'Before continuing, please ensure you have made a backup of your config dire
 # Prompt for backup
 if ! set -q _flag_noconfirm
     log '[1] Two steps ahead of you!  [2] Make one for me please!'
-    read -l -p "input '=> ' -n" choice
+    read -l -p "input '=> ' -n" choice || exit 1
 
     if contains -- "$choice" 1 2
         if test $choice = 2
             log "Backing up $config..."
 
             if test -e $config.bak -o -L $config.bak
-                read -l -p "input 'Backup already exists. Overwrite? [Y/n] ' -n" overwrite
+                read -l -p "input 'Backup already exists. Overwrite? [Y/n] ' -n" overwrite || exit 1
 
                 if test "$overwrite" = 'n' -o "$overwrite" = 'N'
                     log 'Skipping...'
