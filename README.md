@@ -19,7 +19,7 @@ The install script has some options for installing configs for some apps.
 
 ```
 $ ./install.fish -h
-usage: ./install.sh [-h] [--noconfirm] [--spotify] [--vscode] [--discord]
+usage: ./install.sh [-h] [--noconfirm] [--spotify] [--vscode] [--discord] [--paru]
 
 options:
   -h, --help                  show this help message and exit
@@ -28,6 +28,7 @@ options:
   --vscode=[codium|code]      install VSCodium (or VSCode)
   --discord                   install Discord (OpenAsar + Equicord)
   --zen                       install Zen browser
+  --paru                      use paru instead of yay as AUR helper
 ```
 
 For example:
