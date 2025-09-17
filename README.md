@@ -58,6 +58,7 @@ Dependencies:
 -   starship
 -   btop
 -   jq
+-   eza
 -   adw-gtk-theme
 -   papirus-icon-theme
 -   qt5ct-kde
