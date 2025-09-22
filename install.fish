@@ -132,13 +132,13 @@ if ! pacman -Q paru &> /dev/null
     paru --gendb
 end
 
+# Cd into dir
+cd (dirname (status filename)) || exit 1
+
 # Install metapackage for deps
 log 'Installing metapackage...'
 paru -Ui $noconfirm
-rm -f caelestia-meta-*.pkg.tar.zst
-
-# Cd into dir
-cd (dirname (status filename)) || exit 1
+rm -f caelestia-meta-*.pkg.tar.zst 2> /dev/null
 
 # Install hypr* configs
 if confirm-overwrite $config/hypr
