@@ -7,12 +7,13 @@ argparse -n 'install.fish' -X 0 \
     'vscode=?!contains -- "$_flag_value" codium code' \
     'discord' \
     'zen' \
+    'aur-helper=!contains -- "$_flag_value" yay paru' \
     -- $argv
 or exit
 
 # Print help
 if set -q _flag_h
-    echo 'usage: ./install.sh [-h] [--noconfirm] [--spotify] [--vscode] [--discord]'
+    echo 'usage: ./install.sh [-h] [--noconfirm] [--spotify] [--vscode] [--discord] [--aur-helper]'
     echo
     echo 'options:'
     echo '  -h, --help                  show this help message and exit'
@@ -21,6 +22,7 @@ if set -q _flag_h
     echo '  --vscode=[codium|code]      install VSCodium (or VSCode)'
     echo '  --discord                   install Discord (OpenAsar + Equicord)'
     echo '  --zen                       install Zen browser'
+    echo '  --aur-helper=[yay|paru]     the AUR helper to use'
 
     exit
 end
@@ -69,6 +71,7 @@ end
 
 # Variables
 set -q _flag_noconfirm && set noconfirm '--noconfirm'
+set -q _flag_aur_helper && set -l aur_helper $_flag_aur_helper || set -l aur_helper paru
 set -q XDG_CONFIG_HOME && set -l config $XDG_CONFIG_HOME || set -l config $HOME/.config
 set -q XDG_STATE_HOME && set -l state $XDG_STATE_HOME || set -l state $HOME/.local/state
 
@@ -116,20 +119,25 @@ end
 
 
 # Install AUR helper if not already installed
-if ! pacman -Q paru &> /dev/null
-    log "paru not installed. Installing..."
+if ! pacman -Q $aur_helper &> /dev/null
+    log "$aur_helper not installed. Installing..."
 
     # Install
     sudo pacman -S --needed git base-devel $noconfirm
     cd /tmp
-    git clone https://aur.archlinux.org/paru.git
-    cd paru
-    makepkg -si $noconfirm
+    git clone https://aur.archlinux.org/$aur_helper.git
+    cd $aur_helper
+    makepkg -si
     cd ..
-    rm -rf paru
+    rm -rf $aur_helper
 
     # Setup
-    paru --gendb
+    if $aur_helper = yay
+        $aur_helper -Y --gendb
+        $aur_helper -Y --devel --save
+    else
+        $aur_helper --gendb
+    end
 end
 
 # Cd into dir
@@ -137,7 +145,11 @@ cd (dirname (status filename)) || exit 1
 
 # Install metapackage for deps
 log 'Installing metapackage...'
-paru -Ui $noconfirm
+if $aur_helper = yay
+    $aur_helper -Bi . $noconfirm
+else
+    $aur_helper -Ui $noconfirm
+end
 rm -f caelestia-meta-*.pkg.tar.zst 2> /dev/null
 
 # Install hypr* configs
@@ -188,7 +200,7 @@ if set -q _flag_spotify
     log 'Installing spotify (spicetify)...'
 
     set -l has_spicetify (pacman -Q spicetify-cli 2> /dev/null)
-    paru -S --needed spotify spicetify-cli spicetify-marketplace-bin $noconfirm
+    $aur_helper -S --needed spotify spicetify-cli spicetify-marketplace-bin $noconfirm
 
     # Set permissions and init if new install
     if test -z "$has_spicetify"
@@ -216,7 +228,7 @@ if set -q _flag_vscode
     set -l folder $config/$folder/User
 
     log "Installing vs$prog..."
-    paru -S --needed $packages $noconfirm
+    $aur_helper -S --needed $packages $noconfirm
 
     # Install configs
     if confirm-overwrite $folder/settings.json && confirm-overwrite $folder/keybindings.json && confirm-overwrite $config/$prog-flags.conf
@@ -233,20 +245,20 @@ end
 # Install discord
 if set -q _flag_discord
     log 'Installing discord...'
-    paru -S --needed discord equicord-installer-bin $noconfirm
+    $aur_helper -S --needed discord equicord-installer-bin $noconfirm
 
     # Install OpenAsar and Equicord
     sudo Equilotl -install -location /opt/discord
     sudo Equilotl -install-openasar -location /opt/discord
 
     # Remove installer
-    paru -Rns equicord-installer-bin $noconfirm
+    $aur_helper -Rns equicord-installer-bin $noconfirm
 end
 
 # Install zen
 if set -q _flag_zen
     log 'Installing zen...'
-    paru -S --needed zen-browser-bin $noconfirm
+    $aur_helper -S --needed zen-browser-bin $noconfirm
 
     # Install userChrome css
     set -l chrome $HOME/.zen/*/chrome
