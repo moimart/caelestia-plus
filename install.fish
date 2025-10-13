@@ -145,7 +145,7 @@ cd (dirname (status filename)) || exit 1
 
 # Install metapackage for deps
 log 'Installing metapackage...'
-if $aur_helper = yay
+if test $aur_helper = yay
     $aur_helper -Bi . $noconfirm
 else
     $aur_helper -Ui $noconfirm
