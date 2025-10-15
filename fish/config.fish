@@ -10,6 +10,7 @@ if status is-interactive
     alias ls='eza --icons --group-directories-first -1'
 
     # Abbrs
+    abbr lg 'lazygit'
     abbr gd 'git diff'
     abbr ga 'git add .'
     abbr gc 'git commit -am'
