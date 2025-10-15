@@ -150,7 +150,7 @@ if test $aur_helper = yay
 else
     $aur_helper -Ui $noconfirm
 end
-rm -f caelestia-meta-*.pkg.tar.zst 2> /dev/null
+fish -c 'rm -f caelestia-meta-*.pkg.tar.zst' 2> /dev/null
 
 # Install hypr* configs
 if confirm-overwrite $config/hypr
