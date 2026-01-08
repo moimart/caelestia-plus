@@ -3,16 +3,18 @@
 add_newline = false
 continuation_prompt = "[▸▹ ](dimmed white)"
 
-format = """($nix_shell$container$fill$git_metrics\n)$cmd_duration\
-$hostname\
-$localip\
-$shlvl\
-$shell\
-$env_var\
-$jobs\
-$sudo\
-$username\
-$character"""
+#format = """($nix_shell$container$fill$git_metrics\n)$cmd_duration\
+#$username@$hostname\
+#$localip\
+#$shlvl\
+#$shell\
+#$env_var\
+#$jobs\
+#$sudo\
+# $directory \
+#$character"""
+
+format = "$username@$hostname in $directory $git_branch $character"
 
 right_format = """
 $singularity\
@@ -86,8 +88,11 @@ $os\
 $battery\
 $time"""
 
+[hostname]
+format = "$hostname"
+
 [fill]
-symbol = ' '
+symbol = '$ '
 
 [character]
 format = "$symbol "
@@ -112,7 +117,8 @@ disabled = false
 [username]
 style_user = "bright-yellow bold italic"
 style_root = "purple bold italic"
-format = "[⭘ $user]($style) "
+#format = "[⭘ $user]($style) "
+format = "$user"
 disabled = false
 show_always = false
 
