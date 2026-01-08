@@ -302,6 +302,9 @@ if ! test -f $state/caelestia/scheme.json
     hyprctl reload
 end
 
+mkdir ~/.local/share -p
+ln -s bin ~/.local/share/bin
+
 # Start the shell
 caelestia shell -d > /dev/null
 
