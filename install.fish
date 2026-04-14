@@ -178,6 +178,12 @@ if confirm-overwrite $config/foot
     ln -s (realpath foot) $config/foot
 end
 
+# Kitty
+if confirm-overwrite $config/kitty
+    log 'Installing kitty config...'
+    ln -s (realpath kitty) $config/kitty
+end
+
 # Fish
 if confirm-overwrite $config/fish
     log 'Installing fish config...'
