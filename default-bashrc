@@ -207,3 +207,6 @@ set colored-stats on
 #PS1=\[\]~[\] \[\]\>\[\]
 
 export PATH=$PATH:~/.local/share/bin
+
+# Apply caelestia terminal colour sequences
+[ -f ~/.local/state/caelestia/sequences.txt ] && cat ~/.local/state/caelestia/sequences.txt

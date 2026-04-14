@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Broadcast caelestia's cached terminal color sequences to every /dev/pts/*.
+
+Mirrors the logic of caelestia.utils.theme.apply_terms so a Hyprland keybind
+can re-apply the current scheme to all open terminals on demand.
+"""
+import os
+from pathlib import Path
+
+state = Path.home() / ".local/state/caelestia/sequences.txt"
+try:
+    sequences = state.read_bytes()
+except FileNotFoundError:
+    raise SystemExit(f"No sequences file at {state}")
+
+for pt in Path("/dev/pts").iterdir():
+    if not pt.name.isdigit():
+        continue
+    try:
+        fd = os.open(str(pt), os.O_WRONLY | os.O_NONBLOCK | os.O_NOCTTY)
+        try:
+            os.write(fd, sequences)
+        finally:
+            os.close(fd)
+    except (PermissionError, OSError, BlockingIOError):
+        pass
