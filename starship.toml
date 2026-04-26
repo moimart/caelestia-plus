@@ -25,6 +25,35 @@ $rust\
 $scala\
 [](fg:#86BBD8 bg:#06969A)\
 $docker_context\
+[ ](fg:#06969A)\
+"""
+
+right_format = """
+$status\
+$cmd_duration\
+[ with ](fg:#7a7a7a)\
+$custom\
+[ ](fg:#33658A)\
+$time\
+"""
+
+[status]
+disabled = false
+success_symbol = '[ ✓ ](bg:#3a3a3a fg:#5fd75f)'
+symbol = '[ ✗ ](bg:#3a3a3a fg:#ff5f5f)'
+format = '$symbol'
+
+[cmd_duration]
+min_time = 2_000
+format = '[ took $duration ](bg:#3a3a3a fg:#ffd75f)'
+
+[custom.user_at_host]
+command = 'printf "%s@%s" "$USER" "$(hostname -s)"'
+when = 'true'
+shell = ['bash', '--noprofile', '--norc']
+format = '[ $output ](fg:#5fafff)'
+
+# OLD_LEFT_TAIL_REPLACED_BELOW_KEEP_NOTHING
 [](fg:#06969A bg:#33658A)\
 $time\
 [ ](fg:#33658A)\
