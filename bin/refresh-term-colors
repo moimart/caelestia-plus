@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Broadcast caelestia's cached terminal color sequences to every /dev/pts/*.
+"""Broadcast caelestia's cached terminal colour sequences to every /dev/pts/*.
 
-Mirrors the logic of caelestia.utils.theme.apply_terms so a Hyprland keybind
-can re-apply the current scheme to all open terminals on demand.
+Mirrors caelestia.utils.theme.apply_terms, but skips any pty whose foreground
+process is an SSH session (detected via SSH_CONNECTION in /proc/<pid>/environ)
+so remote shells keep their own colour scheme.
 """
 import os
 from pathlib import Path
@@ -13,8 +14,42 @@ try:
 except FileNotFoundError:
     raise SystemExit(f"No sequences file at {state}")
 
+
+def pty_is_ssh(pty_name: str) -> bool:
+    """True if any process using this pty has SSH_CONNECTION set."""
+    for proc in Path("/proc").iterdir():
+        if not proc.name.isdigit():
+            continue
+        try:
+            if os.readlink(proc / "fd/0").endswith(f"/pts/{pty_name}") is False:
+                # cheap pre-check on stdin; still scan environ below for robustness
+                pass
+        except (OSError, PermissionError):
+            continue
+        try:
+            env = (proc / "environ").read_bytes()
+        except (OSError, PermissionError):
+            continue
+        if b"SSH_CONNECTION=" not in env:
+            continue
+        # Confirm this proc actually owns a tty matching pts/<name>
+        try:
+            for fd in (proc / "fd").iterdir():
+                try:
+                    target = os.readlink(fd)
+                except OSError:
+                    continue
+                if target == f"/dev/pts/{pty_name}":
+                    return True
+        except (OSError, PermissionError):
+            continue
+    return False
+
+
 for pt in Path("/dev/pts").iterdir():
     if not pt.name.isdigit():
+        continue
+    if pty_is_ssh(pt.name):
         continue
     try:
         fd = os.open(str(pt), os.O_WRONLY | os.O_NONBLOCK | os.O_NOCTTY)

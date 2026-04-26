@@ -32,8 +32,10 @@ if status is-interactive
     abbr la 'ls -a'
     abbr lla 'ls -la'
 
-    # Custom colours
-    cat ~/.local/state/caelestia/sequences.txt 2> /dev/null
+    # Custom colours (skip over SSH)
+    if not set -q SSH_CONNECTION
+        cat ~/.local/state/caelestia/sequences.txt 2> /dev/null
+    end
 
     # For jumping between prompts in foot terminal
     function mark_prompt_start --on-event fish_prompt
