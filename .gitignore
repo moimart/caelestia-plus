@@ -1,0 +1,15 @@
+# Hyprland's safe-mode auto-generated stub — NOT part of our config
+hyprland.conf
+
+# Caelestia writes the active palette here at runtime; scheme/colors.lua
+# parses it and scheme/default.conf is the fallback we DO track.
+scheme/current.conf
+scheme/current.conf.bak.*
+
+# Screenshots dir (not user config)
+Screenshots/
+
+# Backups from earlier hyprlang tinkering
+*.bak
+*.bak.*
+*~
