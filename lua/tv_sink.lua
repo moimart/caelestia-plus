@@ -28,22 +28,21 @@ hl.monitor({
 -- Monitor: override the mirror rule from lua/monitors.lua. hl.monitor()
 -- merges fields into the existing rule, so setting mirror="" unlinks it.
 --
--- Position matches the physical layout: TV is above DP-1 with its centre
--- offset ~460 logical px right of DP-1's centre (roughly 1/10 of DP-1's
--- width — "less than 1/5" per moises' description). Bump the offset
--- towards ±1000 if the mouse feels like it snaps to the wrong edge when
--- crossing over.
+-- Position: auto-center-up keeps HDMI-A-1's bottom edge glued to DP-1's
+-- top edge no matter the negotiated mode. Reason: the AVR falls back to
+-- a 1920x1080 EDID whenever the TV/AVR handshake is in a "not fully 4K
+-- Enhanced" state, and a fixed y that assumed 2160-tall left a 1080 px
+-- dead band the mouse couldn't cross into (see conversation with moises).
+-- auto-center-up loses the physical +460 horizontal offset in favour of
+-- always-reachable — worth it.
 --
---   DP-1 logical:  4608x1296  at (0,0)  → centre (2304, 648)
---   HDMI-A-1 logical: 3840x2160
---   Placed at (844, -2160):
---     - bottom edge at y=0 (touches DP-1 top)
---     - centre at (844 + 1920, -2160 + 1080) = (2764, -1080)
---     - horizontal offset from DP centre: +460 (≈ 1/10 of DP width)
+-- If the AVR is set to "4K Enhanced" (or equivalent) on this input and
+-- reliably negotiates 3840x2160, swap for the fixed-offset version:
+--   position = "844x-2160",   -- centre at (2764,-1080), +460 from DP centre
 hl.monitor({
   output   = "HDMI-A-1",
   mode     = "preferred",  -- let EDID decide (3840x2160@60 on this AVR)
-  position = "844x-2160",
+  position = "auto-center-up",
   scale    = 1,
   mirror   = "",           -- <-- unlink the DP-1 mirror
   disabled = false,
