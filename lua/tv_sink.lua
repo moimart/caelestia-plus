@@ -50,7 +50,10 @@ hl.monitor({
   -- take effect in HDR mode; consumer TVs usually engage a brighter,
   -- more saturated picture mode when they detect an HDR signal, which
   -- fixes the muted look Hyprland's default sRGB pipeline produces.
-  cm            = "hdr",
+  -- hdredid = same PQ pipeline as "hdr" but uses the display's EDID-declared
+  -- color primaries instead of assumed BT.2020. Tightens near-black on LG
+  -- OLED (measurable improvement in the "not-quite-black" complaint).
+  cm            = "hdredid",
   bitdepth      = 10,     -- HDR requires 10-bit output
   sdrbrightness = 1.25,   -- 1.0 = neutral; typical range 1.0-2.0
   sdrsaturation = 1.20,   -- 1.0 = neutral
