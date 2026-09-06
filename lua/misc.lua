@@ -8,6 +8,9 @@ hl.config({
     animate_mouse_windowdragging  = false,
 
     disable_hyprland_logo    = true,
+    disable_splash_rendering = true,   -- hide the version text on outputs
+                                       -- where nothing else draws a
+                                       -- wallpaper (HDMI-A-1 sink mode)
     force_default_wallpaper  = 0,
 
     -- new_window_takes_over_fullscreen = 2,
@@ -19,7 +22,9 @@ hl.config({
     mouse_move_enables_dpms = true,
     key_press_enables_dpms  = true,
 
-    background_color = C.rgb("surfaceContainer"),
+    -- Pure black — DP-1 is fully covered by caelestia's wallpaper layer,
+    -- so this is what shows on HDMI-A-1 (which has caelestia disabled).
+    background_color = "rgb(000000)",
   },
 
   debug = {
