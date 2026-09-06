@@ -216,7 +216,7 @@ hl.bind("SUPER + SHIFT + H", hl.dsp.exec_cmd('launch-webapp "http://homeassistan
         { description = "Home Assistant" })
 hl.bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('launch-webapp-or-focus Whatsapp "https://web.whatsapp.com/"'),
         { description = "Whatsapp" })
-hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd('launch-webapp-or-focus ChatGPT "https://claude.ai"'),
+hl.bind("SUPER + SHIFT + C", hl.dsp.exec_cmd('launch-webapp "https://claude.ai"'),
         { description = "Claude" })
 hl.bind("SUPER + SHIFT + G", hl.dsp.exec_cmd('launch-webapp-or-focus Gemini "https://gemini.google.com"'),
         { description = "Gemini" })
