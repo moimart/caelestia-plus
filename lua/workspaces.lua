@@ -19,8 +19,14 @@ local V = require("variables")
 --   * per-app XWayland upscale must now be done via env on the launcher,
 --     e.g. `GDK_SCALE=3 QT_SCALE_FACTOR=3 <app>`.
 
--- Workspace 2 uses the scrolling layout (rest stay on dwindle)
-hl.workspace_rule({ workspace = "2", layout = "scrolling" })
+-- (Workspace 2's `layout = "scrolling"` override was dropped — scrolling
+--  is now the global default in lua/general.lua. If you flip general.layout
+--  back to "dwindle", re-add this rule to keep ws 2 on scrolling.)
+
+-- Workspace 3 uses scrolling in the vertical direction — rows top-to-bottom
+-- instead of columns left-to-right. Everything else (column_width becomes
+-- row-height, fullscreen_on_one_column, etc.) still applies.
+hl.workspace_rule({ workspace = "3", layout_opts = { direction = "down" } })
 
 -- Single-window workspaces (tiled or floating, no special) use a smaller gap
 hl.workspace_rule({ workspace = "w[tv1]s[false]", gaps_out = V.singleWindowGapsOut })

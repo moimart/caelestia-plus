@@ -2,7 +2,12 @@ local V = require("variables")
 
 hl.config({
   general = {
-    layout         = "dwindle",
+    -- Trial: scrolling everywhere (was "dwindle"). Combined with
+    -- scrolling.column_width = 0.33 and fullscreen_on_one_column = false,
+    -- this gives 1/3-column layout for 1-3 windows on every workspace.
+    -- 4th+ column scrolls off-screen — swipe/hjkl to reach it. Flip back
+    -- to "dwindle" here to revert.
+    layout         = "scrolling",
     allow_tearing  = false,  -- gates the per-window `immediate` rule
 
     gaps_workspaces = V.workspaceGaps,
