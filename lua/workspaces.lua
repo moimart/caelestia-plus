@@ -23,10 +23,11 @@ local V = require("variables")
 --  is now the global default in lua/general.lua. If you flip general.layout
 --  back to "dwindle", re-add this rule to keep ws 2 on scrolling.)
 
--- Workspace 3 uses scrolling in the vertical direction — rows top-to-bottom
--- instead of columns left-to-right. Everything else (column_width becomes
--- row-height, fullscreen_on_one_column, etc.) still applies.
-hl.workspace_rule({ workspace = "3", layout_opts = { direction = "down" } })
+-- (Workspace 3 previously had layout_opts = { direction = "down" } and an
+--  auto-flow 3-per-row grid handler; dropped so ws 3 behaves like every
+--  other numbered workspace. To bring it back, restore this line and
+--  re-enable require("tv_grid") in hyprland.lua.)
+-- hl.workspace_rule({ workspace = "3", layout_opts = { direction = "down" } })
 
 -- Single-window workspaces (tiled or floating, no special) use a smaller gap
 hl.workspace_rule({ workspace = "w[tv1]s[false]", gaps_out = V.singleWindowGapsOut })

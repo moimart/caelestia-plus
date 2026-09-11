@@ -38,7 +38,9 @@ require("gestures")
 require("execs")
 require("keybinds")
 require("scheme_watcher")
-require("tv_grid")
+-- require("tv_grid")   -- 3-per-row auto-flow for vertical scrolling
+                       --  workspaces. Re-enable together with the ws 3
+                       --  direction=down rule in workspaces.lua.
 
 -- Optional: turn HDMI-A-1 into a "cast target" workspace instead of a
 -- DP-1 mirror. Comment this line to fall back to the mirror behaviour.
