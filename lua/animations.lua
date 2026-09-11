@@ -25,7 +25,7 @@ hl.animation({ leaf = "windowsOut",  enabled = true, speed = 3, bezier = "emphas
 hl.animation({ leaf = "windowsMove", enabled = true, speed = 6, bezier = "standard" })
 
 -- Workspaces
-hl.animation({ leaf = "workspaces",       enabled = true, speed = 5, bezier = "standard" })
+hl.animation({ leaf = "workspaces",       enabled = true, speed = 5, bezier = "standard", style = "slidevert" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 4, bezier = "specialWorkSwitch", style = "slidefadevert 15%" })
 
 -- Misc
