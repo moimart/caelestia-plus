@@ -88,3 +88,29 @@ end)
 -- Focus / return: hover the mouse onto the TV to grab it, then use your
 -- existing SUPER+ALT+<n> binds to move whatever's there back to a numbered
 -- workspace on DP-1.
+
+-- CTRL+SUPER+H — toggle HDMI-A-1's colour management between sRGB and HDR
+-- on demand. Useful for coaxing apps like Chrome (which doesn't reliably
+-- tag its Wayland surface as HDR, so render.cm_auto_hdr never triggers)
+-- into an HDR-mode display. State is kept in the Lua-local `tv_hdr_on`.
+local tv_hdr_on = false
+hl.bind("CTRL + SUPER + H", function()
+  tv_hdr_on = not tv_hdr_on
+  if tv_hdr_on then
+    hl.monitor({
+      output = "HDMI-A-1", mode = "preferred", position = "auto-center-up",
+      scale = 1, mirror = "", disabled = false,
+      cm = "hdredid", bitdepth = 10,
+      sdrbrightness = 1.25, sdrsaturation = 1.20,
+    })
+    hl.notification.create({ text = "HDMI-A-1: HDR on", duration = 2000, icon = "ok" })
+  else
+    hl.monitor({
+      output = "HDMI-A-1", mode = "preferred", position = "auto-center-up",
+      scale = 1, mirror = "", disabled = false,
+      cm = "srgb", bitdepth = 10,
+      sdrbrightness = 1.0, sdrsaturation = 1.0,
+    })
+    hl.notification.create({ text = "HDMI-A-1: sRGB", duration = 2000, icon = "ok" })
+  end
+end)
