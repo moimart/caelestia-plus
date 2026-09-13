@@ -46,17 +46,14 @@ hl.monitor({
   scale    = 1,
   mirror   = "",           -- <-- unlink the DP-1 mirror
   disabled = false,
-  -- Flip the AVR/TV into HDR mode. sdrbrightness/sdrsaturation only
-  -- take effect in HDR mode; consumer TVs usually engage a brighter,
-  -- more saturated picture mode when they detect an HDR signal, which
-  -- fixes the muted look Hyprland's default sRGB pipeline produces.
-  -- hdredid = same PQ pipeline as "hdr" but uses the display's EDID-declared
-  -- color primaries instead of assumed BT.2020. Tightens near-black on LG
-  -- OLED (measurable improvement in the "not-quite-black" complaint).
-  cm            = "hdredid",
-  bitdepth      = 10,     -- HDR requires 10-bit output
-  sdrbrightness = 1.25,   -- 1.0 = neutral; typical range 1.0-2.0
-  sdrsaturation = 1.20,   -- 1.0 = neutral
+  -- Idle in sRGB, not HDR. The HDR pipeline (was cm = "hdredid") introduced
+  -- visible dither noise on flat colors and lifted OLED blacks off zero.
+  -- Chrome on Linux doesn't reliably trigger HDR anyway, so we keep the
+  -- OLED in clean sRGB for the idle desktop; for real HDR content (mpv,
+  -- games) Hyprland's render.cm_auto_hdr = 1 auto-flips the display into
+  -- HDR mode for the fullscreen HDR-tagged surface and back out on exit.
+  cm       = "srgb",
+  bitdepth = 10,     -- keep 10-bit output to reduce gradient banding
 })
 
 -- Persistent named workspace pinned to the second display. Nothing routes
