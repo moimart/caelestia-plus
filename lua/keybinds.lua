@@ -210,6 +210,9 @@ hl.bind("SHIFT + SUPER + F",  hl.dsp.exec_cmd("app2unit -- " .. V.fileExplorer))
 hl.bind("SUPER + ALT + E",    hl.dsp.exec_cmd("app2unit -- nemo"))
 hl.bind("CTRL + ALT + Escape", hl.dsp.exec_cmd("app2unit -- qps"))
 hl.bind("CTRL + ALT + V",     hl.dsp.exec_cmd("app2unit -- pavucontrol"))
+-- iPhone Mirror (USB if plugged in, else Wi-Fi); focuses the window if already running
+hl.bind("SUPER + SHIFT + I",  hl.dsp.exec_cmd(home .. "/.local/bin/iphone-mirror start"),
+        { description = "iPhone Mirror" })
 
 -- Web apps (description shows up in `hyprctl binds`)
 hl.bind("SUPER + SHIFT + H", hl.dsp.exec_cmd('launch-webapp "http://homeassistant.local:8123/"'),
