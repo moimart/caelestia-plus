@@ -83,4 +83,13 @@ for _, p in ipairs(PLUGINS) do
   end
 end
 
+-- Hypr-DarkWindow (per-window shaders; used by lua/darkwindow.lua).
+-- Not managed by hyprpm: built by hand from ~/.local/src/Hypr-DarkWindow,
+-- checked out at the tag matching the installed Hyprland. After a Hyprland
+-- upgrade, rebuild with:
+--   cd ~/.local/src/Hypr-DarkWindow && git fetch --tags \
+--     && git checkout $(hyprctl version -j | jq -r .tag) && make
+-- A stale build is refused by Hyprland's API hash check (load fails, no crash).
+load(os.getenv("HOME") .. "/.local/src/Hypr-DarkWindow/out/hypr-darkwindow.so")
+
 return M
