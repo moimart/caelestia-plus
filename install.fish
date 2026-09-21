@@ -184,6 +184,12 @@ if confirm-overwrite $config/kitty
     ln -s (realpath kitty) $config/kitty
 end
 
+# Ghostty
+if confirm-overwrite $config/ghostty
+    log 'Installing ghostty config...'
+    ln -s (realpath ghostty) $config/ghostty
+end
+
 # Fish
 if confirm-overwrite $config/fish
     log 'Installing fish config...'
@@ -206,6 +212,13 @@ end
 if confirm-overwrite $config/btop
     log 'Installing btop config...'
     ln -s (realpath btop) $config/btop
+end
+
+# Caelestia cli (only cli.json; the dir also holds shell.json etc.)
+if confirm-overwrite $config/caelestia/cli.json
+    log 'Installing caelestia cli config...'
+    mkdir -p $config/caelestia
+    ln -s (realpath caelestia/cli.json) $config/caelestia/cli.json
 end
 
 # Install spicetify

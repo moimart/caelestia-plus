@@ -1,0 +1,27 @@
+# Font (matches kitty.conf / foot.ini)
+font-family = Hack Nerd Font Mono
+font-size = 12
+
+# Window
+window-padding-x = 25
+window-padding-y = 25
+window-decoration = false
+confirm-close-surface = false
+
+# Cursor
+cursor-style = block
+
+# Scrollback (bytes; roughly kitty's 10000 lines)
+scrollback-limit = 10000000
+
+# Amber CRT shader. Transparency is set by OPACITY in the shader;
+# background-opacity only needs to be below 1 so the window can be see-through.
+custom-shader = shaders/amber-crt.glsl
+custom-shader-animation = always
+background-opacity = 0.85
+
+# Bell
+bell-features = no-audio
+
+# Behaviour
+command = bash
