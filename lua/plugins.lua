@@ -88,7 +88,10 @@ end
 -- checked out at the tag matching the installed Hyprland. After a Hyprland
 -- upgrade, rebuild with:
 --   cd ~/.local/src/Hypr-DarkWindow && git fetch --tags \
---     && git checkout $(hyprctl version -j | jq -r .tag) && make
+--     && git checkout $(hyprctl version -j | jq -r .tag) \
+--     && git apply ~/.config/hypr/patches/darkwindow-wallclock-time.patch && make
+-- (that patch makes x_Time wall-clock based so all shaded windows animate
+--  in sync; without it each window's animation starts when it was opened)
 -- A stale build is refused by Hyprland's API hash check (load fails, no crash).
 load(os.getenv("HOME") .. "/.local/src/Hypr-DarkWindow/out/hypr-darkwindow.so")
 
