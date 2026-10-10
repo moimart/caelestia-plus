@@ -1,3 +1,4 @@
+import "ha"
 import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
@@ -20,7 +21,15 @@ RowLayout {
             rootHeight: root.height
         }
 
+        HaLock {
+            id: haLeft
+
+            Layout.fillWidth: true
+            column: "left"
+        }
+
         Fetch {
+            visible: !haLeft.hides("fetch")
             Layout.fillWidth: true
             rootHeight: root.height
         }
@@ -41,7 +50,15 @@ RowLayout {
         spacing: Tokens.spacing.medium
 
         Resources {
+            visible: !haRight.hides("resources")
             Layout.fillWidth: true
+        }
+
+        HaLock {
+            id: haRight
+
+            Layout.fillWidth: true
+            column: "right"
         }
 
         StyledRect {
