@@ -1,0 +1,8 @@
+{
+  "theme": {
+    "postHook": "pgrep -x nautilus >/dev/null && nautilus -q"
+  },
+  "wallpaper": {
+    "postHook": "[ \"$SCHEME_NAME\" != dynamic ] || [ \"$SCHEME_VARIANT\" = vibrant ] || caelestia scheme set -v vibrant"
+  }
+}
