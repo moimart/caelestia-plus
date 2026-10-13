@@ -224,8 +224,20 @@
                     "timeout": 3600
                 },
                 {
-                    "idleAction": "caelestia shell brightness set 0",
-                    "returnAction": "caelestia shell brightness set 1",
+                    "idleAction": [
+                        "caelestia",
+                        "shell",
+                        "brightness",
+                        "set",
+                        "0"
+                    ],
+                    "returnAction": [
+                        "caelestia",
+                        "shell",
+                        "brightness",
+                        "set",
+                        "1"
+                    ],
                     "timeout": 3600
                 }
             ]
