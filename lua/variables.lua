@@ -5,7 +5,7 @@ local C = require("colors")
 local M = {}
 
 -- Apps
-M.terminal      = "kitty"
+M.terminal      = "kitty-crt"  -- bin/kitty-crt in the caelestia dotfiles: kitty + wall-clock-synced CRT shader
 M.browser       = "google-chrome-stable"
 M.editor        = "vim"
 M.fileExplorer  = "nautilus"
