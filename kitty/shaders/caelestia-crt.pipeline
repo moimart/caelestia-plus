@@ -1,0 +1,8 @@
+# Amber CRT: one group, always animating (no animation_start = runs every frame).
+# animation_step is the frame interval in ms; 16 ≈ 60fps for a smooth rolling
+# band. Raise it (e.g. 33 ≈ 30fps) if it costs too much power.
+
+startgroup
+    animation_step 16
+    shaders caelestia-crt
+endgroup
