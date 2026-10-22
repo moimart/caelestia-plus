@@ -65,6 +65,19 @@ public:
         : ConfigObject(parent) {}
 };
 
+class BackgroundVideo : public ConfigObject {
+    Q_OBJECT
+    QML_ANONYMOUS
+
+    CONFIG_PROPERTY(QString, hwdec, QStringLiteral("auto-safe"))
+    CONFIG_PROPERTY(bool, pauseWhenHidden, true)
+    CONFIG_PROPERTY(QString, mpvOptions, QString())
+
+public:
+    explicit BackgroundVideo(QObject* parent = nullptr)
+        : ConfigObject(parent) {}
+};
+
 class BackgroundConfig : public ConfigObject {
     Q_OBJECT
     QML_ANONYMOUS
@@ -73,12 +86,14 @@ class BackgroundConfig : public ConfigObject {
     CONFIG_PROPERTY(bool, wallpaperEnabled, true)
     CONFIG_SUBOBJECT(DesktopClock, desktopClock)
     CONFIG_SUBOBJECT(BackgroundVisualiser, visualiser)
+    CONFIG_SUBOBJECT(BackgroundVideo, video)
 
 public:
     explicit BackgroundConfig(QObject* parent = nullptr)
         : ConfigObject(parent)
         , m_desktopClock(new DesktopClock(this))
-        , m_visualiser(new BackgroundVisualiser(this)) {}
+        , m_visualiser(new BackgroundVisualiser(this))
+        , m_video(new BackgroundVideo(this)) {}
 };
 
 } // namespace caelestia::config
