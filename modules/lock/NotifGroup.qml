@@ -25,7 +25,7 @@ StyledRect {
         for (const n of notifs) {
             if (!img && n.image.length > 0)
                 img = n.image;
-            if (!icon && n.appIcon.length > 0)
+            if (!icon && Icons.hasIcon(n.appIcon))
                 icon = n.appIcon;
             if (n.urgency === NotificationUrgency.Critical)
                 hasCritical = true;

@@ -22,7 +22,7 @@ StyledRect {
     readonly property list<var> activeNotifs: notifs.filter(n => !n.closed)
     readonly property int notifCount: activeNotifs.length
     readonly property string image: activeNotifs.find(n => n.image.length > 0)?.image ?? ""
-    readonly property string appIcon: activeNotifs.find(n => n.appIcon.length > 0)?.appIcon ?? ""
+    readonly property string appIcon: activeNotifs.find(n => Icons.hasIcon(n.appIcon))?.appIcon ?? ""
     readonly property int urgency: {
         if (activeNotifs.find(n => n.urgency === NotificationUrgency.Critical))
             return NotificationUrgency.Critical;

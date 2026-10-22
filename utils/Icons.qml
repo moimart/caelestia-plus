@@ -99,6 +99,16 @@ Singleton {
         return false;
     }
 
+    // Whether an icon can actually be drawn: a file path, or a name the icon
+    // theme has. Names it lacks would render Qt's "missing image" checkerboard.
+    function hasIcon(name: string): bool {
+        if (!name)
+            return false;
+        if (name.startsWith("/") || name.startsWith("file:") || name.startsWith("image:"))
+            return true;
+        return Quickshell.iconPath(name, true) !== "";
+    }
+
     function getAppIcon(name: string, fallback: string): string {
         const icon = DesktopEntries.heuristicLookup(name)?.icon;
         if (fallback !== "undefined")
