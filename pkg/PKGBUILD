@@ -45,6 +45,8 @@ depends=(
 )
 optdepends=(
     'fprintd: fingerprint unlock for the lock screen'
+    'mpvpaper: video wallpapers'
+    'ffmpeg: video wallpaper posters and thumbnails'
 )
 makedepends=('cmake' 'ninja' 'git' 'qt6-shadertools')
 provides=('caelestia-shell')
