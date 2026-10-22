@@ -15,6 +15,8 @@ Singleton {
     property list<string> osIdLike
     property string osLogo: Qt.resolvedUrl(`${Quickshell.shellDir}/assets/logo.svg`)
     property bool isDefaultLogo: true
+    // A logo the user pointed at as an image file: shown in its own colours, not recoloured.
+    readonly property bool customLogo: !isDefaultLogo && String(osLogo).startsWith("file:")
 
     property string uptime
     readonly property string user: Quickshell.env("USER")

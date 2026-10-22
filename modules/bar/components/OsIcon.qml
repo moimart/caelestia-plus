@@ -40,8 +40,10 @@ Item {
 
         ColouredIcon {
             source: SysInfo.osLogo
-            implicitSize: Math.round(Tokens.font.body.large.pointSize * 1.2)
+            // custom images get the Caelestia logo's size; distro icons stay smaller
+            implicitSize: Math.round(Tokens.font.body.large.pointSize * (SysInfo.customLogo ? 1.6 : 1.2))
             colour: Colours.palette.m3tertiary
+            layer.enabled: !SysInfo.customLogo
         }
     }
 }

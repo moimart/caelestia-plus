@@ -158,6 +158,7 @@ Item {
             source: SysInfo.osLogo
             implicitSize: Tokens.sizes.dashboard.logoSize
             colour: Colours.palette.m3onPrimaryContainer
+            layer.enabled: !SysInfo.customLogo
         }
     }
 
