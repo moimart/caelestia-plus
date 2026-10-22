@@ -6,16 +6,7 @@
             }
         },
         "font": {
-            "clock": "Instrument Serif",
-            "family": {
-                "clock": "Instrument Serif",
-                "material": "Material Symbols Rounded",
-                "mono": "CaskaydiaCove NF",
-                "sans": "Rubik"
-            },
-            "size": {
-                "scale": 1
-            }
+            "clock": "Instrument Serif"
         },
         "padding": {
             "scale": 1
