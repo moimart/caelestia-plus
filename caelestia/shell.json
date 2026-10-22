@@ -233,7 +233,7 @@
                 }
             ]
         },
-        "logo": ""
+        "logo": "~/.config/caelestia/assets/daruma-logo.png"
     },
     "launcher": {
         "actionPrefix": ">",
