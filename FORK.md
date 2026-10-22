@@ -29,6 +29,9 @@ package, which replaces the AUR `caelestia-shell`.
   `qs -c caelestia ipc call wallpaper setFor DP-1 <path>` / `clearFor DP-1` / `getFor DP-1`.
   The colour scheme follows the global wallpaper.
 
+- **MCP server** (`mcp/`): lets Claude Code agents control the shell (screenshots,
+  wallpapers, scheme, settings, lock, media, panels, raw IPC). See `mcp/README.md`.
+
 ## Build and install
 
 ```sh
