@@ -54,10 +54,9 @@ PageBase {
                     anchors.rightMargin: Tokens.padding.largeIncreased
                     spacing: Tokens.spacing.medium
 
-                    IconImage {
-                        asynchronous: true
+                    AppIcon {
                         implicitSize: Math.round(Tokens.font.icon.large.pointSize * 1.8)
-                        source: Quickshell.iconPath(appItem.modelData.icon, "image-missing")
+                        entry: appItem.modelData
                     }
 
                     ColumnLayout {
