@@ -27,7 +27,9 @@ ShellRoot {
     GSFLoader {}
     ServiceLoader {}
 
-    Background {}
+    Background {
+        lock: lock
+    }
     Drawers {}
     AreaPicker {}
     Lock {

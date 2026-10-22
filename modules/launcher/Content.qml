@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import Caelestia
 import Caelestia.Config
 import qs.components
@@ -64,7 +65,7 @@ Item {
             const currentItem = list.currentList?.currentItem;
             if (currentItem) {
                 if (list.showWallpapers) {
-                    if (Colours.scheme === "dynamic" && currentItem.modelData.path !== Wallpapers.actualCurrent)
+                    if (Colours.scheme === "dynamic" && currentItem.modelData.path !== Wallpapers.actualSource)
                         Wallpapers.previewColourLock = true;
                     Wallpapers.setWallpaper(currentItem.modelData.path);
                     root.screenState.launcher = false;
@@ -86,6 +87,18 @@ Item {
         Keys.onEscapePressed: root.screenState.launcher = false
 
         Keys.onPressed: event => {
+            // Shift+Enter on a wallpaper sets it for this screen only.
+            if (list.showWallpapers && (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && (event.modifiers & Qt.ShiftModifier)) {
+                const currentItem = list.currentList?.currentItem;
+                const screen = (QsWindow.window as QsWindow)?.screen?.name;
+                if (currentItem && screen) {
+                    Wallpapers.setWallpaperFor(screen, currentItem.modelData.path);
+                    root.screenState.launcher = false;
+                }
+                event.accepted = true;
+                return;
+            }
+
             if (!GlobalConfig.launcher.vimKeybinds)
                 return;
 

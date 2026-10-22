@@ -9,6 +9,10 @@ import qs.components.containers
 import qs.services
 
 Variants {
+    id: root
+
+    property var lock
+
     model: Screens.screens.filter(s => GlobalConfig.forScreen(s.name).background.enabled)
 
     StyledWindow {
@@ -19,8 +23,10 @@ Variants {
         screen: modelData
         name: "background"
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
-        WlrLayershell.layer: contentItem.Config.background.wallpaperEnabled ? WlrLayer.Background : WlrLayer.Bottom
-        color: contentItem.Config.background.wallpaperEnabled ? "black" : "transparent"
+        // Bottom rather than Background so video wallpapers (mpvpaper, on the
+        // background layer) can play underneath; transparent while one shows.
+        WlrLayershell.layer: WlrLayer.Bottom
+        color: contentItem.Config.background.wallpaperEnabled && !(wallpaper.item?.hasVideo ?? false) ? "black" : "transparent"
         surfaceFormat.opaque: false
 
         anchors.top: true
@@ -47,7 +53,10 @@ Variants {
                 anchors.fill: parent
                 active: Config.background.wallpaperEnabled
 
-                sourceComponent: Wallpaper {}
+                sourceComponent: Wallpaper {
+                    screen: win.modelData
+                    locked: root.lock?.lock.locked ?? false
+                }
             }
 
             Visualiser {

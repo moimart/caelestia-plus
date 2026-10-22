@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import Caelestia.Config
 import qs.components
 import qs.components.filedialog
@@ -8,30 +9,91 @@ import qs.components.images
 import qs.services
 import qs.utils
 
+// The wallpaper for one screen. Images crossfade as before. A video shows as
+// its poster frame first; once the poster is fully visible the video starts
+// underneath (VideoPlayer), and the poster fades out when frames are playing.
 Item {
     id: root
 
-    property string source: Wallpapers.current
+    required property ShellScreen screen
+    property bool locked
+
+    readonly property var chosen: Wallpapers.forScreen(screen.name)
+    property string source: chosen.image
     property CachingImage current
     property bool completed
+
+    // The video handed to the player; lags `chosen.video` until its poster is shown.
+    property string shownVideo
+    readonly property bool videoShowing: chosen.video !== "" && player.video === chosen.video && player.playing
+    readonly property bool hasVideo: player.active
 
     onSourceChanged: {
         if (!source)
             current = null;
         else
-            current = imgComp.createObject(this, {
+            current = imgComp.createObject(images, {
                 path: source
             });
+        handover.restart();
     }
+
+    onChosenChanged: handover.restart()
 
     Component.onCompleted: {
         if (source)
             Qt.callLater(() => {
-                current = imgComp.createObject(this, {
+                current = imgComp.createObject(images, {
                     path: source
                 });
                 completed = true;
+                handover.restart();
             });
+    }
+
+    // Swap the video once the current image is on screen and fully faded in,
+    // so neither the old video nor the old image is seen through it.
+    Timer {
+        id: handover
+
+        interval: Tokens.anim.durations.expressiveSlowEffects
+        onTriggered: {
+            // Previews are opaque stills; leave the video running underneath.
+            if (Wallpapers.showPreview)
+                return;
+            if (root.chosen.video && root.current?.status !== Image.Ready)
+                return restart();
+            player.startTime = root.chosen.time;
+            root.shownVideo = root.chosen.video;
+        }
+    }
+
+    VideoPlayer {
+        id: player
+
+        screenName: root.screen.name
+        video: root.shownVideo
+        paused: {
+            if (!GlobalConfig.forScreen(root.screen.name).background.video.pauseWhenHidden)
+                return false;
+            if (root.locked || GameMode.enabled)
+                return true;
+            const ws = Hypr.monitorFor(root.screen)?.activeWorkspace;
+            return ws?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false;
+        }
+    }
+
+    Item {
+        id: images
+
+        anchors.fill: parent
+        opacity: root.videoShowing ? 0 : 1
+
+        Behavior on opacity {
+            Anim {
+                type: Anim.SlowEffects
+            }
+        }
     }
 
     Loader {

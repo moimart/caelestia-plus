@@ -59,18 +59,38 @@ Item {
 
         MaterialIcon {
             anchors.centerIn: parent
-            text: "image"
+            text: Wallpapers.isVideo(root.modelData.path) ? "movie" : "image"
             color: Colours.tPalette.m3outline
             fontStyle: Tokens.font.icon.builders.extraLarge.scale(2).weight(Font.DemiBold).build()
         }
 
         CachingImage {
             anchors.fill: parent
-            path: root.modelData.path
+            path: Wallpapers.thumbFor(root.modelData.path)
             smooth: !root.PathView.view.moving
             sourceSize: {
                 const dpr = (QsWindow.window as QsWindow)?.devicePixelRatio ?? 1;
                 return Qt.size(image.implicitWidth * dpr, image.implicitHeight * dpr);
+            }
+        }
+
+        StyledRect {
+            visible: Wallpapers.isVideo(root.modelData.path)
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: Tokens.padding.small
+            implicitWidth: videoIcon.implicitWidth + Tokens.padding.small * 2
+            implicitHeight: videoIcon.implicitHeight + Tokens.padding.small
+            radius: Tokens.rounding.full
+            color: Qt.alpha(Colours.palette.m3surface, 0.75)
+
+            MaterialIcon {
+                id: videoIcon
+
+                anchors.centerIn: parent
+                text: "play_arrow"
+                fill: 1
+                color: Colours.palette.m3onSurface
             }
         }
     }

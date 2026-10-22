@@ -50,10 +50,10 @@ PathView {
         readonly property string search: root.search.text.split(" ").slice(1).join(" ")
 
         values: Wallpapers.query(search)
-        onValuesChanged: root.currentIndex = search ? 0 : values.findIndex(w => w.path === Wallpapers.actualCurrent)
+        onValuesChanged: root.currentIndex = search ? 0 : values.findIndex(w => w.path === Wallpapers.actualSource)
     }
 
-    Component.onCompleted: currentIndex = Wallpapers.list.findIndex(w => w.path === Wallpapers.actualCurrent)
+    Component.onCompleted: currentIndex = Wallpapers.list.findIndex(w => w.path === Wallpapers.actualSource)
     Component.onDestruction: Wallpapers.stopPreview()
 
     onCurrentItemChanged: {
