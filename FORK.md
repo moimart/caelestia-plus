@@ -46,6 +46,14 @@ scripts/dev-shell.sh dev      # run this checkout (hot-reloads on save)
 scripts/dev-shell.sh system   # back to the installed shell
 ```
 
+The dev shell watches this whole checkout, and `makepkg` normally unpacks
+copies of the shell into `pkg/`, which breaks its hot reload. While it runs,
+build the package outside the repo:
+
+```sh
+cd pkg && BUILDDIR=/tmp/caelestia-pkg SRCDEST=/tmp/caelestia-pkg makepkg -si
+```
+
 ## Pulling upstream changes
 
 ```sh
