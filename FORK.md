@@ -54,7 +54,7 @@ copies of the shell into `pkg/`, which breaks its hot reload. While it runs,
 build the package outside the repo:
 
 ```sh
-cd pkg && BUILDDIR=/tmp/caelestia-pkg SRCDEST=/tmp/caelestia-pkg makepkg -si
+cd pkg && BUILDDIR=/tmp/caelestia-pkg/build SRCDEST=/tmp/caelestia-pkg/src PKGDEST=$PWD makepkg -si
 ```
 
 ## Pulling upstream changes
