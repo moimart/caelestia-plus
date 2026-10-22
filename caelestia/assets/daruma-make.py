@@ -1,5 +1,5 @@
-"""Animate a daruma: rocks on its rounded base after a nudge, settles, then winks its
-left eye during the rest; repeats.
+"""Animate a daruma: rocks on its rounded base after a nudge, settles, then its
+winking eye blinks open and shut during the rest; repeats.
 
 make.py <rendered-png> <out-dir>
 The doll rolls rather than pivots: rotation is about the centre of the base's
@@ -24,13 +24,10 @@ _ink = source.crop(WINK_BOX).convert("L").point(lambda v: 255 - v)
 w = DOLL * SS
 
 def eye_state(t):
-    """How open the left eye is: 1 = open (most of the time), 0 = the wink.
-    It winks once during the rest: closes, holds, reopens."""
-    ease, hold, centre = 0.045, 0.06, 0.88
-    d = abs(t - centre) - hold / 2
-    if d <= 0:
-        return 0.0
-    return 1.0 if d >= ease else (d / ease) ** 0.7
+    """How open the winking eye is: 0 = its usual wink, 1 = open. It opens
+    once during the rest, centred at 88% of the loop."""
+    d = abs(t - 0.88) / 0.05
+    return 0.0 if d >= 1 else 1 - d ** 1.5
 
 # The painted eye, mirrored, is what the winking eye looks like open.
 _cx, _cy = EYE_C
@@ -51,7 +48,7 @@ def doll_frame(openness):
         img.alpha_composite(OPEN_EYE.resize((2 * EYE_R, h), Image.LANCZOS), (LEFT_C[0] - EYE_R, LEFT_C[1] - h // 2))
     return img.resize((w, round(img.height * w / img.width)), Image.LANCZOS)
 
-doll = doll_frame(1.0)
+doll = doll_frame(0.0)
 cw = ch = SIZE * SS
 base_y = ch - 22 * SS        # where the base touches the ground
 radius = w * 0.47            # curvature of the base ~ half the width
