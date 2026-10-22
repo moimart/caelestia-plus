@@ -431,7 +431,7 @@
         "hideDelay": 2000
     },
     "paths": {
-        "mediaGif": "root:/assets/bongocat.gif",
+        "mediaGif": "~/.config/caelestia/assets/daruma-media.webp",
         "sessionGif": "~/.config/caelestia/assets/daruma.webp",
         "wallpaperDir": "/home/moimart/Pictures/Wallpapers"
     },
