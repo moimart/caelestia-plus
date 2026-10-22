@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Wayland
-import Quickshell.Widgets
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -28,13 +27,12 @@ Item {
             anchors.right: parent.right
             spacing: Tokens.spacing.medium
 
-            IconImage {
+            AppIcon {
                 id: icon
 
-                asynchronous: true
                 Layout.alignment: Qt.AlignVCenter
                 implicitSize: details.implicitHeight
-                source: Icons.getAppIcon(Hypr.activeToplevel?.lastIpcObject.class ?? "", "image-missing")
+                entry: Icons.entryForClass(Hypr.activeToplevel?.lastIpcObject.class ?? "")
             }
 
             ColumnLayout {

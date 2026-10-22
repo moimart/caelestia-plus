@@ -115,6 +115,22 @@ Singleton {
         return Quickshell.iconPath(name, true);
     }
 
+    // The desktop entry for a window class. Chromium-based browsers name web
+    // app windows "<browser>-<site>__-<profile>"; if the class itself matches
+    // nothing, try the site's name (e.g. "claude" for chrome-claude.ai__-Default).
+    function entryForClass(cls: string): DesktopEntry {
+        if (!cls)
+            return null;
+        const entry = DesktopEntries.heuristicLookup(cls);
+        if (entry)
+            return entry;
+        const site = /^(?:chrome|chromium|brave|msedge|vivaldi)-([^_]+)__/.exec(cls)?.[1]?.split(".")[0].toLowerCase();
+        if (!site)
+            return null;
+        const apps = DesktopEntries.applications.values;
+        return DesktopEntries.heuristicLookup(site) ?? apps.find(a => a.name.toLowerCase() === site) ?? apps.find(a => a.id.toLowerCase().endsWith(`.${site}`)) ?? null;
+    }
+
     function getAppIcon(name: string, fallback: string): string {
         const icon = DesktopEntries.heuristicLookup(name)?.icon;
         if (fallback !== "undefined")
