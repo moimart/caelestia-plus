@@ -1,4 +1,5 @@
-"""Animate a daruma: rocks on its rounded base after a nudge, settles, rests, repeats.
+"""Animate a daruma: rocks on its rounded base after a nudge, settles, then its
+winking eye blinks open and shut during the rest; repeats.
 
 make.py <rendered-png> <out-dir>
 The doll rolls rather than pivots: rotation is about the centre of the base's
@@ -17,40 +18,37 @@ AMP = math.radians(16)
 source = Image.open(src).convert("RGBA")   # rendered at 1024 px wide
 EYE_C, EYE_R = (712, 392), 134             # the open (painted) eye in the 1024 render
 FACE = source.getpixel((EYE_C[0], EYE_C[1] + EYE_R + 14))
-# The winking (closed) eye on the other side, cut by darkness so only the stroke
-# comes along, mirrored across the face's centre line.
+# The winking eye's stroke, as a mask (by darkness) for erasing it while it's open.
 WINK_BOX = (150, 292, 440, 420)
-_wink = source.crop(WINK_BOX)
-_ink = _wink.convert("L").point(lambda v: 255 - v)
-WINK = Image.new("RGBA", _wink.size, (0, 0, 0, 0))
-WINK.paste(_wink, (0, 0), _ink)
-WINK = WINK.transpose(Image.FLIP_LEFT_RIGHT)
+_ink = source.crop(WINK_BOX).convert("L").point(lambda v: 255 - v)
 w = DOLL * SS
 
 def eye_state(t):
-    """1 = open, 0 = closed: one blink during the rest, centred at 88% of the loop."""
+    """How open the winking eye is: 0 = its usual wink, 1 = open. It opens
+    once during the rest, centred at 88% of the loop."""
     d = abs(t - 0.88) / 0.05
-    return 1.0 if d >= 1 else d ** 1.5
+    return 0.0 if d >= 1 else 1 - d ** 1.5
+
+# The painted eye, mirrored, is what the winking eye looks like open.
+_cx, _cy = EYE_C
+_box = (_cx - EYE_R, _cy - EYE_R, _cx + EYE_R, _cy + EYE_R)
+_mask = Image.new("L", source.size, 0)
+ImageDraw.Draw(_mask).ellipse(_box, fill=255)
+_eye = Image.new("RGBA", source.size, (0, 0, 0, 0))
+_eye.paste(source, (0, 0), _mask)
+OPEN_EYE = _eye.crop(_box).transpose(Image.FLIP_LEFT_RIGHT)
+LEFT_C = (source.width - _cx, _cy)          # mirrored across the face's centre line
 
 def doll_frame(openness):
     img = source.copy()
-    if openness < 0.999:
-        cx, cy = EYE_C
-        box = (cx - EYE_R, cy - EYE_R, cx + EYE_R, cy + EYE_R)
-        mask = Image.new("L", source.size, 0)
-        ImageDraw.Draw(mask).ellipse(box, fill=255)
-        eye = Image.new("RGBA", source.size, (0, 0, 0, 0))
-        eye.paste(img, (0, 0), mask)
-        eye = eye.crop(box)
-        ImageDraw.Draw(img).ellipse(box, fill=FACE)          # cover the open eye
+    if openness > 0.12:
+        # erase the wink stroke, then draw the eye opening (squashed vertically)
+        ImageDraw.Draw(img).bitmap(WINK_BOX[:2], _ink, fill=FACE)
         h = max(1, round(2 * EYE_R * openness))
-        if openness > 0.12:
-            img.alpha_composite(eye.resize((2 * EYE_R, h), Image.LANCZOS), (cx - EYE_R, cy - h // 2))
-        else:  # closed: his own wink, mirrored onto this side of the face
-            img.alpha_composite(WINK, (source.width - WINK_BOX[2], WINK_BOX[1]))
+        img.alpha_composite(OPEN_EYE.resize((2 * EYE_R, h), Image.LANCZOS), (LEFT_C[0] - EYE_R, LEFT_C[1] - h // 2))
     return img.resize((w, round(img.height * w / img.width)), Image.LANCZOS)
 
-doll = doll_frame(1.0)
+doll = doll_frame(0.0)
 cw = ch = SIZE * SS
 base_y = ch - 22 * SS        # where the base touches the ground
 radius = w * 0.47            # curvature of the base ~ half the width
