@@ -149,10 +149,10 @@
             "label": "  ",
             "occupiedBg": false,
             "occupiedLabel": "󰮯",
-            "perMonitorWorkspaces": true,
+            "perMonitor": true,
             "showWindows": true,
             "showWindowsOnSpecialWorkspaces": true,
-            "shown": 8,
+            "shown": 5,
             "specialWorkspaceIcons": [
             ]
         }
@@ -179,7 +179,7 @@
                 "mpv"
             ],
             "terminal": [
-                "foot"
+                "kitty"
             ]
         },
         "battery": {
@@ -428,6 +428,7 @@
     },
     "services": {
         "audioIncrement": 0.1,
+        "clockFormat": "TwentyFourHour",
         "defaultPlayer": "Spotify",
         "gpuType": "",
         "maxVolume": 1,
@@ -438,10 +439,9 @@
             }
         ],
         "smartScheme": true,
-        "useFahrenheit": false,
-        "useTwelveHourClock": false,
         "visualiserBars": 45,
-        "weatherLocation": ""
+        "weatherLocation": "",
+        "weatherUnits": "Celsius"
     },
     "session": {
         "commands": {
@@ -490,8 +490,12 @@
         "vpn": {
             "enabled": false,
             "provider": [
-                "netbird"
-            ]
+                {
+                    "id": "vpn-mvjy6z8h-455sv",
+                    "name": "netbird"
+                }
+            ],
+            "selectedProvider": "vpn-mvjy6z8h-455sv"
         }
     }
 }
