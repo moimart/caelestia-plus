@@ -99,14 +99,20 @@ Singleton {
         return false;
     }
 
-    // Whether an icon can actually be drawn: a file path, or a name the icon
-    // theme has. Names it lacks would render Qt's "missing image" checkerboard.
-    function hasIcon(name: string): bool {
+    // A drawable source for an icon reference as apps send it: a theme name,
+    // a file path or URL, or an image://icon/ URL. "" for theme names the icon
+    // theme lacks (which would render Qt's "missing image" checkerboard). Files
+    // can still be missing; IconCheck finds that out by loading them.
+    function iconSource(name: string): string {
         if (!name)
-            return false;
-        if (name.startsWith("/") || name.startsWith("file:") || name.startsWith("image:"))
-            return true;
-        return Quickshell.iconPath(name, true) !== "";
+            return "";
+        if (name.startsWith("image://icon/"))
+            name = name.slice("image://icon/".length);
+        if (name.startsWith("/"))
+            return `file://${name}`;
+        if (/^[a-z]+:/.test(name))
+            return name;
+        return Quickshell.iconPath(name, true);
     }
 
     function getAppIcon(name: string, fallback: string): string {

@@ -25,7 +25,7 @@ StyledRect {
         for (const n of notifs) {
             if (!img && n.image.length > 0)
                 img = n.image;
-            if (!icon && Icons.hasIcon(n.appIcon))
+            if (!icon && n.appIcon.length > 0)
                 icon = n.appIcon;
             if (n.urgency === NotificationUrgency.Critical)
                 hasCritical = true;
@@ -67,11 +67,23 @@ StyledRect {
             implicitWidth: TokenConfig.sizes.notifs.image
             implicitHeight: TokenConfig.sizes.notifs.image
 
+            IconCheck {
+                id: imageCheck
+
+                name: root.image
+            }
+
+            IconCheck {
+                id: iconCheck
+
+                name: root.appIcon
+            }
+
             Component {
                 id: imageComp
 
                 Image {
-                    source: Qt.resolvedUrl(root.image)
+                    source: imageCheck.resolved
                     fillMode: Image.PreserveAspectCrop
                     sourceSize: {
                         const size = TokenConfig.sizes.notifs.image * ((QsWindow.window as QsWindow)?.devicePixelRatio ?? 1);
@@ -89,7 +101,7 @@ StyledRect {
 
                 ColouredIcon {
                     implicitSize: Math.round(TokenConfig.sizes.notifs.image * 0.6)
-                    source: Quickshell.iconPath(root.appIcon)
+                    source: iconCheck.resolved
                     colour: root.urgency === "critical" ? Colours.palette.m3onError : root.urgency === "low" ? Colours.palette.m3onSurface : Colours.palette.m3onSecondaryContainer
                     layer.enabled: root.appIcon.endsWith("symbolic")
                 }
@@ -113,7 +125,7 @@ StyledRect {
                 Loader {
                     asynchronous: true
                     anchors.centerIn: parent
-                    sourceComponent: root.image ? imageComp : root.appIcon ? appIconComp : materialIconComp
+                    sourceComponent: imageCheck.ok ? imageComp : iconCheck.ok ? appIconComp : materialIconComp
                 }
             }
 
@@ -121,7 +133,7 @@ StyledRect {
                 asynchronous: true
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                active: root.appIcon && root.image
+                active: iconCheck.ok && imageCheck.ok
 
                 sourceComponent: StyledRect {
                     implicitWidth: Tokens.sizes.notifs.badge
@@ -133,7 +145,7 @@ StyledRect {
                     ColouredIcon {
                         anchors.centerIn: parent
                         implicitSize: Math.round(Tokens.sizes.notifs.badge * 0.6)
-                        source: Quickshell.iconPath(root.appIcon)
+                        source: iconCheck.resolved
                         colour: root.urgency === "critical" ? Colours.palette.m3onError : root.urgency === "low" ? Colours.palette.m3onSurface : Colours.palette.m3onSecondaryContainer
                         layer.enabled: root.appIcon.endsWith("symbolic")
                     }

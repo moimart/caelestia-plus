@@ -22,7 +22,7 @@ StyledRect {
     readonly property list<var> activeNotifs: notifs.filter(n => !n.closed)
     readonly property int notifCount: activeNotifs.length
     readonly property string image: activeNotifs.find(n => n.image.length > 0)?.image ?? ""
-    readonly property string appIcon: activeNotifs.find(n => Icons.hasIcon(n.appIcon))?.appIcon ?? ""
+    readonly property string appIcon: activeNotifs.find(n => n.appIcon.length > 0)?.appIcon ?? ""
     readonly property int urgency: {
         if (activeNotifs.find(n => n.urgency === NotificationUrgency.Critical))
             return NotificationUrgency.Critical;
@@ -79,11 +79,23 @@ StyledRect {
             implicitWidth: TokenConfig.sizes.notifs.image
             implicitHeight: TokenConfig.sizes.notifs.image
 
+            IconCheck {
+                id: imageCheck
+
+                name: root.image
+            }
+
+            IconCheck {
+                id: iconCheck
+
+                name: root.appIcon
+            }
+
             Component {
                 id: imageComp
 
                 Image {
-                    source: Qt.resolvedUrl(root.image)
+                    source: imageCheck.resolved
                     fillMode: Image.PreserveAspectCrop
                     sourceSize: {
                         const size = TokenConfig.sizes.notifs.image * ((QsWindow.window as QsWindow)?.devicePixelRatio ?? 1);
@@ -101,7 +113,7 @@ StyledRect {
 
                 ColouredIcon {
                     implicitSize: Math.round(TokenConfig.sizes.notifs.image * 0.6)
-                    source: Quickshell.iconPath(root.appIcon)
+                    source: iconCheck.resolved
                     colour: root.urgency === NotificationUrgency.Critical ? Colours.palette.m3onError : root.urgency === NotificationUrgency.Low ? Colours.palette.m3onSurface : Colours.palette.m3onSecondaryContainer
                     layer.enabled: root.appIcon.endsWith("symbolic")
                 }
@@ -126,7 +138,7 @@ StyledRect {
                     asynchronous: true
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: sourceComponent === materialIconComp ? 1 : 0
-                    sourceComponent: root.image ? imageComp : root.appIcon ? appIconComp : materialIconComp
+                    sourceComponent: imageCheck.ok ? imageComp : iconCheck.ok ? appIconComp : materialIconComp
                 }
             }
 
@@ -134,7 +146,7 @@ StyledRect {
                 asynchronous: true
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
-                active: root.appIcon && root.image
+                active: iconCheck.ok && imageCheck.ok
 
                 sourceComponent: StyledRect {
                     implicitWidth: Tokens.sizes.notifs.badge
@@ -146,7 +158,7 @@ StyledRect {
                     ColouredIcon {
                         anchors.centerIn: parent
                         implicitSize: Math.round(Tokens.sizes.notifs.badge * 0.6)
-                        source: Quickshell.iconPath(root.appIcon)
+                        source: iconCheck.resolved
                         colour: root.urgency === NotificationUrgency.Critical ? Colours.palette.m3onError : root.urgency === NotificationUrgency.Low ? Colours.palette.m3onSurface : Colours.palette.m3onSecondaryContainer
                         layer.enabled: root.appIcon.endsWith("symbolic")
                     }
