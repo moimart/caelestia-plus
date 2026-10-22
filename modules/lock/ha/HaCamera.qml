@@ -6,7 +6,7 @@ import qs.services
 
 // A camera snapshot, refreshed on every poll. The next frame loads off-screen
 // and replaces the shown one only once it's ready, so the image never blanks.
-StyledClippingRect {
+ClipRect {
     id: root
 
     required property var card

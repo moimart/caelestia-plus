@@ -40,7 +40,7 @@ PageBase {
                 opacity: modelData ? 1 : 0
                 enabled: modelData
 
-                source: Wallpapers.thumbFor(String(modelData?.path ?? ""))
+                source: String(modelData?.path ?? "")
                 text: modelData?.name ?? ""
                 onClicked: {
                     Wallpapers.setWallpaper(modelData.path);

@@ -3,9 +3,10 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Caelestia.Config
+import Caelestia.I18n
+import Caelestia.State
 import qs.components
 import qs.components.filedialog
-import qs.components.images
 import qs.services
 import qs.utils
 
@@ -20,7 +21,7 @@ Item {
 
     readonly property var chosen: Wallpapers.forScreen(screen.name)
     property string source: chosen.image
-    property CachingImage current
+    property Image current
     property bool completed
 
     // The video handed to the player; lags `chosen.video` until its poster is shown.
@@ -74,9 +75,11 @@ Item {
         screenName: root.screen.name
         video: root.shownVideo
         paused: {
+            if (!PersistentState.wallpaperPlaying) // the "pause wallpaper" quick toggle
+                return true;
             if (!GlobalConfig.forScreen(root.screen.name).background.video.pauseWhenHidden)
                 return false;
-            if (root.locked || GameMode.enabled)
+            if (root.locked || RuntimeState.gameMode)
                 return true;
             const ws = Hypr.monitorFor(root.screen)?.activeWorkspace;
             return ws?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false;
@@ -120,7 +123,7 @@ Item {
                     spacing: Tokens.spacing.small
 
                     StyledText {
-                        text: qsTr("Wallpaper missing?")
+                        text: Tr.tr("Wallpaper missing?")
                         color: Colours.palette.m3onSurfaceVariant
                         font: Tokens.font.body.builders.large.size(28 * 2).weight(Font.Bold).build()
                     }
@@ -135,8 +138,8 @@ Item {
                         FileDialog {
                             id: dialog
 
-                            title: qsTr("Select a wallpaper")
-                            filterLabel: qsTr("Image files")
+                            title: Tr.tr("Select a wallpaper")
+                            filterLabel: Tr.tr("Image files")
                             filters: Images.validImageExtensions
                             onAccepted: path => Wallpapers.setWallpaper(path)
                         }
@@ -152,7 +155,7 @@ Item {
 
                             anchors.centerIn: parent
 
-                            text: qsTr("Set it now!")
+                            text: Tr.tr("Set it now!")
                             color: Colours.palette.m3onPrimary
                             font: Tokens.font.body.large
                         }
@@ -165,10 +168,19 @@ Item {
     Component {
         id: imgComp
 
-        CachingImage {
+        Image {
             id: img
 
+            property string path
+
             anchors.fill: parent
+            asynchronous: true
+            fillMode: Image.PreserveAspectCrop
+            source: path.startsWith("/") ? `file://${path}` : path
+            sourceSize: {
+                const dpr = (QsWindow.window as QsWindow)?.devicePixelRatio ?? 1;
+                return Qt.size(width * dpr, height * dpr);
+            }
 
             opacity: 0
 

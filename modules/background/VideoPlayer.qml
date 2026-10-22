@@ -71,7 +71,16 @@ Scope {
             const opts = ["no-audio", "loop", "panscan=1.0", "vd-lavc-dr=yes", `hwdec=${cfg.hwdec}`, `start=${root.startTime}`, `input-ipc-server=${root.socketPath}`, `pause=${root.startPaused ? "yes" : "no"}`];
             if (cfg.mpvOptions)
                 opts.push(cfg.mpvOptions);
-            return ["sh", "-c", 'mkdir -p "$(dirname "$1")" && shift && exec mpvpaper -o "$@"', "sh", root.socketPath, opts.join(" "), root.screenName, root.video];
+            // $1 socket, $2 mpv options, $3 screen, $4 video. Stop any mpvpaper this
+            // shell left on the screen (matched by our socket name, so other apps'
+            // mpvpaper is untouched), and tie the new one to the shell's lifetime
+            // with a parent-death signal so a killed or crashed shell can't orphan it.
+            return ["sh", "-c", `mkdir -p "$(dirname "$1")"
+for p in $(pgrep -x mpvpaper); do
+    tr '\\0' '\\n' < /proc/$p/cmdline 2>/dev/null | grep -q -- "/caelestia/mpvpaper-$3-" && kill "$p"
+done
+shift
+exec setpriv --pdeathsig TERM mpvpaper -o "$@"`, "sh", root.socketPath, opts.join(" "), root.screenName, root.video];
         }
 
         onExited: (code, status) => {
