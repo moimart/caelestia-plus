@@ -16,6 +16,7 @@ qml_module(caelestia-config
         barconfig.hpp
         dashboardconfig.hpp
         generalconfig.hpp
+        keybindsconfig.hpp
         launcherconfig.hpp
         lockconfig.hpp
         nexusconfig.hpp

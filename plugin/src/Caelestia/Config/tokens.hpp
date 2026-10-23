@@ -231,6 +231,14 @@ class NexusTokens : public settings::ObjectNode {
     CONFIG_PROPERTY(int, smallTextFieldWidth, 100)
 };
 
+class KeybindsTokens : public settings::ObjectNode {
+    CONFIG_NODE(KeybindsTokens, settings::ObjectNode)
+
+    CONFIG_PROPERTY(int, maxWidth, 2600)
+    CONFIG_PROPERTY(int, columnWidth, 560)
+    CONFIG_PROPERTY(int, searchWidth, 320)
+};
+
 class SizeTokens : public settings::ObjectNode {
     CONFIG_NODE(SizeTokens, settings::ObjectNode)
 
@@ -245,6 +253,7 @@ class SizeTokens : public settings::ObjectNode {
     CONFIG_SUBOBJECT(LockTokens, lock)
     CONFIG_SUBOBJECT(WInfoTokens, winfo)
     CONFIG_SUBOBJECT(NexusTokens, nexus)
+    CONFIG_SUBOBJECT(KeybindsTokens, keybinds)
 };
 
 } // namespace caelestia::config

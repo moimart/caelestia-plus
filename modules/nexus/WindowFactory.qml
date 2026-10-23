@@ -25,6 +25,9 @@ Singleton {
         FloatingWindow {
             id: win
 
+            // Page to open on, as an index into PageRegistry.pages
+            property int initialPage: -1
+
             color: Colours.tPalette.m3surface
             surfaceFormat.opaque: false
 
@@ -51,6 +54,10 @@ Singleton {
                 nState.screen: win.screen
                 nState.isWindow: true
                 onClose: win.destroy()
+                Component.onCompleted: {
+                    if (win.initialPage >= 0)
+                        nState.currentPageIdx = win.initialPage;
+                }
             }
 
             Behavior on color {

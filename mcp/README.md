@@ -19,6 +19,7 @@ Tools:
 | Colours | `scheme_get`, `scheme_list`, `scheme_set` |
 | Settings | `config_get`, `config_set` (dotted keys in `shell.json` or a monitor's override; reloads live) |
 | Desktop | `media_status`, `media_control`, `brightness`, `toast`, `notifications`, `toggle` (game mode, idle inhibitor), `panel` (launcher, dashboard, ...; `settings`) |
+| Shortcuts | `keybinds` (list the Hyprland/shell shortcuts from the config, filter by words or owner; show/hide the shortcuts panel; open its settings) |
 | Anything else | `ipc_list`, `ipc_call` |
 
 Window management (moving/focusing windows) is Hyprland's, not the shell's,

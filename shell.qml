@@ -11,6 +11,7 @@ import qs.services
 import qs.modules.areapicker
 import qs.modules.background
 import qs.modules.drawers
+import qs.modules.keybinds
 import qs.modules.lock
 import qs.daemons
 
@@ -46,6 +47,7 @@ ShellRoot {
     }
     Drawers {}
     AreaPicker {}
+    KeybindsPanel {}
     Lock {
         id: lock
     }

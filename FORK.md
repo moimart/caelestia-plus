@@ -29,8 +29,29 @@ package, which replaces the AUR `caelestia-shell`.
   `qs -c caelestia ipc call wallpaper setFor DP-1 <path>` / `clearFor DP-1` / `getFor DP-1`.
   The colour scheme follows the global wallpaper.
 
+- **Keyboard shortcuts panel** (`modules/keybinds/`, `services/Keybinds.qml`,
+  `assets/hyprbinds.py`): a searchable cheatsheet of every active bind. Nothing
+  is hardcoded. `hyprbinds.py` reads `hyprland.lua` and the modules it
+  `require()`s (or `hyprland.conf` and its `source`s), evaluates each
+  `hl.bind()`, binds made in loops included, and pairs it with `hyprctl binds`.
+  Titles come, in order of preference, from:
+  - the bind's `description`;
+  - a `-- SUPER + X → …` comment;
+  - the dispatcher, command, desktop entry or global shortcut description;
+  - the config's comments.
+
+  Categories come from the config's `-- ====` section banners. The list
+  refreshes when Hyprland reloads. To open it:
+  - press `hl.dsp.global("caelestia:keybinds")` (bound to Super+/);
+  - choose `>Shortcuts` in the launcher;
+  - run `qs -c caelestia ipc call keybinds toggle|open|close|list|settings`;
+  - use the `keybinds` MCP tool.
+
+  Settings are in Nexus → Keyboard shortcuts (`keybinds.*` in shell.json).
+  Sizes are under `sizes.keybinds` in the tokens.
+
 - **MCP server** (`mcp/`): lets Claude Code agents control the shell (screenshots,
-  wallpapers, scheme, settings, lock, media, panels, raw IPC). See `mcp/README.md`.
+  wallpapers, scheme, settings, lock, media, panels, raw IPC, keybinds). See `mcp/README.md`.
 
 ## Build and install
 

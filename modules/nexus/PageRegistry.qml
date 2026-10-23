@@ -71,6 +71,12 @@ QtObject {
             category: "shell"
         },
         {
+            label: Tr.tr("Keyboard shortcuts"),
+            icon: "keyboard",
+            description: Tr.tr("Hyprland and shell shortcuts"),
+            category: "shell"
+        },
+        {
             label: Tr.tr("Services"),
             icon: "build",
             description: Tr.tr("Poll intervals, lyrics backend"),

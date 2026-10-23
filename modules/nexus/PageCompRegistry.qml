@@ -157,6 +157,14 @@ QtObject {
             }
         },
         Component {
+            // Keyboard shortcuts
+            StackPage {
+                Component {
+                    KeybindsPage {}
+                }
+            }
+        },
+        Component {
             // Services
             StackPage {
                 Component {

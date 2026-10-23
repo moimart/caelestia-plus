@@ -376,6 +376,39 @@ def panel(args):
     return {name: ipc("drawers", "isOpen", name)}
 
 
+HYPRBINDS = Path(__file__).resolve().parent.parent / "assets" / "hyprbinds.py"
+
+
+@tool("keybinds", "The Hyprland and shell keyboard shortcuts, read from the Hyprland config (what each does, its keys, category). "
+      "Action 'list' (default) returns them, optionally filtered; 'show'/'hide'/'toggle' the on-screen shortcuts panel; "
+      "'settings' opens its settings page.",
+      {"action": {"type": "string", "enum": ["list", "show", "hide", "toggle", "settings"]},
+       "query": {"type": "string", "description": "Only shortcuts whose title, keys, command or category contain all these words."},
+       "owner": {"type": "string", "enum": ["shell", "hyprland", "app"], "description": "Only shortcuts handled by the shell, Hyprland or launching apps."},
+       "include_internal": {"type": "boolean", "description": "Include pass-through binds the shell uses itself."}})
+def keybinds(args):
+    action = args.get("action") or "list"
+    if action != "list":
+        ipc("keybinds", {"show": "open", "hide": "close", "toggle": "toggle", "settings": "settings"}[action])
+        return {"ok": True}
+    data = json.loads(run(["python3", "-I", str(HYPRBINDS)]))
+    if data.get("error"):
+        raise ToolError(data["error"])
+    words = (args.get("query") or "").lower().split()
+    binds = [b for b in data["binds"]
+             if (args.get("include_internal") or not b["internal"])
+             and (not args.get("owner") or b["owner"] == args["owner"])
+             and all(w in b["search"] for w in words)]
+    return {
+        "config": data["config"],
+        "binds": [{k: b[k] for k in ("combo", "title", "category", "owner", "note", "detail")}
+                  | ({"missing": True} if b["missing"] else {})
+                  | ({"flags": [f for f, on in b["flags"].items() if on]} if any(b["flags"].values()) else {})
+                  for b in binds],
+        "unbound_shell_actions": [{"name": u["name"], "title": u["title"]} for u in data["unbound"]] if not words else [],
+    }
+
+
 @tool("ipc_list", "Every IPC target and function the running shell exposes (for ipc_call).")
 def ipc_list(_):
     return run(["qs", "-c", "caelestia", "ipc", "show"])
