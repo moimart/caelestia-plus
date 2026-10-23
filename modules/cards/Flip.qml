@@ -90,7 +90,7 @@ Item {
                 live: root.phase === 0
                 onHasContentChanged: {
                     if (hasContent && root.phase === 0)
-                        root.captureBack();
+                        coverTimer.start();
                 }
             }
         }
@@ -159,6 +159,15 @@ Item {
                 easing.type: Easing.InQuad
             }
         }
+    }
+
+    // The real front is hidden next, so let the compositor show the card over
+    // it for a few frames first; hiding it straight away flashes the wallpaper
+    Timer {
+        id: coverTimer
+
+        interval: 60
+        onTriggered: root.captureBack()
     }
 
     // Give Hyprland a moment to switch the group before capturing the back

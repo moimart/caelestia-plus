@@ -104,7 +104,9 @@ Singleton {
             return;
         // The focused window is the side showing (a group's hidden window can't
         // have focus); the toplevel list's visibility can lag a flip behind
-        const target = toplevel ?? Hyprland.activeToplevel;
+        // (Hyprland.activeToplevel is only known after a focus change, so fall back
+        // to the focus history the toplevel list carries, e.g. right after a restart)
+        const target = toplevel ?? Hyprland.activeToplevel ?? Hypr.toplevels.values.find(t => t.lastIpcObject.focusHistoryID === 0) ?? null;
         const card = cardFor(target);
         if (!card) {
             Toaster.toast(Tr.tr("Not a card"), Tr.tr("Pair two windows into a card first"), "flip");
