@@ -409,6 +409,25 @@ def keybinds(args):
     }
 
 
+@tool("cards", "Window cards: two windows paired into one Hyprland group that flips over in 3D to show the other. "
+      "'list' shows the cards; 'pair' pairs two windows by address (see list_windows / hyprctl clients), front first; "
+      "'pick' starts interactive pairing for the focused window; 'flip' and 'unpair' act on the focused card.",
+      {"action": {"type": "string", "enum": ["list", "pair", "pick", "flip", "unpair"]},
+       "front": {"type": "string", "description": "Address (0x...) of the window shown first, for 'pair'."},
+       "back": {"type": "string", "description": "Address (0x...) of the window on the back, for 'pair'."}}, ["action"])
+def cards(args):
+    action = args["action"]
+    if action == "list":
+        return json.loads(ipc("cards", "list") or "[]")
+    if action == "pair":
+        if not args.get("front") or not args.get("back"):
+            raise ToolError("'pair' needs front and back window addresses")
+        ipc("cards", "pairWindows", args["front"], args["back"])
+    else:
+        ipc("cards", {"pick": "pair", "flip": "flip", "unpair": "unpair"}[action])
+    return {"ok": True}
+
+
 @tool("ipc_list", "Every IPC target and function the running shell exposes (for ipc_call).")
 def ipc_list(_):
     return run(["qs", "-c", "caelestia", "ipc", "show"])

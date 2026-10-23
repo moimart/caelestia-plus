@@ -50,6 +50,25 @@ package, which replaces the AUR `caelestia-shell`.
   Settings are in Nexus → Keyboard shortcuts (`keybinds.*` in shell.json).
   Sizes are under `sizes.keybinds` in the tokens.
 
+- **Window cards** (`modules/cards/`, `services/Cards.qml`): pair two windows
+  into one "card" and flip it over in 3D to show the other. No Hyprland plugin
+  is needed:
+  - **Pairing:** a card is a locked Hyprland group of the two windows, tagged
+    `caelestia-card`, with decorations off so no tab bar shows. The shell
+    installs small Lua helpers into Hyprland on start and after every reload
+    (`hyprctl eval`).
+  - **Flipping:** the shell captures both windows, hides the real ones with a
+    `caelestia-card-hidden` tag (an opacity-0, no-animation rule), turns a card
+    with the captures on its faces in a perspective rotation, then shows the
+    other window live.
+  - **Shortcuts:** `caelestia:cardPair` (the focused window becomes the front;
+    pick the back), `cardFlip` and `cardUnpair`, bound to Super+Alt+Tab,
+    Super+Tab and Super+Shift+Tab.
+  - **Other access:** IPC target `cards`
+    (`pair`/`pairWindows`/`flip`/`unpair`/`cancel`/`list`), the `cards` MCP
+    tool, and Nexus → Window cards for settings (`cards.*`).
+  - **Needs** the Lua config (Hyprland 0.55+).
+
 - **MCP server** (`mcp/`): lets Claude Code agents control the shell (screenshots,
   wallpapers, scheme, settings, lock, media, panels, raw IPC, keybinds). See `mcp/README.md`.
 

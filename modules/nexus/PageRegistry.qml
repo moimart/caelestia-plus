@@ -77,6 +77,12 @@ QtObject {
             category: "shell"
         },
         {
+            label: Tr.tr("Window cards"),
+            icon: "flip",
+            description: Tr.tr("Pair windows and flip between them"),
+            category: "shell"
+        },
+        {
             label: Tr.tr("Services"),
             icon: "build",
             description: Tr.tr("Poll intervals, lyrics backend"),

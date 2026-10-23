@@ -165,6 +165,14 @@ QtObject {
             }
         },
         Component {
+            // Window cards
+            StackPage {
+                Component {
+                    CardsPage {}
+                }
+            }
+        },
+        Component {
             // Services
             StackPage {
                 Component {

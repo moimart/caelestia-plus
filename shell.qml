@@ -10,6 +10,7 @@ import Caelestia.Config
 import qs.services
 import qs.modules.areapicker
 import qs.modules.background
+import qs.modules.cards
 import qs.modules.drawers
 import qs.modules.keybinds
 import qs.modules.lock
@@ -48,6 +49,7 @@ ShellRoot {
     Drawers {}
     AreaPicker {}
     KeybindsPanel {}
+    WindowCards {}
     Lock {
         id: lock
     }
