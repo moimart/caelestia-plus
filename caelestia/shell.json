@@ -145,11 +145,12 @@
             "activeIndicator": true,
             "activeLabel": "󰮯",
             "activeTrail": false,
-            "capitalisation": "preserve",
+            "capitalisation": "Preserve",
             "label": "  ",
             "occupiedBg": false,
             "occupiedLabel": "󰮯",
             "perMonitor": true,
+            "showUnoccupied": true,
             "showWindows": true,
             "showWindowsOnSpecialWorkspaces": true,
             "shown": 5,
@@ -186,12 +187,14 @@
             "criticalLevel": 3,
             "warnLevels": [
                 {
+                    "critical": false,
                     "icon": "battery_android_frame_2",
                     "level": 20,
                     "message": "You might want to plug in a charger",
                     "title": "Low battery"
                 },
                 {
+                    "critical": false,
                     "icon": "battery_android_frame_1",
                     "level": 10,
                     "message": "You should probably plug in a charger <b>now</b>",
@@ -211,10 +214,15 @@
             "lockBeforeSleep": false,
             "timeouts": [
                 {
+                    "enabled": true,
                     "idleAction": "lock",
+                    "inhibitWhenAudio": false,
+                    "inhibitWhenCharging": false,
+                    "respectInhibitors": true,
                     "timeout": 3600
                 },
                 {
+                    "enabled": true,
                     "idleAction": [
                         "caelestia",
                         "shell",
@@ -222,6 +230,9 @@
                         "set",
                         "0"
                     ],
+                    "inhibitWhenAudio": false,
+                    "inhibitWhenCharging": false,
+                    "respectInhibitors": true,
                     "returnAction": [
                         "caelestia",
                         "shell",
@@ -248,6 +259,19 @@
                 "enabled": true,
                 "icon": "calculate",
                 "name": "Calculator"
+            },
+            {
+                "command": [
+                    "caelestia",
+                    "shell",
+                    "nexus",
+                    "open"
+                ],
+                "dangerous": false,
+                "description": "Open the shell settings",
+                "enabled": true,
+                "icon": "settings",
+                "name": "Settings"
             },
             {
                 "command": [
@@ -491,7 +515,13 @@
             "enabled": false,
             "provider": [
                 {
+                    "connectCmd": [
+                    ],
+                    "disconnectCmd": [
+                    ],
+                    "displayName": "",
                     "id": "vpn-mvjy6z8h-455sv",
+                    "interface": "",
                     "name": "netbird"
                 }
             ],
