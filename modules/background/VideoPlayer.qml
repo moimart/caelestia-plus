@@ -53,7 +53,7 @@ Scope {
         socket.connected = false;
         if (proc.running) {
             restartPending = true; // start() runs once the old mpvpaper has exited
-            proc.running = false;
+            proc.signal(9); // mpvpaper catches SIGTERM without exiting (seen while paused)
         } else {
             start();
         }
@@ -75,12 +75,13 @@ Scope {
             // shell left on the screen (matched by our socket name, so other apps'
             // mpvpaper is untouched), and tie the new one to the shell's lifetime
             // with a parent-death signal so a killed or crashed shell can't orphan it.
+            // SIGKILL throughout: mpvpaper catches SIGTERM and can carry on running.
             return ["sh", "-c", `mkdir -p "$(dirname "$1")"
 for p in $(pgrep -x mpvpaper); do
-    tr '\\0' '\\n' < /proc/$p/cmdline 2>/dev/null | grep -q -- "/caelestia/mpvpaper-$3-" && kill "$p"
+    tr '\\0' '\\n' < /proc/$p/cmdline 2>/dev/null | grep -q -- "/caelestia/mpvpaper-$3-" && kill -KILL "$p"
 done
 shift
-exec setpriv --pdeathsig TERM mpvpaper -o "$@"`, "sh", root.socketPath, opts.join(" "), root.screenName, root.video];
+exec setpriv --pdeathsig KILL mpvpaper -o "$@"`, "sh", root.socketPath, opts.join(" "), root.screenName, root.video];
         }
 
         onExited: (code, status) => {
