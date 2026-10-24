@@ -458,7 +458,8 @@
     "paths": {
         "mediaGif": "~/.config/caelestia/assets/daruma-media.webp",
         "sessionGif": "~/.config/caelestia/assets/daruma.webp",
-        "wallpaperDir": "/home/moimart/Pictures/Wallpapers"
+        "wallpaperDir": "/home/moimart/Pictures/Wallpapers",
+        "face": "~/.config/caelestia/assets/face.mp4"
     },
     "services": {
         "audioIncrement": 0.1,
