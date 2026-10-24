@@ -1,0 +1,19 @@
+{
+    "id": "daruma",
+    "name": "Daruma",
+    "description": "Your winking daruma, its painted eye following the pointer",
+    "icon": "self_improvement",
+    "author": "moimart",
+    "version": "1.1",
+    "main": "Daruma.qml",
+    "defaultSize": [
+        110,
+        110
+    ],
+    "minSize": [
+        40,
+        40
+    ],
+    "keepAspect": true,
+    "needsCursor": true
+}

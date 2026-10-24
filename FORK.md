@@ -77,6 +77,10 @@ package, which replaces the AUR `caelestia-shell`.
     from a palette.
   - **Eyes:** the first widget, xeyes-like, in three abstract styles
     (orbit by default).
+  - **Daruma:** your winking daruma (from `daruma-source.svg`), its painted
+    eye following the pointer. It winks that eye now and then and rests with
+    both shut when the pointer is still. Rebuild its images with
+    `modules/widgets/builtin/daruma/make-art.py`.
   - **Settings:** Nexus → Plugins lists plugins and holds the settings
     (`widgets.*`). About counts the plugins.
   - **Other access:** IPC target `widgets` and the `widgets` MCP tool.
