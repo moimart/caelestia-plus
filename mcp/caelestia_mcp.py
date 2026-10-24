@@ -428,6 +428,43 @@ def cards(args):
     return {"ok": True}
 
 
+@tool("widgets", "Desktop widgets (widget plugins). 'list' shows installed plugins and placed widgets; 'add' places one "
+      "(type = plugin id, monitor = e.g. DP-1); 'place' moves/resizes one (screen logical px); 'configure' sets its "
+      "settings (JSON object, e.g. {\"style\": \"almond\"} for eyes); 'remove'; 'edit'/'done' open/close the "
+      "on-screen editor; 'rescan' re-reads the plugin folders.",
+      {"action": {"type": "string", "enum": ["list", "add", "place", "configure", "remove", "edit", "done", "rescan"]},
+       "type": {"type": "string", "description": "Plugin id, for 'add'."},
+       "monitor": MONITOR,
+       "uid": {"type": "string", "description": "Placed widget id (from 'list')."},
+       "x": {"type": "integer"}, "y": {"type": "integer"},
+       "width": {"type": "integer"}, "height": {"type": "integer"},
+       "settings": {"type": "object", "description": "For 'configure': replaces the widget's settings."}}, ["action"])
+def widgets(args):
+    action = args["action"]
+    if action == "list":
+        return json.loads(ipc("widgets", "list") or "{}")
+    if action == "add":
+        if not args.get("type") or not args.get("monitor"):
+            raise ToolError("'add' needs type and monitor")
+        ipc("widgets", "add", args["type"], args["monitor"])
+    elif action == "place":
+        missing = [k for k in ("uid", "x", "y", "width", "height") if args.get(k) is None]
+        if missing:
+            raise ToolError(f"'place' needs {', '.join(missing)}")
+        ipc("widgets", "place", args["uid"], args["x"], args["y"], args["width"], args["height"])
+    elif action == "configure":
+        if not args.get("uid"):
+            raise ToolError("'configure' needs uid")
+        ipc("widgets", "configure", args["uid"], json.dumps(args.get("settings") or {}))
+    elif action == "remove":
+        if not args.get("uid"):
+            raise ToolError("'remove' needs uid")
+        ipc("widgets", "remove", args["uid"])
+    else:
+        ipc("widgets", action)
+    return {"ok": True}
+
+
 @tool("ipc_list", "Every IPC target and function the running shell exposes (for ipc_call).")
 def ipc_list(_):
     return run(["qs", "-c", "caelestia", "ipc", "show"])

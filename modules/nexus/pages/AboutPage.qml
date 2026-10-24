@@ -12,8 +12,8 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    // Plugin support is not wired up yet; always 0 for now
-    readonly property int pluginCount: 0
+    // Widget plugins are the only kind so far
+    readonly property int pluginCount: Widgets.plugins.length
 
     property string quickshellVersion
     property string cliVersion

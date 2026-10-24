@@ -2,6 +2,7 @@
 
 #include <qdir.h>
 #include <qjsonarray.h>
+#include <qjsonobject.h>
 #include <qlocalsocket.h>
 #include <qloggingcategory.h>
 #include <qvariant.h>
@@ -22,7 +23,11 @@ HyprExtras::HyprExtras(QObject* parent)
     : QObject(parent)
     , m_socket(nullptr)
     , m_socketValid(false)
-    , m_devices(new HyprDevices(this)) {
+    , m_devices(new HyprDevices(this))
+    , m_cursorTimer(new QTimer(this)) {
+    m_cursorTimer->setTimerType(Qt::PreciseTimer);
+    QObject::connect(m_cursorTimer, &QTimer::timeout, this, &HyprExtras::pollCursor);
+
     const auto his = qEnvironmentVariable("HYPRLAND_INSTANCE_SIGNATURE");
     if (his.isEmpty()) {
         qCWarning(lcHypr) << "$HYPRLAND_INSTANCE_SIGNATURE is unset. Unable to connect to Hyprland socket.";
@@ -60,6 +65,57 @@ QVariantHash HyprExtras::options() const {
 
 HyprDevices* HyprExtras::devices() const {
     return m_devices;
+}
+
+QPointF HyprExtras::cursorPos() const {
+    return m_cursorPos;
+}
+
+bool HyprExtras::trackCursor() const {
+    return m_trackCursor;
+}
+
+void HyprExtras::setTrackCursor(bool track) {
+    if (m_trackCursor == track) {
+        return;
+    }
+    m_trackCursor = track;
+    emit trackCursorChanged();
+
+    if (track) {
+        m_cursorStill = 0;
+        m_cursorTimer->start(16);
+        pollCursor();
+    } else {
+        m_cursorTimer->stop();
+    }
+}
+
+void HyprExtras::pollCursor() {
+    // One request at a time; a slow reply just skips a tick
+    if (!m_cursorRequest.isNull()) {
+        return;
+    }
+
+    m_cursorRequest = makeRequestJson(u"cursorpos"_s, [this](bool success, const QJsonDocument& response) {
+        m_cursorRequest.reset();
+        if (!success || !m_trackCursor) {
+            return;
+        }
+
+        const auto obj = response.object();
+        const QPointF pos(obj.value(u"x"_s).toDouble(), obj.value(u"y"_s).toDouble());
+        if (pos != m_cursorPos) {
+            m_cursorPos = pos;
+            emit cursorPosChanged();
+            if (m_cursorStill > 0) {
+                m_cursorStill = 0;
+                m_cursorTimer->setInterval(16); // ~60 Hz while moving
+            }
+        } else if (++m_cursorStill == 60) {
+            m_cursorTimer->setInterval(100); // still for about a second
+        }
+    });
 }
 
 void HyprExtras::message(const QString& message) {

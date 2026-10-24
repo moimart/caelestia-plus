@@ -21,6 +21,7 @@ Tools:
 | Desktop | `media_status`, `media_control`, `brightness`, `toast`, `notifications`, `toggle` (game mode, idle inhibitor), `panel` (launcher, dashboard, ...; `settings`) |
 | Shortcuts | `keybinds` (list the Hyprland/shell shortcuts from the config, filter by words or owner; show/hide the shortcuts panel; open its settings) |
 | Window cards | `cards` (list, pair two windows by address, start picking, flip, unpair) |
+| Desktop widgets | `widgets` (list plugins and placed widgets, add, place, configure, remove, open the editor) |
 | Anything else | `ipc_list`, `ipc_call` |
 
 Window management (moving/focusing windows) is Hyprland's, not the shell's,

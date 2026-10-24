@@ -14,6 +14,7 @@ import qs.modules.cards
 import qs.modules.drawers
 import qs.modules.keybinds
 import qs.modules.lock
+import qs.modules.widgets
 import qs.daemons
 
 ShellRoot {
@@ -50,6 +51,7 @@ ShellRoot {
     AreaPicker {}
     KeybindsPanel {}
     WindowCards {}
+    WidgetsEditor {}
     Lock {
         id: lock
     }

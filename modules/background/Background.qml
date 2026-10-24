@@ -7,6 +7,7 @@ import Caelestia.Config
 import qs.components
 import qs.components.containers
 import qs.services
+import qs.modules.widgets
 
 Variants {
     id: root
@@ -64,6 +65,12 @@ Variants {
                 screen: win.modelData
                 wallpaper: wallpaper
             }
+        }
+
+        // Desktop widgets, above the wallpaper and below the clock
+        DesktopWidgets {
+            anchors.fill: parent
+            screen: win.modelData
         }
 
         Loader {

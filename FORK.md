@@ -69,6 +69,23 @@ package, which replaces the AUR `caelestia-shell`.
     tool, and Nexus → Window cards for settings (`cards.*`).
   - **Needs** the Lua config (Hyprland 0.55+).
 
+- **Plugins: desktop widgets** (`modules/widgets/`, `services/Widgets.qml`): widget
+  plugins placed on the desktop, above the wallpaper. Built-in ones are in
+  `modules/widgets/builtin/`; yours go in `~/.config/caelestia/plugins/widgets/`.
+  - **Editing:** Super+Ctrl+W (`caelestia:widgets`) opens an editor on every
+    monitor: drag widgets to move them, drag a corner to resize, and add more
+    from a palette.
+  - **Eyes:** the first widget, xeyes-like, in three abstract styles
+    (orbit by default).
+  - **Settings:** Nexus → Plugins lists plugins and holds the settings
+    (`widgets.*`). About counts the plugins.
+  - **Other access:** IPC target `widgets` and the `widgets` MCP tool.
+  - **Pointer:** comes from a new poller in `HyprExtras`
+    (`cursorPos`/`trackCursor`), active only while a placed widget needs it.
+
+  How to write a plugin: see [PLUGINS.md](PLUGINS.md); there's a working
+  example in `examples/widgets/clock/`.
+
 - **MCP server** (`mcp/`): lets Claude Code agents control the shell (screenshots,
   wallpapers, scheme, settings, lock, media, panels, raw IPC, keybinds). See `mcp/README.md`.
 

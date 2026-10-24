@@ -140,6 +140,14 @@ Scope {
             WindowFactory.create();
         }
 
+        // Open on a page by (part of) its name, e.g. "plugins" or "keyboard"
+        function page(name: string): void {
+            const n = name.toLowerCase();
+            WindowFactory.create(null, {
+                initialPage: Math.max(0, PageRegistry.pages.findIndex(p => p.label.toLowerCase().includes(n)))
+            });
+        }
+
         target: "nexus"
     }
 

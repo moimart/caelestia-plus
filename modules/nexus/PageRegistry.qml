@@ -53,7 +53,7 @@ QtObject {
         {
             label: Tr.tr("Plugins"),
             icon: "extension",
-            description: Tr.tr("Manage plugins"),
+            description: Tr.tr("Desktop widgets and other plugins"),
             category: "system"
         },
 

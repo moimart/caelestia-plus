@@ -1,0 +1,18 @@
+{
+    "id": "eyes",
+    "name": "Eyes",
+    "description": "Two quiet eyes that follow your pointer, like xeyes",
+    "icon": "visibility",
+    "author": "moimart",
+    "version": "1.0",
+    "main": "Eyes.qml",
+    "defaultSize": [
+        120,
+        64
+    ],
+    "minSize": [
+        40,
+        22
+    ],
+    "needsCursor": true
+}

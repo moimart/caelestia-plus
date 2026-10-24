@@ -1,0 +1,11 @@
+{
+    "id": "example-clock",
+    "name": "Clock",
+    "description": "Example widget plugin: the time, in the scheme's colours",
+    "icon": "schedule",
+    "author": "you",
+    "version": "1.0",
+    "main": "Clock.qml",
+    "defaultSize": [220, 90],
+    "minSize": [80, 32]
+}

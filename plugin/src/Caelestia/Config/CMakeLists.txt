@@ -28,6 +28,7 @@ qml_module(caelestia-config
         sidebarconfig.hpp
         userpaths.hpp
         utilitiesconfig.hpp
+        widgetsconfig.hpp
         tokens.hpp
     LIBRARIES
         Qt::Quick

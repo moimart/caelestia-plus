@@ -23,6 +23,7 @@
 #include "tokens.hpp"
 #include "userpaths.hpp"
 #include "utilitiesconfig.hpp"
+#include "widgetsconfig.hpp"
 
 namespace caelestia::config {
 
@@ -48,6 +49,7 @@ class ConfigRoot : public settings::RootNode {
     CONFIG_SUBOBJECT(SessionConfig, session)
     CONFIG_SUBOBJECT(SidebarConfig, sidebar)
     CONFIG_SUBOBJECT(UtilitiesConfig, utilities)
+    CONFIG_SUBOBJECT(WidgetsConfig, widgets)
     CONFIG_SUBOBJECT(UserPaths, paths)
 
 public:
