@@ -47,7 +47,8 @@ Item {
         id: pfp
 
         anchors.fill: shape
-        source: `${Paths.home}/.face`
+        source: Paths.face
+        playing: true // a video face loops; only loaded while the lock screen is up
 
         layer.enabled: true
         layer.effect: Mask {

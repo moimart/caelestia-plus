@@ -7,6 +7,7 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.components.filedialog
+import qs.services
 import qs.utils
 
 Item {
@@ -15,10 +16,16 @@ Item {
     required property ScreenState screenState
     readonly property FileDialog facePicker: FileDialog {
         title: Tr.tr("Select a profile picture")
-        filterLabel: Tr.tr("Image files")
-        filters: Images.validImageExtensions
+        filterLabel: Tr.tr("Images and videos")
+        filters: [...Images.validImageExtensions, ...Wallpapers.videoExtensions]
         onAccepted: path => {
-            if (CUtils.copyFile(Qt.resolvedUrl(path), Qt.resolvedUrl(`${Paths.home}/.face`)))
+            // Images replace ~/.face as before; a video (played on loop) is kept
+            // with the shell's config instead, so ~/.face stays a picture for other apps
+            const dest = Wallpapers.isVideo(path) ? `${Paths.config}/face.${path.slice(path.lastIndexOf(".") + 1).toLowerCase()}` : `${Paths.home}/.face`;
+            const copied = CUtils.copyFile(Qt.resolvedUrl(path), Qt.resolvedUrl(dest));
+            if (copied)
+                GlobalConfig.paths.face = Paths.shortenHome(dest);
+            if (copied)
                 // TRANSLATORS: %1 = a file path
                 Quickshell.execDetached(["notify-send", "-a", "caelestia-shell", "-u", "low", "-h", `STRING:image-path:${path}`, Tr.tr("Profile picture changed"), Tr.tr("Profile picture changed to %1").arg(Paths.shortenHome(path))]);
             else

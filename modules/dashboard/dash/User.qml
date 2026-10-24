@@ -89,7 +89,8 @@ Item {
                 id: pfp
 
                 anchors.fill: parent
-                source: `${Paths.home}/.face`
+                source: Paths.face
+                playing: true // a video face loops; only loaded while this is on screen
             }
 
             StyledRect {
