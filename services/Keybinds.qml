@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Caelestia.Config
+import qs.services
 
 // The active Hyprland keybinds, read from the user's Hyprland config by
 // assets/hyprbinds.py (which also pairs them with `hyprctl binds`). Loaded on

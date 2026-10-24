@@ -4,7 +4,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Caelestia.Config
 import qs.components.containers
 import qs.components.misc
 import qs.services
@@ -104,10 +103,10 @@ Scope {
         // The cards as JSON: [{ front, back }] with class and title of each side
         function list(): string {
             const side = t => ({
-                    address: `0x${t.address}`,
-                    class: t.lastIpcObject.class,
-                    title: t.title
-                });
+                        address: `0x${t.address}`,
+                        class: t.lastIpcObject.class,
+                        title: t.title
+                    });
             return JSON.stringify(Cards.cards.map(c => ({
                         front: side(c.front),
                         back: side(c.back)

@@ -31,10 +31,10 @@ Loader {
     asynchronous: true
     source: plugin?.url ?? ""
     onLoaded: accepts = {
-        cursor: item.cursor !== undefined,
-        editing: item.editing !== undefined,
-        screen: item.screen !== undefined,
-        settings: item.settings !== undefined
+        cursor: "cursor" in item,
+        editing: "editing" in item,
+        screen: "screen" in item,
+        settings: "settings" in item
     }
 
     Binding {

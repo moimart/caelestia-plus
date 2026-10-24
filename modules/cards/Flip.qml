@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Effects
-import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import Caelestia.Config
@@ -28,7 +27,8 @@ Item {
             return Qt.rect(0, 0, 0, 0);
         return Qt.rect(ipc.at[0] - monitor.lastIpcObject.x, ipc.at[1] - monitor.lastIpcObject.y, ipc.size[0], ipc.size[1]);
     }
-    readonly property real rounding: Hypr.options["decoration:rounding"] ?? 0
+    readonly property var hyprOptions: Hypr.options
+    readonly property real rounding: hyprOptions["decoration:rounding"] ?? 0
     readonly property int sign: GlobalConfig.cards.direction === "left" ? -1 : 1
 
     property int phase // 0 capture front, 1 capture back, 2 turning, 3 landing

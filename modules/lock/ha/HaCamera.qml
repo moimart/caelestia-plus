@@ -12,7 +12,7 @@ ClipRect {
     required property var card
     required property var ha
 
-    readonly property var entity: ha.state(card.entity)
+    readonly property var entity: ha.entity(card.entity)
     readonly property string picture: entity?.attributes?.entity_picture ?? ""
 
     implicitHeight: width * (card.aspect ?? 9 / 16)
@@ -26,7 +26,8 @@ ClipRect {
         asynchronous: true
         source: root.picture ? `${root.ha.url}${root.picture}&_=${root.ha.tick}` : ""
         sourceSize: shown.sourceSize
-        onStatusChanged: if (status === Image.Ready) shown.source = source
+        onStatusChanged: if (status === Image.Ready)
+            shown.source = source
     }
 
     Image {

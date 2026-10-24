@@ -27,7 +27,7 @@ Variants {
         // Bottom rather than Background so video wallpapers (mpvpaper, on the
         // background layer) can play underneath; transparent while one shows.
         WlrLayershell.layer: WlrLayer.Bottom
-        color: contentItem.Config.background.wallpaperEnabled && !(wallpaper.item?.hasVideo ?? false) ? "black" : "transparent"
+        color: contentItem.Config.background.wallpaperEnabled && !((wallpaper.item as Wallpaper)?.hasVideo ?? false) ? "black" : "transparent"
         surfaceFormat.opaque: false
 
         anchors.top: true

@@ -24,17 +24,6 @@ StyledRect {
 
     color: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3secondaryContainer : Colours.tPalette.m3surfaceContainer
 
-    IconCheck {
-        id: imageCheck
-
-        name: root.modelData.image
-    }
-
-    IconCheck {
-        id: iconCheck
-
-        name: root.modelData.appIcon
-    }
     radius: Tokens.rounding.large
 
     implicitHeight: inner.implicitHeight
@@ -50,6 +39,18 @@ StyledRect {
         Anim {
             easing: Tokens.anim.emphasizedDecel
         }
+    }
+
+    IconCheck {
+        id: imageCheck
+
+        name: root.modelData.image
+    }
+
+    IconCheck {
+        id: iconCheck
+
+        name: root.modelData.appIcon
     }
 
     MouseArea {

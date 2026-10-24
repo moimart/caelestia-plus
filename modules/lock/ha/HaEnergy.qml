@@ -15,8 +15,15 @@ StyledRect {
     required property var card
     required property var ha
 
+    readonly property real solar: num(card.solar)
+    readonly property real home: num(card.home)
+    readonly property real grid: num(card.grid) * (card.grid_invert ? -1 : 1)
+    readonly property real batteryPower: num(card.battery_power) * (card.battery_invert ? -1 : 1)
+    readonly property real soc: num(card.battery_soc)
+    readonly property real autarky: num(card.autarky)
+
     function num(id: string): real {
-        const s = id ? ha.state(id) : null;
+        const s = id ? ha.entity(id) : null;
         const v = parseFloat(s?.state);
         return isNaN(v) ? NaN : v;
     }
@@ -27,13 +34,6 @@ StyledRect {
         const w = Math.abs(watts);
         return w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`;
     }
-
-    readonly property real solar: num(card.solar)
-    readonly property real home: num(card.home)
-    readonly property real grid: num(card.grid) * (card.grid_invert ? -1 : 1)
-    readonly property real batteryPower: num(card.battery_power) * (card.battery_invert ? -1 : 1)
-    readonly property real soc: num(card.battery_soc)
-    readonly property real autarky: num(card.autarky)
 
     implicitHeight: layout.implicitHeight + layout.anchors.margins * 2
     radius: Tokens.rounding.extraLarge

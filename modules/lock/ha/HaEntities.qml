@@ -55,7 +55,7 @@ StyledRect {
                 required property var modelData
 
                 readonly property string entityId: typeof modelData === "string" ? modelData : modelData.entity
-                readonly property var entity: root.ha.state(entityId)
+                readonly property var entity: root.ha.entity(entityId)
                 readonly property string domain: entityId.split(".")[0]
                 readonly property bool on: ["on", "open", "unlocked", "playing", "home"].includes(entity?.state)
                 readonly property string stateText: {

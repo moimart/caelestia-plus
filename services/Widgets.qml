@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Caelestia.Config
 import Caelestia.State
+import qs.services
 import qs.utils
 
 // Desktop widgets: plugins found on disk, and the widgets placed on each
@@ -45,7 +46,8 @@ Singleton {
         const [w, h] = p.defaultSize;
         // Centre it, nudged so repeated adds don't stack exactly
         const n = instancesOn(screen.name).length % 6;
-        save([...instances, {
+        save([...instances,
+            {
                 uid: `${type}-${Date.now().toString(36)}`,
                 type: type,
                 screen: screen.name,
@@ -54,7 +56,8 @@ Singleton {
                 width: w,
                 height: h,
                 settings: {}
-            }]);
+            }
+        ]);
     }
 
     function remove(uid: string): void {

@@ -16,7 +16,7 @@ ColumnLayout {
 
     property var config: ({})
     property string token: ""
-    property var states: ({})
+    property var entityStates: ({})
     property int tick: 0
 
     readonly property string url: (config.url ?? "").replace(/\/+$/, "")
@@ -38,8 +38,8 @@ ColumnLayout {
         return (config.hide ?? []).includes(name);
     }
 
-    function state(id: string): var {
-        return states[id] ?? null;
+    function entity(id: string): var {
+        return entityStates[id] ?? null;
     }
 
     function refresh(): void {
@@ -52,9 +52,9 @@ ColumnLayout {
                     console.warn(`lock-ha: ${id}: HTTP ${xhr.status}`);
                     return;
                 }
-                const next = Object.assign({}, root.states);
+                const next = Object.assign({}, root.entityStates);
                 next[id] = JSON.parse(xhr.responseText);
-                root.states = next;
+                root.entityStates = next;
             };
             xhr.open("GET", `${root.url}/api/states/${id}`);
             xhr.setRequestHeader("Authorization", `Bearer ${root.token}`);

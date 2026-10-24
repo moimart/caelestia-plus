@@ -2,7 +2,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Shapes
-import Caelestia.Config
 import qs.services
 
 // Two eyes that follow the pointer, abstract and drawn in the scheme's text

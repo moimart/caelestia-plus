@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
+import qs.services
 
 // Window cards: two windows paired into one Hyprland group that flips over
 // (modules/cards animates it) to show the other. The pairing lives entirely in
