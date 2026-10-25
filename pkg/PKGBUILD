@@ -41,6 +41,7 @@ depends=(
 
     # Extra functionality
     'swappy'
+    'wtype'
     'fish'
     'bash'
 )

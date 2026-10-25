@@ -141,6 +141,12 @@ class LauncherConfig : public settings::ObjectNode {
                 { u"description"_s, mark(u"Show the keyboard shortcuts"_s) },
                 { u"command"_s, QStringList{ u"caelestia"_s, u"shell"_s, u"keybinds"_s, u"toggle"_s } },
             }),
+            vmap({
+                { u"name"_s, markCtx(u"Emoji"_s, u"launcher action"_s) },
+                { u"icon"_s, u"add_reaction"_s },
+                { u"description"_s, mark(u"Pick an emoji and type it"_s) },
+                { u"command"_s, QStringList{ u"caelestia"_s, u"shell"_s, u"emoji"_s, u"open"_s } },
+            }),
         }))
 };
 

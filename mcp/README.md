@@ -20,6 +20,7 @@ Tools:
 | Settings | `config_get`, `config_set` (dotted keys in `shell.json` or a monitor's override; reloads live) |
 | Desktop | `media_status`, `media_control`, `brightness`, `toast`, `notifications`, `toggle` (game mode, idle inhibitor), `panel` (launcher, dashboard, ...; `settings`) |
 | Shortcuts | `keybinds` (list the Hyprland/shell shortcuts from the config, filter by words or owner; show/hide the shortcuts panel; open its settings) |
+| Emoji | `emoji` (search by name or keyword, type an emoji into the focused window, show/hide the picker) |
 | Window cards | `cards` (list, pair two windows by address, start picking, flip, unpair) |
 | Desktop widgets | `widgets` (list plugins and placed widgets, add, place, configure, remove, open the editor) |
 | Camera | `camera` (status and who's using it, controls, presets, gestures on/off, open the panel; no photos) |

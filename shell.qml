@@ -13,6 +13,7 @@ import qs.modules.background
 import qs.modules.camera
 import qs.modules.cards
 import qs.modules.drawers
+import qs.modules.emoji
 import qs.modules.keybinds
 import qs.modules.lock
 import qs.modules.widgets
@@ -51,6 +52,7 @@ ShellRoot {
     Drawers {}
     AreaPicker {}
     KeybindsPanel {}
+    EmojiPanel {}
     WindowCards {}
     WidgetsEditor {}
     CameraPanel {}

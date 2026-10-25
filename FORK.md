@@ -50,6 +50,22 @@ package, which replaces the AUR `caelestia-shell`.
   Settings are in Nexus → Keyboard shortcuts (`keybinds.*` in shell.json).
   Sizes are under `sizes.keybinds` in the tokens.
 
+- **Emoji picker** (`modules/emoji/`, `services/Emoji.qml`): like macOS's
+  Ctrl+Cmd+Space. Ctrl+Super+Space (`caelestia:emoji`) opens it next to the
+  pointer; pick an emoji and it's typed into the window that had focus,
+  through `wtype`. Without `wtype` it goes on the clipboard instead.
+  - **Using it:** type to search names and keywords ("lol" finds 😂), arrows
+    and Enter to pick, Esc to close. Most-used emoji come first, and the
+    categories run along the bottom.
+  - **Skin tones:** right-click, long-press or Tab on an emoji with a dot.
+    Each emoji remembers its tone.
+  - **Data:** `assets/emoji/emoji.json`, built from Unicode's emoji list and
+    CLDR's English keywords by `assets/emoji/make-emoji.py`. Usage and tones
+    are kept in `~/.local/state/caelestia/emoji.json`.
+  - **Other access:** `>Emoji` in the launcher, IPC target `emoji`
+    (`toggle`/`open`/`close`/`search <words>`/`type <text>`), and the `emoji`
+    MCP tool.
+
 - **Window cards** (`modules/cards/`, `services/Cards.qml`): pair two windows
   into one "card" and flip it over in 3D to show the other. No Hyprland plugin
   is needed:

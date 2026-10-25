@@ -17,6 +17,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Video wallpapers](#video-wallpapers)
 - [Desktop widgets and plugins](#desktop-widgets-and-plugins)
 - [Keyboard shortcuts panel](#keyboard-shortcuts-panel)
+- [Emoji picker](#emoji-picker)
 - [Window cards](#window-cards)
 - [Camera](#camera)
 - [Lock screen](#lock-screen)
@@ -67,6 +68,16 @@ nothing is hardcoded. It follows `hyprland.lua` and the modules it loads (or
 app or your own comments, groups them by your config's sections, and
 refreshes whenever Hyprland reloads. Search, filter by who handles a shortcut
 (the shell, Hyprland or an app), and see the shell actions still waiting for a key.
+
+## Emoji picker
+
+<img src="docs/screenshots/emoji.jpg" alt="The emoji picker" width="380">
+
+**Ctrl+Super+Space** opens an emoji picker next to the pointer, like
+Ctrl+Cmd+Space on a Mac. Type to search ("lol" finds 😂), use the arrows and
+Enter, or click; the emoji is typed straight into the app you were in.
+Your most-used emoji come first. Right-click an emoji with a dot under it
+(or press Tab) for its skin tones, and it remembers your choice.
 
 ## Window cards
 
@@ -157,7 +168,7 @@ caelestia shell wallpaper setFor DP-1 ~/Videos/loop.mp4
 
 An [MCP server](mcp/README.md) lets AI agents such as Claude Code drive the
 shell: screenshots, wallpapers, colour schemes, settings, the lock screen,
-media, panels, shortcuts, window cards, widgets and the camera (on purpose,
+media, panels, shortcuts, emoji, window cards, widgets and the camera (on purpose,
 without a way to take photos).
 
 ## Shortcuts
@@ -166,12 +177,13 @@ without a way to take photos).
 | --- | --- |
 | Super+/ | Keyboard shortcuts panel |
 | Super+Ctrl+W | Place and resize desktop widgets |
+| Ctrl+Super+Space | Emoji picker |
 | Super+Alt+Tab · Super+Tab · Super+Shift+Tab | Pair a window card · flip it · split it |
 | Super+Alt+C | Camera panel |
 | Super+Alt+G | Hand gestures on/off |
 
 These are bound in the Hyprland config; the shell registers them as global
-shortcuts (`caelestia:keybinds`, `caelestia:widgets`, `caelestia:cardPair`,
+shortcuts (`caelestia:keybinds`, `caelestia:emoji`, `caelestia:widgets`, `caelestia:cardPair`,
 `caelestia:cardFlip`, `caelestia:cardUnpair`, `caelestia:camera`,
 `caelestia:cameraGestures`), so you can bind them to anything.
 

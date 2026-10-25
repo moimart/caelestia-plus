@@ -409,6 +409,24 @@ def keybinds(args):
     }
 
 
+@tool("emoji", "The emoji picker (Ctrl+Super+Space). 'search' finds emoji by name or keyword; "
+      "'type' types text (an emoji) into the focused window; 'show', 'hide' and 'toggle' the picker.",
+      {"action": {"type": "string", "enum": ["search", "type", "show", "hide", "toggle"]},
+       "query": {"type": "string", "description": "Words to search for, for 'search'."},
+       "text": {"type": "string", "description": "What to type, for 'type'."}}, ["action"])
+def emoji(args):
+    action = args["action"]
+    if action == "search":
+        return json.loads(ipc("emoji", "search", args.get("query") or ""))
+    if action == "type":
+        if not args.get("text"):
+            raise ToolError("'type' needs text")
+        ipc("emoji", "type", args["text"])
+    else:
+        ipc("emoji", {"show": "open", "hide": "close", "toggle": "toggle"}[action])
+    return {"ok": True}
+
+
 @tool("cards", "Window cards: two windows paired into one Hyprland group that flips over in 3D to show the other. "
       "'list' shows the cards; 'pair' pairs two windows by address (see list_windows / hyprctl clients), front first; "
       "'pick' starts interactive pairing for the focused window; 'flip' and 'unpair' act on the focused card.",
