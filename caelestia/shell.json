@@ -111,6 +111,10 @@
             },
             {
                 "enabled": true,
+                "id": "camera"
+            },
+            {
+                "enabled": true,
                 "id": "audio"
             },
             {
@@ -159,6 +163,11 @@
     "border": {
         "rounding": 30,
         "thickness": 6
+    },
+    "camera": {
+        "gestures": {
+            "enabled": true
+        }
     },
     "dashboard": {
         "dragThreshold": 50,
@@ -456,16 +465,15 @@
         "hideDelay": 2000
     },
     "paths": {
+        "face": "~/.config/caelestia/assets/face.mp4",
         "mediaGif": "~/.config/caelestia/assets/daruma-media.webp",
         "sessionGif": "~/.config/caelestia/assets/daruma.webp",
-        "wallpaperDir": "/home/moimart/Pictures/Wallpapers",
-        "face": "~/.config/caelestia/assets/face.mp4"
+        "wallpaperDir": "/home/moimart/Pictures/Wallpapers"
     },
     "services": {
         "audioIncrement": 0.1,
         "clockFormat": "TwentyFourHour",
         "defaultPlayer": "Spotify",
-        "gpuType": "",
         "maxVolume": 1,
         "playerAliases": [
             {
