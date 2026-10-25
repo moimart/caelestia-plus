@@ -13,6 +13,15 @@ case "${1:-}" in
     *) echo "usage: $0 dev|system" >&2; exit 2 ;;
 esac
 
+# Swapping shells kills the lock screen; with the session locked, Hyprland
+# would show its "lockscreen crashed" screen. Refuse instead.
+for target in "qs -c caelestia" "qs -p $repo"; do
+    if [ "$($target ipc call lock isLocked 2>/dev/null)" = "true" ]; then
+        echo "The session is locked; not swapping shells. Unlock first." >&2
+        exit 1
+    fi
+done
+
 for pid in $(pgrep -x qs); do
     case "$(tr '\0' ' ' < /proc/"$pid"/cmdline)" in
         "qs -c caelestia"* | "qs -p $repo"*) kill "$pid" ;;

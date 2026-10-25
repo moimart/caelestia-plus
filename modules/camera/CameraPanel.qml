@@ -21,11 +21,13 @@ Scope {
         root.screen = Quickshell.screens.find(s => s.name === focused) ?? Quickshell.screens[0];
         root.open = true;
         loader.activeAsync = true;
+        Camera.mirror = true;
         Camera.refreshControls();
     }
 
     function hide(): void {
         root.open = false;
+        Camera.mirror = false;
     }
 
     function toggle(): void {
@@ -132,6 +134,10 @@ Scope {
         function tutorial(): void {
             root.hide();
             Camera.tutorial = true;
+        }
+
+        function closeTutorial(): void {
+            Camera.tutorial = false;
         }
 
         function toggleGestures(): string {

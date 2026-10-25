@@ -152,7 +152,8 @@ Item {
 
                     QM.CaptureSession {
                         camera: QM.Camera {
-                            active: root.shown
+                            // Once the daemon has let go of the camera (gestures pause while this is open)
+                            active: root.shown && !Camera.capturing
                             cameraDevice: devices.videoInputs.find(d => String(d.id).includes(GlobalConfig.camera.device)) ?? devices.defaultVideoInput
                         }
                         videoOutput: mirror

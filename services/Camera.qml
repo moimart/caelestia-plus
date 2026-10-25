@@ -32,6 +32,8 @@ Singleton {
     // The gesture tutorial: while it runs, gestures stream with live hand feedback
     property bool tutorial
     property bool tutorialDone
+    // The camera panel's mirror needs the device to itself: gestures pause meanwhile
+    property bool mirror
     // { pose: open | thumbs_up | thumbs_down | other, x, y } or null, during the tutorial
     property var hand: null
     property var lastPresence: null
@@ -80,7 +82,7 @@ Singleton {
     function syncGestures(): void {
         send({
             cmd: "gestures",
-            on: GlobalConfig.camera.gestures.enabled || tutorial,
+            on: (GlobalConfig.camera.gestures.enabled || tutorial) && !mirror,
             feedback: tutorial
         });
     }
@@ -223,6 +225,7 @@ Singleton {
         hand = null;
         syncGestures();
     }
+    onMirrorChanged: syncGestures()
 
     Process {
         id: proc
