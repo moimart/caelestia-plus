@@ -14,6 +14,7 @@ qml_module(caelestia-config
         enums.hpp
         backgroundconfig.hpp
         barconfig.hpp
+        cameraconfig.hpp
         cardsconfig.hpp
         dashboardconfig.hpp
         generalconfig.hpp

@@ -72,3 +72,18 @@ jobs:
           clang-tidy --version
           run-clang-tidy -p build -quiet -j "$(nproc)" -warnings-as-errors='*' \
             -source-filter='^(?!.*/build/).*\.cpp$'
+
+  lint-rust:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/shell-arch-env:latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Clippy and rustfmt
+        working-directory: extras/camerad
+        run: |
+          cargo fmt --check
+          cargo clippy --release --locked -- -D warnings

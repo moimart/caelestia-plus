@@ -465,6 +465,37 @@ def widgets(args):
     return {"ok": True}
 
 
+@tool("camera", "The webcam (caelestia-camerad): 'status' (who's using it, gestures state, last light/presence readings), "
+      "'controls' (zoom, focus, white balance, ...), 'set' a control, 'presets' / 'apply' a saved preset, "
+      "'gestures' on/off, 'panel' to open the camera panel. Photos are deliberately not available here.",
+      {"action": {"type": "string", "enum": ["status", "controls", "set", "presets", "apply", "gestures", "panel"]},
+       "key": {"type": "string", "description": "Control key for 'set', e.g. zoom_absolute (see 'controls')."},
+       "value": {"description": "Value for 'set' (number or boolean)."},
+       "name": {"type": "string", "description": "Preset name for 'apply'."},
+       "on": {"type": "boolean", "description": "For 'gestures'."}}, ["action"])
+def camera(args):
+    action = args["action"]
+    if action == "status":
+        return json.loads(ipc("camera", "status") or "{}")
+    if action == "controls":
+        return json.loads(ipc("camera", "controls") or "[]")
+    if action == "set":
+        if not args.get("key") or args.get("value") is None:
+            raise ToolError("'set' needs key and value")
+        v = args["value"]
+        ipc("camera", "set", args["key"], str(v).lower() if isinstance(v, bool) else str(v))
+    elif action == "presets":
+        return [p for p in ipc("camera", "presets").splitlines() if p]
+    elif action == "apply":
+        if ipc("camera", "applyPreset", args.get("name", "")) != "true":
+            raise ToolError(f"no preset {args.get('name')!r}")
+    elif action == "gestures":
+        ipc("camera", "gestures", "true" if args.get("on") else "false")
+    elif action == "panel":
+        ipc("camera", "open")
+    return {"ok": True}
+
+
 @tool("ipc_list", "Every IPC target and function the running shell exposes (for ipc_call).")
 def ipc_list(_):
     return run(["qs", "-c", "caelestia", "ipc", "show"])

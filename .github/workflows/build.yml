@@ -23,3 +23,17 @@ jobs:
           cmake -B build -G Ninja -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_FLAGS=-Werror \
             -DVERSION= -DGIT_REVISION=
           cmake --build build
+
+  # The camera daemon (extras/camerad)
+  camerad:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/shell-arch-env:latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Cargo build
+        working-directory: extras/camerad
+        run: cargo build --release --locked

@@ -1,0 +1,23 @@
+[package]
+name = "caelestia-camerad"
+version = "0.1.0"
+edition = "2024"
+description = "Camera daemon for the Caelestia shell: who's using the camera, controls, presence, light, gestures and snapshots, over PipeWire"
+license = "GPL-3.0-only"
+publish = false
+
+[dependencies]
+anyhow = "1"
+inotify = "0.11"
+jpeg-decoder = { version = "0.3", default-features = false }
+libc = "0.2"
+ort = { version = "=2.0.0-rc.15", default-features = false, features = ["std", "ndarray", "load-dynamic", "api-22"] }
+ndarray = "0.17"
+pipewire = "0.10"
+serde_json = "1"
+v4l = "0.14"
+
+[profile.release]
+lto = "thin"
+codegen-units = 4
+strip = true

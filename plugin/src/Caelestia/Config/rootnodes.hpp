@@ -6,6 +6,7 @@
 #include "backgroundconfig.hpp"
 #include "barconfig.hpp"
 #include "borderconfig.hpp"
+#include "cameraconfig.hpp"
 #include "cardsconfig.hpp"
 #include "common.hpp"
 #include "dashboardconfig.hpp"
@@ -37,6 +38,7 @@ class ConfigRoot : public settings::RootNode {
     CONFIG_SUBOBJECT(BackgroundConfig, background)
     CONFIG_SUBOBJECT(BarConfig, bar)
     CONFIG_SUBOBJECT(BorderConfig, border)
+    CONFIG_SUBOBJECT(CameraConfig, camera)
     CONFIG_SUBOBJECT(CardsConfig, cards)
     CONFIG_SUBOBJECT(DashboardConfig, dashboard)
     CONFIG_SUBOBJECT(KeybindsConfig, keybinds)

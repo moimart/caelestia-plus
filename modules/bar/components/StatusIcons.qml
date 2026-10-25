@@ -37,6 +37,8 @@ StyledRect {
     function collapsed(entry: var): bool {
         if (entry.id === "lockStatus")
             return !Hypr.capsLock && !Hypr.numLock;
+        if (entry.id === "camera")
+            return !Camera.inUse;
         return false;
     }
 
@@ -73,6 +75,21 @@ StyledRect {
                         LockStatus {
                             colour: root.colour
                             parentSpacing: root.spacing
+                        }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "camera"
+                    // Only while another app has the camera: Wayland doesn't show this otherwise
+                    delegate: EntryWrapper {
+                        margin: Tokens.spacing.extraSmall / 2
+
+                        MaterialIcon {
+                            visible: Camera.inUse
+                            text: "videocam"
+                            color: Colours.palette.m3error
+                            fontStyle: Tokens.font.icon.medium
+                            fill: 1
                         }
                     }
                 }

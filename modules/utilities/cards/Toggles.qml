@@ -122,6 +122,15 @@ StyledRect {
                     }
                 }
                 DelegateChoice {
+                    roleValue: "camera"
+                    // The camera's master switch: off stops caelestia-camerad and every camera feature
+                    delegate: Toggle {
+                        icon: GlobalConfig.camera.enabled ? "videocam" : "videocam_off"
+                        checked: GlobalConfig.camera.enabled
+                        onClicked: GlobalConfig.camera.enabled = !GlobalConfig.camera.enabled
+                    }
+                }
+                DelegateChoice {
                     roleValue: "gameMode"
                     delegate: Toggle {
                         icon: "gamepad"

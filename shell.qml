@@ -10,6 +10,7 @@ import Caelestia.Config
 import qs.services
 import qs.modules.areapicker
 import qs.modules.background
+import qs.modules.camera
 import qs.modules.cards
 import qs.modules.drawers
 import qs.modules.keybinds
@@ -52,6 +53,7 @@ ShellRoot {
     KeybindsPanel {}
     WindowCards {}
     WidgetsEditor {}
+    CameraPanel {}
     Lock {
         id: lock
     }
@@ -62,6 +64,9 @@ ShellRoot {
     GameMode {}
     IdleInhibit {}
     IdleMonitors {
+        lock: lock
+    }
+    CameraFeatures {
         lock: lock
     }
 }

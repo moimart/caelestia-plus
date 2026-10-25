@@ -82,6 +82,14 @@ QtObject {
             }
         },
         Component {
+            // Camera
+            StackPage {
+                Component {
+                    CameraPage {}
+                }
+            }
+        },
+        Component {
             // Audio
             StackPage {
                 Component {

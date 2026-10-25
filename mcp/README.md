@@ -22,6 +22,7 @@ Tools:
 | Shortcuts | `keybinds` (list the Hyprland/shell shortcuts from the config, filter by words or owner; show/hide the shortcuts panel; open its settings) |
 | Window cards | `cards` (list, pair two windows by address, start picking, flip, unpair) |
 | Desktop widgets | `widgets` (list plugins and placed widgets, add, place, configure, remove, open the editor) |
+| Camera | `camera` (status and who's using it, controls, presets, gestures on/off, open the panel; no photos) |
 | Anything else | `ipc_list`, `ipc_call` |
 
 Window management (moving/focusing windows) is Hyprland's, not the shell's,

@@ -8,6 +8,7 @@ import qs.components.misc
 
 Scope {
     property alias lock: lock
+    readonly property alias pam: pam
 
     WlSessionLock {
         id: lock

@@ -29,6 +29,8 @@ Scope {
     property string buffer
 
     signal flashMsg
+    // A wrong password (for the camera's unlock-attempt snapshots)
+    signal passwordFailed
 
     function handleKey(event: KeyEvent): void {
         if (passwd.active)
@@ -106,6 +108,9 @@ Scope {
                 root.state = Pam.MaxTries;
             else if (res === PamResult.Failed)
                 root.state = Pam.Failed;
+
+            if (res === PamResult.Failed || res === PamResult.MaxTries)
+                root.passwordFailed();
 
             root.flashMsg();
             pwdStateReset.restart();

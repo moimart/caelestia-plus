@@ -69,6 +69,7 @@ class UtilitiesConfig : public settings::ObjectNode {
             LIST_ENTRY(wifi, true),
             LIST_ENTRY(bluetooth, true),
             LIST_ENTRY(mic, true),
+            LIST_ENTRY(camera, true),
             LIST_ENTRY(settings, true),
             LIST_ENTRY(gameMode, true),
             LIST_ENTRY(wallpaperPlaying, true),

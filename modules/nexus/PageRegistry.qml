@@ -37,6 +37,12 @@ QtObject {
             noFill: true
         },
         {
+            label: Tr.tr("Camera"),
+            icon: "videocam",
+            description: Tr.tr("Presence, gestures, light, face unlock"),
+            category: "connectivity"
+        },
+        {
             label: Tr.tr("Audio"),
             icon: "volume_up",
             description: Tr.tr("App volumes, sound devices"),

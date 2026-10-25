@@ -48,15 +48,32 @@ optdepends=(
     'fprintd: fingerprint unlock for the lock screen'
     'mpvpaper: video wallpapers'
     'ffmpeg: video wallpaper posters and thumbnails'
+    'onnxruntime-cpu: camera presence, gestures (caelestia-camerad)'
+    'howdy: face unlock on the lock screen'
 )
-makedepends=('cmake' 'ninja' 'git' 'qt6-shadertools')
+makedepends=('cmake' 'ninja' 'git' 'qt6-shadertools' 'cargo' 'clang')
 # Upstream split M3Shapes (Material shapes QML module) out of the shell build;
 # it's built here too so this stays a single package.
 provides=('caelestia-shell' 'qt6-m3shapes')
 conflicts=('caelestia-shell' 'caelestia-shell-git' 'qt6-m3shapes-git')
+# Camera models for caelestia-camerad, from opencv_zoo (Apache-2.0 / MIT)
+_zoo=https://github.com/opencv/opencv_zoo/raw/main/models
 source=("${pkgname}::git+file://$(realpath "${startdir}/..")"
-        "m3shapes::git+https://github.com/soramanew/m3shapes.git")
-sha256sums=('SKIP' 'SKIP')
+        "m3shapes::git+https://github.com/soramanew/m3shapes.git"
+        "${_zoo}/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+        "${_zoo}/palm_detection_mediapipe/palm_detection_mediapipe_2023feb.onnx"
+        "${_zoo}/handpose_estimation_mediapipe/handpose_estimation_mediapipe_2023feb.onnx")
+sha256sums=('SKIP' 'SKIP'
+            '8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4'
+            '78ff51c38496b7fc8b8ebdb6cc8c1abb02fa6c38427c6848254cdaba57fcce7c'
+            'db0898ae717b76b075d9bf563af315b29562e11f8df5027a1ef07b02bef6d81c')
+noextract=('face_detection_yunet_2023mar.onnx' 'palm_detection_mediapipe_2023feb.onnx' 'handpose_estimation_mediapipe_2023feb.onnx')
+
+prepare() {
+    cd "${srcdir}/${pkgname}/extras/camerad"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
 
 pkgver() {
     cd "${srcdir}/${pkgname}"
@@ -78,6 +95,11 @@ build() {
         -DGIT_REVISION="$(git rev-parse HEAD)" \
         -DDISTRIBUTOR="moimart (package: ${pkgname})"
     cmake --build build
+
+    # The camera daemon
+    cd extras/camerad
+    export RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR=target
+    cargo build --frozen --release
 }
 
 package() {
@@ -86,5 +108,9 @@ package() {
     cd "${srcdir}/${pkgname}"
 
     DESTDIR="$pkgdir" cmake --install build
+    install -Dm755 extras/camerad/target/release/caelestia-camerad "$pkgdir"/usr/lib/caelestia/caelestia-camerad
+    for model in "${noextract[@]}"; do
+        install -Dm644 "${srcdir}/${model}" "$pkgdir/usr/lib/caelestia/camera-models/${model}"
+    done
     install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }

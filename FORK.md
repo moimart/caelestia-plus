@@ -90,6 +90,66 @@ package, which replaces the AUR `caelestia-shell`.
   How to write a plugin: see [PLUGINS.md](PLUGINS.md); there's a working
   example in `examples/widgets/clock/`.
 
+- **Camera** (`extras/camerad/`, `services/Camera.qml`, `daemons/CameraFeatures.qml`,
+  `modules/camera/`). One Rust daemon, `caelestia-camerad`, is the only thing
+  that touches the webcam. The shell runs it and talks JSON lines over its
+  stdin and stdout.
+  - **How it uses the camera:** it reads frames through **PipeWire**, and only
+    while a feature needs them, so the camera and its light are off the rest
+    of the time. Other PipeWire users share the camera with it, at no added
+    latency, since the daemon is never in their video path:
+    - Chrome, with `chrome://flags/#enable-webrtc-pipewire-camera`;
+    - OBS, with its "Video Capture Device (PipeWire)" source.
+
+    If an app opens the device directly, the daemon stops capturing at once and
+    keeps the camera free for 30 s, so the app's next try gets it.
+  - **Who's using it:** an inotify watch on the device plus `/proc` for direct
+    users, and the PipeWire graph for apps sharing it. The bar shows a red
+    camera icon while another app has the camera; it's a `camera` status icon
+    entry, with a popout listing the apps.
+  - **Camera panel** (Super+Alt+C, `caelestia:camera`): a mirror, the camera's
+    V4L2 controls (zoom, pan, tilt, focus, white balance, image), saved
+    presets, and the feature switches.
+  - **Utilities quick toggle:** the camera's master switch (`camera.enabled`).
+  - **Presence:** after 60 s without input it checks every 20 s.
+    - If you're there (reading, watching), it holds off idle actions.
+    - After 3 checks without a face, it locks.
+    - While locked, it checks every 6 s, and wakes the screen and starts face
+      unlock when you sit back down.
+  - **Light sensor:** a reading every 5 minutes sets monitor brightness, and can
+    switch the light/dark scheme. The camera has no exposure control, so
+    readings are relative; calibrate with "Read now" in Nexus → Camera. Off by
+    default.
+  - **Gestures** (Super+Alt+G, `caelestia:cameraGestures`):
+    - an open palm held: play/pause;
+    - a swipe left/right: previous/next track;
+    - a thumbs up or down held: unassigned by default.
+
+    Each action is configurable: `media.*`, `none`, or any shell command. While
+    gestures are on, the camera stays on, except while another app uses it.
+  - **Unlock-attempt photos:** after 3 wrong passwords on the lock screen,
+    again at 6, saved to `~/Pictures/Unlock attempts` and shown in a
+    notification once you unlock.
+  - **Face unlock:** with howdy, through the lock screen's existing support.
+    This camera has no infrared, so a photo could fool it.
+  - **Models:** YuNet (faces) and MediaPipe palm and hand (gestures), from
+    opencv_zoo, on ONNX Runtime (`onnxruntime-cpu`, loaded only when a model is
+    first needed). The PKGBUILD fetches them, with pinned checksums, into
+    `/usr/lib/caelestia/camera-models`.
+  - **Testing models:** `caelestia-camerad --test photo.jpg` runs them on a
+    picture.
+  - **Other access:** settings in Nexus → Camera (`camera.*`), IPC target
+    `camera`, and the `camera` MCP tool (deliberately without photos).
+
+  Setup:
+  ```sh
+  sudo pacman -S onnxruntime-cpu        # presence, gestures, light
+  paru -S howdy-git                     # face unlock (optional)
+  sudo howdy config                     # set device_path = /dev/video0
+  sudo howdy add                        # learn your face
+  ```
+  Then turn on Chrome's PipeWire camera flag, so Chrome shares the camera.
+
 - **MCP server** (`mcp/`): lets Claude Code agents control the shell (screenshots,
   wallpapers, scheme, settings, lock, media, panels, raw IPC, keybinds). See `mcp/README.md`.
 
@@ -106,6 +166,7 @@ together, so they always match.
 
 ```sh
 cmake -B build -G Ninja && cmake --build build   # plugins, after C++ changes
+(cd extras/camerad && cargo build --release)      # the camera daemon
 scripts/dev-shell.sh dev      # run this checkout (hot-reloads on save)
 scripts/dev-shell.sh system   # back to the installed shell
 ```
