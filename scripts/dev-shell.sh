@@ -13,6 +13,13 @@ case "${1:-}" in
     *) echo "usage: $0 dev|system" >&2; exit 2 ;;
 esac
 
+# The new shell is launched through hyprctl; without Hyprland's environment
+# that fails after the old shell is gone, leaving no shell at all.
+if ! hyprctl version > /dev/null 2>&1; then
+    echo "Can't reach Hyprland (is HYPRLAND_INSTANCE_SIGNATURE set?); not swapping shells." >&2
+    exit 1
+fi
+
 # Swapping shells kills the lock screen; with the session locked, Hyprland
 # would show its "lockscreen crashed" screen. Refuse instead.
 for target in "qs -c caelestia" "qs -p $repo"; do
