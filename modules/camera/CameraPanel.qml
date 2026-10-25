@@ -36,7 +36,9 @@ Scope {
     }
 
     function setGestures(on: bool): void {
-        GlobalConfig.camera.gestures.enabled = on;
+        if (on && !Camera.tutorialDone)
+            hide();
+        Camera.setGesturesEnabled(on);
     }
 
     LazyLoader {
@@ -68,6 +70,28 @@ Scope {
         }
     }
 
+    // The gesture tutorial, on the focused monitor
+    LazyLoader {
+        active: Camera.tutorial
+
+        StyledWindow {
+            screen: Quickshell.screens.find(s => s.name === Hypr.focusedMonitor?.name) ?? Quickshell.screens[0]
+            name: "camera-tutorial"
+            WlrLayershell.exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+
+            anchors.top: true
+            anchors.bottom: true
+            anchors.left: true
+            anchors.right: true
+
+            GestureTutorial {
+                anchors.fill: parent
+            }
+        }
+    }
+
     Connections {
         function onOpenPanelRequested(): void {
             root.show();
@@ -89,12 +113,30 @@ Scope {
             root.hide();
         }
 
-        function gestures(on: bool): void {
-            root.setGestures(on);
+        // From the command line (caelestia shell camera ...) gestures switch
+        // directly; the tutorial is for turning them on interactively
+        function gesturesOn(): void {
+            GlobalConfig.camera.gestures.enabled = true;
         }
 
-        function toggleGestures(): void {
-            root.setGestures(!GlobalConfig.camera.gestures.enabled);
+        function gesturesOff(): void {
+            GlobalConfig.camera.gestures.enabled = false;
+        }
+
+        // off, running, or paused (another app has the camera)
+        function gestures(): string {
+            return GlobalConfig.camera.gestures.enabled ? Camera.gesturesState : "off";
+        }
+
+        // The gesture tutorial, to learn or check the gestures
+        function tutorial(): void {
+            root.hide();
+            Camera.tutorial = true;
+        }
+
+        function toggleGestures(): string {
+            GlobalConfig.camera.gestures.enabled = !GlobalConfig.camera.gestures.enabled;
+            return GlobalConfig.camera.gestures.enabled ? "on" : "off";
         }
 
         // { running, inUse, users, gestures, light, presence } as JSON

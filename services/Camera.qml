@@ -29,6 +29,11 @@ Singleton {
     property var presets: []
     property string gesturesState: "off" // off, running or paused (another app has the camera)
     property var lastLight: null
+    // The gesture tutorial: while it runs, gestures stream with live hand feedback
+    property bool tutorial
+    property bool tutorialDone
+    // { pose: open | thumbs_up | thumbs_down | other, x, y } or null, during the tutorial
+    property var hand: null
     property var lastPresence: null
 
     property var _waiting: ({
@@ -40,6 +45,7 @@ Singleton {
     signal gesture(name: string)
     // Something (the bar popout, Nexus) wants the camera panel open
     signal openPanelRequested
+    signal tutorialRequested
     signal steppedAside(seconds: int)
 
     function send(obj: var): void {
@@ -68,6 +74,31 @@ Singleton {
             cmd: "snapshot",
             path: path
         });
+    }
+
+    // Gestures run while enabled or while the tutorial is open (with feedback)
+    function syncGestures(): void {
+        send({
+            cmd: "gestures",
+            on: GlobalConfig.camera.gestures.enabled || tutorial,
+            feedback: tutorial
+        });
+    }
+
+    // Turning gestures on the first time goes through the tutorial instead
+    function setGesturesEnabled(on: bool): void {
+        if (on && !tutorialDone)
+            tutorial = true;
+        else
+            GlobalConfig.camera.gestures.enabled = on;
+    }
+
+    function finishTutorial(): void {
+        tutorial = false;
+        tutorialDone = true;
+        stateFile.setText(JSON.stringify({
+            tutorialDone: true
+        }));
     }
 
     function refreshControls(): void {
@@ -145,10 +176,7 @@ Singleton {
         case "ready":
             ready = true;
             error = "";
-            send({
-                cmd: "gestures",
-                on: GlobalConfig.camera.gestures.enabled
-            });
+            syncGestures();
             break;
         case "users":
             users = msg.users ?? [];
@@ -178,6 +206,9 @@ Singleton {
         case "gesture":
             gesture(msg.name);
             break;
+        case "hand":
+            hand = msg.hand;
+            break;
         case "stepped_aside":
             steppedAside(msg.seconds);
             break;
@@ -186,6 +217,11 @@ Singleton {
             console.warn("camerad:", msg.message);
             break;
         }
+    }
+
+    onTutorialChanged: {
+        hand = null;
+        syncGestures();
     }
 
     Process {
@@ -217,6 +253,18 @@ Singleton {
     }
 
     FileView {
+        id: stateFile
+
+        path: `${Paths.state}/camera-state.json`
+        printErrors: false
+        onLoaded: {
+            try {
+                root.tutorialDone = JSON.parse(text()).tutorialDone ?? false;
+            } catch (e) {}
+        }
+    }
+
+    FileView {
         id: presetsFile
 
         path: `${Paths.state}/camera-presets.json`
@@ -240,10 +288,7 @@ Singleton {
 
     Connections {
         function onEnabledChanged(): void {
-            root.send({
-                cmd: "gestures",
-                on: GlobalConfig.camera.gestures.enabled
-            });
+            root.syncGestures();
         }
 
         target: GlobalConfig.camera.gestures

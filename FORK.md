@@ -101,8 +101,10 @@ package, which replaces the AUR `caelestia-shell`.
     - Chrome, with `chrome://flags/#enable-webrtc-pipewire-camera`;
     - OBS, with its "Video Capture Device (PipeWire)" source.
 
-    If an app opens the device directly, the daemon stops capturing at once and
-    keeps the camera free for 30 s, so the app's next try gets it.
+    If an app opens the device directly, the daemon stops capturing at once.
+    An app that keeps the camera has it for as long as it likes. A brief peek
+    costs a 3 s pause, and peeks that keep coming (something polling for
+    cameras) are ignored for two minutes.
   - **Who's using it:** an inotify watch on the device plus `/proc` for direct
     users, and the PipeWire graph for apps sharing it. The bar shows a red
     camera icon while another app has the camera; it's a `camera` status icon

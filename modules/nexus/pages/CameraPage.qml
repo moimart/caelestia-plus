@@ -280,7 +280,41 @@ PageBase {
             text: Tr.trCtx("Enabled", "toggle label")
             subtext: Camera.gesturesState === "paused" ? Tr.tr("Paused while another app uses the camera") : Tr.tr("Keeps the camera on while enabled; pauses whenever an app needs it")
             checked: GlobalConfig.camera.gestures.enabled
-            onToggled: GlobalConfig.camera.gestures.enabled = checked
+            onToggled: {
+                // The first time, the tutorial turns them on at its end
+                const want = checked;
+                if (want && !Camera.tutorialDone)
+                    checked = false;
+                Camera.setGesturesEnabled(want);
+            }
+        }
+
+        ConnectedRect {
+            Layout.fillWidth: true
+            implicitHeight: tutorialRow.implicitHeight + Tokens.padding.medium * 2
+
+            RowLayout {
+                id: tutorialRow
+
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: Tokens.padding.largeIncreased
+                anchors.rightMargin: Tokens.padding.largeIncreased
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: Tr.tr("Learn the gestures, with a live view of what the camera sees")
+                    font: Tokens.font.body.small
+                    wrapMode: Text.WordWrap
+                }
+
+                TextButton {
+                    text: Tr.tr("Gesture tutorial")
+                    type: TextButton.Tonal
+                    onClicked: Camera.tutorial = true
+                }
+            }
         }
 
         ActionRow {

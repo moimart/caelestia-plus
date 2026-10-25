@@ -472,7 +472,7 @@ def widgets(args):
        "key": {"type": "string", "description": "Control key for 'set', e.g. zoom_absolute (see 'controls')."},
        "value": {"description": "Value for 'set' (number or boolean)."},
        "name": {"type": "string", "description": "Preset name for 'apply'."},
-       "on": {"type": "boolean", "description": "For 'gestures'."}}, ["action"])
+       "on": {"type": "boolean", "description": "For 'gestures': true or false; leave out to toggle."}}, ["action"])
 def camera(args):
     action = args["action"]
     if action == "status":
@@ -490,7 +490,13 @@ def camera(args):
         if ipc("camera", "applyPreset", args.get("name", "")) != "true":
             raise ToolError(f"no preset {args.get('name')!r}")
     elif action == "gestures":
-        ipc("camera", "gestures", "true" if args.get("on") else "false")
+        # on: true/false switches; leaving it out toggles
+        if args.get("on") is None:
+            state = ipc("camera", "toggleGestures")
+        else:
+            ipc("camera", "gesturesOn" if args["on"] else "gesturesOff")
+            state = "on" if args["on"] else "off"
+        return {"gestures": state}
     elif action == "panel":
         ipc("camera", "open")
     return {"ok": True}

@@ -374,7 +374,15 @@ Item {
                             text: Tr.tr("Gestures")
                             subtext: Camera.gesturesState === "paused" ? Tr.tr("Paused while another app uses the camera") : Camera.gesturesState === "running" ? Tr.tr("Watching for gestures") : Tr.tr("Palm to pause, swipe to skip")
                             checked: GlobalConfig.camera.gestures.enabled
-                            onToggled: GlobalConfig.camera.gestures.enabled = checked
+                            onToggled: {
+                                // The first time, the tutorial turns them on at its end
+                                const want = checked;
+                                if (want && !Camera.tutorialDone) {
+                                    checked = false;
+                                    root.closeRequested();
+                                }
+                                Camera.setGesturesEnabled(want);
+                            }
                         }
 
                         Feature {

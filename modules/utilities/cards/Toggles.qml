@@ -131,6 +131,20 @@ StyledRect {
                     }
                 }
                 DelegateChoice {
+                    roleValue: "gestures"
+                    // Hand gestures; the first time this opens the gesture tutorial
+                    delegate: Toggle {
+                        icon: "back_hand"
+                        checked: GlobalConfig.camera.gestures.enabled
+                        disabled: !GlobalConfig.camera.enabled
+                        onClicked: {
+                            if (!GlobalConfig.camera.gestures.enabled && !Camera.tutorialDone)
+                                root.screenState.utilities = false;
+                            Camera.setGesturesEnabled(!GlobalConfig.camera.gestures.enabled);
+                        }
+                    }
+                }
+                DelegateChoice {
                     roleValue: "gameMode"
                     delegate: Toggle {
                         icon: "gamepad"

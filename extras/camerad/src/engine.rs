@@ -38,9 +38,14 @@ const WARMUP: u32 = 12;
 const GESTURE_INTERVAL: Duration = Duration::from_millis(100);
 /// How long the camera must be free again before gestures resume
 const RESUME_AFTER: Duration = Duration::from_secs(3);
-/// After an app tried to open the camera while we streamed, how long to keep
-/// it free so the app's next attempt gets it
-const STEP_ASIDE: Duration = Duration::from_secs(30);
+/// After a brief open of the camera while we streamed (an app reaching for it,
+/// or just one listing cameras), how long to leave it free
+const STEP_ASIDE: Duration = Duration::from_secs(3);
+/// Brief opens this often with nobody keeping the camera are something
+/// polling for cameras, not an app wanting it: stop reacting to them for a while
+const PROBES: usize = 3;
+const PROBE_WINDOW: Duration = Duration::from_secs(20);
+const IGNORE_PROBES_FOR: Duration = Duration::from_secs(120);
 
 struct State {
     out: Out,
@@ -64,6 +69,9 @@ struct State {
     last_gesture_frame: Instant,
     /// Kept free for another app until then
     aside_until: Option<Instant>,
+    brief_opens: std::collections::VecDeque<Instant>,
+    ignore_probes_until: Option<Instant>,
+    feedback: bool,
 }
 
 pub fn run(opts: Options, out: Out, rx: Receiver<Msg>, capture: capture::Handle) {
@@ -86,6 +94,9 @@ pub fn run(opts: Options, out: Out, rx: Receiver<Msg>, capture: capture::Handle)
         resume_at: None,
         last_gesture_frame: Instant::now(),
         aside_until: None,
+        brief_opens: std::collections::VecDeque::new(),
+        ignore_probes_until: None,
+        feedback: false,
     };
     s.out
         .emit(json!({ "event": "ready", "device": s.opts.device }));
@@ -171,6 +182,8 @@ impl State {
             "gestures" => {
                 let on = v["on"].as_bool().unwrap_or(false);
                 self.gestures = on;
+                // The shell's gesture tutorial wants to see what the camera sees
+                self.feedback = on && v["feedback"].as_bool().unwrap_or(false);
                 self.tracker.reset();
                 if on {
                     if self.foreign() {
@@ -214,11 +227,35 @@ impl State {
 
     /// While our stream runs, PipeWire already has the device open, so any new
     /// open is another app reaching for the camera: let go and keep it free
+    ///
+    /// An app that then keeps the camera shows up as a direct user and gets it
+    /// for as long as it likes; one that only peeks (listing cameras) costs a
+    /// short pause, and if peeks keep coming they're ignored.
     fn device_opened(&mut self) {
         if !self.capturing || self.started.elapsed() < Duration::from_millis(1500) {
             return;
         }
-        self.aside_until = Some(Instant::now() + STEP_ASIDE);
+        let now = Instant::now();
+        if self.ignore_probes_until.is_some_and(|t| now < t) {
+            return;
+        }
+        self.brief_opens.push_back(now);
+        while self
+            .brief_opens
+            .front()
+            .is_some_and(|t| now - *t > PROBE_WINDOW)
+        {
+            self.brief_opens.pop_front();
+        }
+        if self.brief_opens.len() >= PROBES && self.direct_users.is_empty() {
+            self.brief_opens.clear();
+            self.ignore_probes_until = Some(now + IGNORE_PROBES_FOR);
+            self.out.emit(
+                json!({ "event": "ignoring_probes", "seconds": IGNORE_PROBES_FOR.as_secs() }),
+            );
+            return;
+        }
+        self.aside_until = Some(now + STEP_ASIDE);
         self.out
             .emit(json!({ "event": "stepped_aside", "seconds": STEP_ASIDE.as_secs() }));
         self.yield_or_resume();
@@ -244,7 +281,12 @@ impl State {
     fn tick(&mut self) {
         if self.aside_until.is_some_and(|t| Instant::now() >= t) {
             self.aside_until = None;
-            self.yield_or_resume();
+            if !self.foreign() && self.gestures && self.paused {
+                // Nobody took the camera: carry on straight away
+                self.paused = false;
+                self.start_capture();
+                self.status();
+            }
         }
         if let Some(at) = self.resume_at
             && Instant::now() >= at
@@ -354,6 +396,19 @@ impl State {
             }),
             None => None,
         };
+        if self.feedback {
+            // Where the hand is (0..1 of the frame, as the camera sees it) and its pose
+            let hand = seen.map(|(pose, x, y)| {
+                let pose = match pose {
+                    gestures::Pose::Open => "open",
+                    gestures::Pose::ThumbUp => "thumbs_up",
+                    gestures::Pose::ThumbDown => "thumbs_down",
+                    gestures::Pose::Other => "other",
+                };
+                json!({ "pose": pose, "x": x, "y": y })
+            });
+            self.out.emit(json!({ "event": "hand", "hand": hand }));
+        }
         if let Some(name) = self.tracker.update(now, seen) {
             self.out.emit(json!({ "event": "gesture", "name": name }));
         }
