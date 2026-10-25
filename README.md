@@ -81,10 +81,13 @@ draws the flip with real perspective, then hands back to the live window.
 
 One small Rust daemon, `caelestia-camerad`, is the only thing that touches the
 webcam. It reads frames through PipeWire, and only while a feature needs one,
-so the camera and its light are off the rest of the time. Apps that share the
-camera through PipeWire (Chrome with its PipeWire camera flag, OBS) keep their
-normal latency, since the daemon is never in their video path; apps that want
-the camera to themselves get it immediately.
+so the camera and its light are off the rest of the time. Apps that read the
+camera through PipeWire (Chrome with `chrome://flags/#enable-webrtc-pipewire-camera`,
+Firefox, OBS's PipeWire source) share it with the daemon at their normal
+latency, since the daemon is never in their video path. Apps that open the
+camera directly make the daemon let go at once and stay off while they're
+interested; with gestures on, their very first attempt can still find the
+camera busy, so turn that Chrome flag on.
 
 - **In use**: a red camera icon in the bar while any other app has the camera, with who.
 - **Camera panel** (**Super+Alt+C**): a mirror to check yourself before a call,

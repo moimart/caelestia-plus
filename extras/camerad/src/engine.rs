@@ -38,14 +38,9 @@ const WARMUP: u32 = 12;
 const GESTURE_INTERVAL: Duration = Duration::from_millis(100);
 /// How long the camera must be free again before gestures resume
 const RESUME_AFTER: Duration = Duration::from_secs(3);
-/// After a brief open of the camera while we streamed (an app reaching for it,
-/// or just one listing cameras), how long to leave it free
-const STEP_ASIDE: Duration = Duration::from_secs(3);
-/// Brief opens this often with nobody keeping the camera are something
-/// polling for cameras, not an app wanting it: stop reacting to them for a while
-const PROBES: usize = 3;
-const PROBE_WINDOW: Duration = Duration::from_secs(20);
-const IGNORE_PROBES_FOR: Duration = Duration::from_secs(120);
+/// After another app opens the camera, how long to leave it alone (each
+/// further open restarts the wait)
+const STEP_ASIDE: Duration = Duration::from_secs(30);
 
 struct State {
     out: Out,
@@ -69,8 +64,6 @@ struct State {
     last_gesture_frame: Instant,
     /// Kept free for another app until then
     aside_until: Option<Instant>,
-    brief_opens: std::collections::VecDeque<Instant>,
-    ignore_probes_until: Option<Instant>,
     feedback: bool,
 }
 
@@ -94,8 +87,6 @@ pub fn run(opts: Options, out: Out, rx: Receiver<Msg>, capture: capture::Handle)
         resume_at: None,
         last_gesture_frame: Instant::now(),
         aside_until: None,
-        brief_opens: std::collections::VecDeque::new(),
-        ignore_probes_until: None,
         feedback: false,
     };
     s.out
@@ -225,39 +216,26 @@ impl State {
         !self.direct_users.is_empty() || self.aside_until.is_some_and(|t| Instant::now() < t)
     }
 
-    /// While our stream runs, PipeWire already has the device open, so any new
-    /// open is another app reaching for the camera: let go and keep it free
-    ///
-    /// An app that then keeps the camera shows up as a direct user and gets it
-    /// for as long as it likes; one that only peeks (listing cameras) costs a
-    /// short pause, and if peeks keep coming they're ignored.
+    /// Someone opened the device node. Apps that read the camera directly
+    /// can't share it with a stream, so every such open means: let go now, and
+    /// stay off until nobody has shown interest for a while. An app polling
+    /// for cameras keeps gestures paused; other apps always come first.
     fn device_opened(&mut self) {
-        if !self.capturing || self.started.elapsed() < Duration::from_millis(1500) {
+        // Our own stream starting makes PipeWire open the device: that's us
+        if self.capturing && self.started.elapsed() < Duration::from_millis(1500) {
+            return;
+        }
+        // One-off readings take under a second; only gestures hold the camera
+        if !self.gestures && !self.capturing {
             return;
         }
         let now = Instant::now();
-        if self.ignore_probes_until.is_some_and(|t| now < t) {
-            return;
-        }
-        self.brief_opens.push_back(now);
-        while self
-            .brief_opens
-            .front()
-            .is_some_and(|t| now - *t > PROBE_WINDOW)
-        {
-            self.brief_opens.pop_front();
-        }
-        if self.brief_opens.len() >= PROBES && self.direct_users.is_empty() {
-            self.brief_opens.clear();
-            self.ignore_probes_until = Some(now + IGNORE_PROBES_FOR);
-            self.out.emit(
-                json!({ "event": "ignoring_probes", "seconds": IGNORE_PROBES_FOR.as_secs() }),
-            );
-            return;
-        }
+        let first = !self.aside_until.is_some_and(|t| now < t);
         self.aside_until = Some(now + STEP_ASIDE);
-        self.out
-            .emit(json!({ "event": "stepped_aside", "seconds": STEP_ASIDE.as_secs() }));
+        if first {
+            self.out
+                .emit(json!({ "event": "stepped_aside", "seconds": STEP_ASIDE.as_secs() }));
+        }
         self.yield_or_resume();
     }
 

@@ -205,12 +205,10 @@ Scope {
                 Toaster.toast(root.gestureNames[name] ?? name, did, name === "palm" ? "back_hand" : name.startsWith("thumbs") ? "thumb_up" : "swipe");
         }
 
-        // Gestures pause while another app has the camera; say so once
-        function onInUseChanged(): void {
-            // Apps sharing through PipeWire don't pause anything; only exclusive users do
-            const exclusive = Camera.others.filter(u => !u.shell && u.via === "direct");
-            if (exclusive.length > 0 && GlobalConfig.camera.gestures.enabled)
-                Toaster.toast(Tr.tr("Camera handed over"), Tr.tr("Gestures pause while %1 uses the camera").arg(exclusive.map(u => u.name).join(", ")), "videocam");
+        // Gestures pause for as long as another app shows interest in the camera
+        function onSteppedAside(seconds: int): void {
+            if (GlobalConfig.camera.gestures.enabled)
+                Toaster.toast(Tr.tr("Camera handed over"), Tr.tr("Gestures pause while another app wants the camera"), "videocam");
         }
 
         target: Camera
