@@ -123,7 +123,7 @@ Singleton {
     function type(text: string): void {
         typer.text = text;
         if (!panelOpen)
-            targetClass = Hypr.activeToplevel?.lastIpcObject?.class ?? "";
+            targetClass = Hypr.activeToplevel?.lastIpcObject.class ?? "";
         typer.mode = terminals.includes(targetClass.toLowerCase()) ? "wtype" : "paste";
         if (panelOpen) {
             pending = true;
