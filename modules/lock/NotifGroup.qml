@@ -326,7 +326,7 @@ StyledRect {
         textFormat: Text.MarkdownText
         text: {
             const summary = modelData.summary.replace(/\n/g, " ");
-            const body = modelData.body.replace(/\n/g, " ");
+            const body = modelData.bodyText.replace(/\n/g, " ").replace(/&/g, "&amp;").replace(/</g, "&lt;");
             const colour = root.urgency === "critical" ? Colours.palette.m3secondary : Colours.palette.m3outline;
 
             if (metrics.text === metrics.elidedText)
@@ -346,7 +346,7 @@ StyledRect {
         TextMetrics {
             id: metrics
 
-            text: `${notifLine.modelData.summary} ${notifLine.modelData.body}`.replace(/\n/g, " ")
+            text: `${notifLine.modelData.summary} ${notifLine.modelData.bodyText}`.replace(/\n/g, " ")
             font: notifLine.font
             elideWidth: notifLine.width
             elide: Text.ElideRight

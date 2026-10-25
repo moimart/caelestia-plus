@@ -52,6 +52,24 @@ QtObject {
     property bool resident
     property bool hasActionIcons
     property list<var> actions
+    // The body as plain text, for one-line previews and copying. Bodies may carry
+    // markup; Chrome starts every web notification with the site's address,
+    // linked or not, then a blank line.
+    readonly property string bodyText: {
+        const entities = {
+            amp: "&",
+            lt: "<",
+            gt: ">",
+            quot: "\"",
+            apos: "'",
+            nbsp: " "
+        };
+        return body.replace(/^\s*(<a\s[^>]*>[^<]*<\/a>|[a-z0-9-]+(\.[a-z0-9-]+)+)[ \t]*\n\s*\n/i, "").replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "").replace(/&(#x?[0-9a-f]+|\w+);/gi, (m, e) => {
+            if (e[0] === "#")
+                return String.fromCodePoint(e[1].toLowerCase() === "x" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1)));
+            return entities[e.toLowerCase()] ?? m;
+        }).trim();
+    }
 
     readonly property bool hasFullscreen: {
         const monitor = Hypr.focusedMonitor;

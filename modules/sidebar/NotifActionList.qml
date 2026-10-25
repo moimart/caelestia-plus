@@ -139,7 +139,7 @@ Item {
                             if (action.modelData.isClose) {
                                 root.notif.close();
                             } else if (action.modelData.isCopy) {
-                                Quickshell.clipboardText = root.notif.body;
+                                Quickshell.clipboardText = root.notif.bodyText;
                                 (actionInner.item as MaterialIcon).text = "inventory";
                                 copyTimer.start();
                             } else if (action.modelData.invoke) {

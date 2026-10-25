@@ -404,8 +404,8 @@ StyledRect {
                 anchors.rightMargin: Tokens.spacing.small
 
                 animate: true
-                textFormat: root.bodyTextFormat
-                text: bodyPreviewMetrics.elidedText
+                textFormat: Text.PlainText
+                text: bodyPreviewMetrics.elidedText.replace(/\n/g, " ")
                 color: Colours.palette.m3onSurfaceVariant
                 font: Tokens.font.body.small
 
@@ -421,7 +421,7 @@ StyledRect {
             TextMetrics {
                 id: bodyPreviewMetrics
 
-                text: root.modelData.body
+                text: root.modelData.bodyText
                 font: bodyPreview.font
                 elide: Text.ElideRight
                 elideWidth: bodyPreview.width
@@ -521,7 +521,7 @@ StyledRect {
                     icon: copyTimer.running ? "inventory" : "content_copy"
                     padding: Tokens.padding.extraSmall
                     onClicked: {
-                        Quickshell.clipboardText = root.modelData.body;
+                        Quickshell.clipboardText = root.modelData.bodyText;
                         copyTimer.restart();
                     }
                     label.animate: true
