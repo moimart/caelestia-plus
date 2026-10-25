@@ -40,6 +40,10 @@ Singleton {
     property bool tutorialDone
     // The camera panel's mirror needs the device to itself: gestures pause meanwhile
     property bool mirror
+    // The camera panel is recording a video
+    property bool recording
+    // Asked to record while the camera panel was closed: it starts once open
+    property bool recordOnOpen
     // { pose: open | thumbs_up | thumbs_down | other, x, y } or null, during the tutorial
     property var hand: null
     property var lastPresence: null
@@ -54,6 +58,8 @@ Singleton {
     // Something (the bar popout, Nexus) wants the camera panel open
     signal openPanelRequested
     signal tutorialRequested
+    // The camera panel records videos; this asks it to start or stop
+    signal recordRequested
     signal steppedAside(seconds: int)
 
     function send(obj: var): void {

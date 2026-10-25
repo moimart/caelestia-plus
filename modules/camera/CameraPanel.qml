@@ -117,6 +117,20 @@ Scope {
 
         // From the command line (caelestia shell camera ...) gestures switch
         // directly; the tutorial is for turning them on interactively
+        // Starts or stops recording a video, opening the panel if needed
+        function record(): void {
+            if (root.open) {
+                Camera.recordRequested();
+            } else {
+                Camera.recordOnOpen = true;
+                root.show();
+            }
+        }
+
+        function isRecording(): string {
+            return Camera.recording ? "1" : "0";
+        }
+
         function gesturesOn(): void {
             GlobalConfig.camera.gestures.enabled = true;
         }

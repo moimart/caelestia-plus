@@ -466,7 +466,8 @@ impl State {
                     "name": u.name,
                     "via": u.via,
                     "self": u.own || u.pid == me,
-                    "shell": u.pid == shell,
+                    // The shell, or something it started (the panel's recorder)
+                    "shell": descends_from(u.pid, shell),
                 })
             })
             .collect();
@@ -487,4 +488,29 @@ impl State {
         };
         self.out.emit(json!({ "event": "status", "capturing": self.capturing, "gestures": gestures, "device": self.opts.device }));
     }
+}
+
+/// Whether `pid` is `ancestor` or one of its descendants
+fn descends_from(mut pid: i32, ancestor: i32) -> bool {
+    for _ in 0..8 {
+        if pid == ancestor {
+            return true;
+        }
+        let Ok(stat) = std::fs::read_to_string(format!("/proc/{pid}/stat")) else {
+            return false;
+        };
+        // The parent is the second field after the command, which is in parentheses
+        let Some(ppid) = stat
+            .rsplit_once(')')
+            .and_then(|(_, rest)| rest.split_whitespace().nth(1))
+            .and_then(|p| p.parse::<i32>().ok())
+        else {
+            return false;
+        };
+        if ppid <= 1 {
+            return false;
+        }
+        pid = ppid;
+    }
+    false
 }

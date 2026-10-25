@@ -138,6 +138,12 @@ package, which replaces the AUR `caelestia-shell`.
   - **Camera panel** (Super+Alt+C, `caelestia:camera`): a mirror, the camera's
     V4L2 controls (zoom, pan, tilt, focus, white balance, image), saved
     presets, and the feature switches.
+  - **Recording videos:** the record button on the mirror saves clips to
+    `~/Videos/Camera`, through `assets/camera-record.sh`. ffmpeg records
+    1080p30 H.264 (4:2:0, on NVENC when it works, else x264), with sound from
+    the camera's own microphone if it has one (the mic button turns sound
+    off). While recording, ffmpeg has the camera and the mirror shows its
+    preview. `caelestia shell camera record` starts or stops a recording.
   - **Utilities quick toggle:** the camera's master switch (`camera.enabled`).
   - **Presence:** after 60 s without input it checks every 20 s.
     - If you're there (reading, watching), it holds off idle actions.

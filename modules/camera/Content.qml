@@ -4,6 +4,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtMultimedia as QM
 import Quickshell
+import Quickshell.Io
+import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
@@ -11,6 +13,7 @@ import qs.components.containers
 import qs.components.controls
 import qs.components.effects
 import qs.services
+import qs.utils
 
 // The camera panel: a mirror to check yourself, the camera's own controls,
 // saved presets, and the camera features. While the mirror shows, the shell
@@ -20,6 +23,22 @@ Item {
 
     required property bool shown
     property string newPreset
+    // Recording (assets/camera-record.sh): sound from the camera's microphone,
+    // unless turned off. ffmpeg has the camera meanwhile and feeds the mirror.
+    property bool withMic: true
+    property string savingTo
+    // Asked to record before the camera was ready: start once it is
+    property bool recordWhenReady
+    // Waiting for the mirror to let go of the camera
+    property bool starting
+    property int startAttempts
+    // The mirror is showing the camera
+    property bool mirrorLive
+    property real recordStart
+    property real now
+    property int previewTick
+    readonly property bool recording: starting || recorder.running
+    readonly property string previewPath: `${Quickshell.env("XDG_RUNTIME_DIR")}/caelestia-camera-preview.jpg`
 
     // Controls grouped for the panel, keyed by V4L2 control name
     readonly property var groups: [
@@ -44,8 +63,50 @@ Item {
     signal closeRequested
     signal hidden
 
+    function takeRecordRequest(): void {
+        if (shown && Camera.recordOnOpen) {
+            Camera.recordOnOpen = false;
+            toggleRecording();
+        }
+    }
+
+    function toggleRecording(): void {
+        if (recorder.running) {
+            recorder.write("q\n");
+        } else if (starting) {
+            starting = false;
+            savingTo = "";
+            startTimer.stop();
+        } else if (!mirrorLive) {
+            recordWhenReady = true;
+        } else {
+            // The mirror lets go of the camera first
+            starting = true;
+            startAttempts = 0;
+            startTimer.restart();
+        }
+    }
+
+    // Closing the panel ends a recording, and ffmpeg finishes writing the file
+    onShownChanged: {
+        recordWhenReady = false;
+        if (!shown && recording)
+            toggleRecording();
+        takeRecordRequest();
+    }
+    Component.onCompleted: takeRecordRequest()
+    onRecordingChanged: Camera.recording = recording
+
     Keys.onEscapePressed: closeRequested()
     focus: true
+
+    Connections {
+        function onRecordRequested(): void {
+            root.toggleRecording();
+        }
+
+        target: Camera
+    }
 
     StyledRect {
         anchors.fill: parent
@@ -150,13 +211,104 @@ Item {
                         id: devices
                     }
 
-                    QM.CaptureSession {
-                        camera: QM.Camera {
-                            // Once the daemon has let go of the camera (gestures pause while this is open)
-                            active: root.shown && !Camera.capturing
-                            cameraDevice: devices.videoInputs.find(d => String(d.id).includes(GlobalConfig.camera.device)) ?? devices.defaultVideoInput
+                    // The mirror's camera. Switching it off doesn't close the device, so
+                    // it's destroyed while a recording needs the camera.
+                    Loader {
+                        active: root.shown && !root.recording
+
+                        sourceComponent: Item {
+                            Component.onDestruction: root.mirrorLive = false
+
+                            QM.CaptureSession {
+                                camera: QM.Camera {
+                                    onActiveChanged: {
+                                        root.mirrorLive = active;
+                                        if (active && root.recordWhenReady) {
+                                            root.recordWhenReady = false;
+                                            root.toggleRecording();
+                                        }
+                                    }
+
+                                    // Once the daemon has let go of the camera (gestures pause
+                                    // while this is open)
+                                    active: !Camera.capturing
+                                    cameraDevice: devices.videoInputs.find(d => String(d.id).includes(GlobalConfig.camera.device)) ?? devices.defaultVideoInput
+                                    // 1080p at the best frame rate: 4K is more than a mirror needs
+                                    cameraFormat: {
+                                        const formats = cameraDevice.videoFormats.filter(f => f.resolution.width === 1920 && f.resolution.height === 1080);
+                                        return formats.sort((a, b) => b.maxFrameRate - a.maxFrameRate)[0] ?? cameraDevice.videoFormats[0];
+                                    }
+                                }
+                                videoOutput: mirror
+                            }
                         }
-                        videoOutput: mirror
+                    }
+
+                    Timer {
+                        id: startTimer
+
+                        interval: 300
+                        onTriggered: {
+                            root.startAttempts++;
+                            if (root.savingTo) {
+                                recorder.running = true;
+                                return;
+                            }
+                            const name = `Camera ${Qt.formatDateTime(new Date(), "yyyy-MM-dd hh-mm-ss")}.mp4`;
+                            root.savingTo = `${Paths.videos}/Camera/${name}`;
+                            recorder.running = true;
+                        }
+                    }
+
+                    // Videos go to ~/Videos/Camera, the right way round (not mirrored)
+                    Process {
+                        id: recorder
+
+                        command: ["sh", "-c", 'mkdir -p "$(dirname "$2")" && exec sh "$1" "$3" "$2" "$4" "$5"', "sh", Quickshell.shellPath("assets/camera-record.sh"), root.savingTo, GlobalConfig.camera.device, root.previewPath, root.withMic ? "on" : "off"]
+                        stdinEnabled: true
+                        stderr: StdioCollector {
+                            id: recorderErrors
+                        }
+
+                        onRunningChanged: {
+                            if (running) {
+                                root.recordStart = Date.now();
+                                root.now = root.recordStart;
+                            }
+                        }
+                        onExited: code => {
+                            // The mirror can take a moment to let go of the camera
+                            if (code !== 0 && root.starting && root.startAttempts < 15 && /busy/i.test(recorderErrors.text)) {
+                                startTimer.restart();
+                                return;
+                            }
+                            const path = root.savingTo;
+                            root.savingTo = "";
+                            root.starting = false;
+                            if (code !== 0)
+                                console.warn("camera-record:", code, recorderErrors.text);
+                            if (code === 0)
+                                Toaster.toast(Tr.tr("Video saved"), Paths.shortenHome(path), "videocam");
+                            else
+                                Toaster.toast(Tr.tr("Couldn't record"), recorderErrors.text.trim().split("\n").pop() || Tr.tr("ffmpeg exited (%1)").arg(code), "videocam_off", Toast.Error);
+                        }
+                    }
+
+                    // Recording for real: no more retries, and the mirror stays off until it ends
+                    Timer {
+                        running: recorder.running
+                        interval: 2000
+                        onTriggered: root.starting = false
+                    }
+
+                    Timer {
+                        running: recorder.running
+                        repeat: true
+                        interval: 66
+                        onTriggered: {
+                            root.previewTick++;
+                            root.now = Date.now();
+                        }
                     }
 
                     // Mirrored, as you'd expect from a mirror
@@ -168,6 +320,127 @@ Item {
                         transform: Scale {
                             origin.x: mirror.width / 2
                             xScale: -1
+                        }
+                    }
+
+                    // While recording, ffmpeg has the camera: its preview stands in
+                    Image {
+                        anchors.fill: parent
+                        visible: recorder.running
+                        fillMode: Image.PreserveAspectCrop
+                        cache: false
+                        source: recorder.running ? `file://${root.previewPath}?${root.previewTick}` : ""
+                    }
+
+                    // While recording: a red dot and the time
+                    StyledRect {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.margins: Tokens.padding.large
+                        visible: root.recording
+                        implicitWidth: recRow.implicitWidth + Tokens.padding.medium * 2
+                        implicitHeight: recRow.implicitHeight + Tokens.padding.small * 2
+                        radius: Tokens.rounding.full
+                        color: Qt.alpha(Colours.palette.m3scrim, 0.6)
+
+                        Row {
+                            id: recRow
+
+                            anchors.centerIn: parent
+                            spacing: Tokens.spacing.small
+
+                            StyledRect {
+                                anchors.verticalCenter: parent.verticalCenter
+                                implicitWidth: 10
+                                implicitHeight: 10
+                                radius: 5
+                                color: Colours.palette.m3error
+
+                                SequentialAnimation on opacity {
+                                    running: root.recording
+                                    loops: Animation.Infinite
+
+                                    NumberAnimation {
+                                        to: 0.3
+                                        duration: 700
+                                    }
+                                    NumberAnimation {
+                                        to: 1
+                                        duration: 700
+                                    }
+                                }
+                            }
+
+                            StyledText {
+                                text: {
+                                    const s = Math.max(0, Math.floor((root.now - root.recordStart) / 1000));
+                                    const pad = n => String(n).padStart(2, "0");
+                                    return `${Math.floor(s / 60)}:${pad(s % 60)}`;
+                                }
+                                color: "white"
+                                font: Tokens.font.label.large
+                            }
+                        }
+                    }
+
+                    // Record, and whether to record sound
+                    Row {
+                        anchors.bottom: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottomMargin: Tokens.padding.large
+                        spacing: Tokens.spacing.large
+
+                        IconButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon: root.withMic ? "mic" : "mic_off"
+                            type: IconButton.Tonal
+                            disabled: root.recording
+                            onClicked: root.withMic = !root.withMic
+                        }
+
+                        // A white ring with a red dot, square while recording
+                        Item {
+                            implicitWidth: 64
+                            implicitHeight: 64
+                            opacity: root.mirrorLive || root.recording ? 1 : 0.4
+
+                            StyledRect {
+                                anchors.fill: parent
+                                radius: width / 2
+                                color: "transparent"
+                                border.width: 4
+                                border.color: "white"
+                            }
+
+                            StyledRect {
+                                anchors.centerIn: parent
+                                implicitWidth: root.recording ? 24 : 48
+                                implicitHeight: implicitWidth
+                                radius: root.recording ? 6 : implicitWidth / 2
+                                color: Colours.palette.m3error
+
+                                Behavior on implicitWidth {
+                                    Anim {}
+                                }
+
+                                Behavior on radius {
+                                    Anim {}
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                enabled: root.mirrorLive || root.recording
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.toggleRecording()
+                            }
+                        }
+
+                        IconButton {
+                            anchors.verticalCenter: parent.verticalCenter
+                            icon: "folder_open"
+                            type: IconButton.Tonal
+                            onClicked: Quickshell.execDetached(["sh", "-c", `mkdir -p "$1" && xdg-open "$1"`, "sh", `${Paths.videos}/Camera`])
                         }
                     }
                 }

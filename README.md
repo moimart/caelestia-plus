@@ -111,6 +111,7 @@ camera busy, so turn that Chrome flag on.
 - **In use**: a red camera icon in the bar while any other app has the camera, with who.
 - **Camera panel** (**Super+Alt+C**): a mirror to check yourself before a call,
   zoom, pan, tilt, focus, white balance and image controls, and saved presets.
+  Its record button saves video clips, with sound, to `~/Videos/Camera`.
 - **Presence**: while you're idle it checks whether you're still at the desk.
   If you are (reading, watching), the screen won't dim or lock; if you've left,
   it locks; when you sit back down, the screen wakes and face unlock starts.
