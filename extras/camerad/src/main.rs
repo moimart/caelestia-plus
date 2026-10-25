@@ -13,6 +13,7 @@
 //! Events:   {"event": "users" | "presence" | "light" | "snapshot" | "gesture"
 //!            | "gestures" | "controls" | "status" | "error", ...}
 
+mod beat;
 mod capture;
 mod controls;
 mod engine;

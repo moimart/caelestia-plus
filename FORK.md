@@ -106,6 +106,12 @@ package, which replaces the AUR `caelestia-shell`.
     the camera directly can't share it with a running stream, so with gestures
     on, such an app's very first attempt can still find it busy; its retry
     works. Chrome avoids this entirely with its PipeWire camera flag.
+
+    Some apps open the camera on a fixed beat only to list devices; Discord
+    does it every 3 s, for as long as it runs. The daemon learns such a beat
+    from opens made while the camera was free and ignores opens that fall on
+    it. Gestures then resume about 20 s after starting, instead of staying
+    paused.
   - **Who's using it:** an inotify watch on the device plus `/proc` for direct
     users, and the PipeWire graph for apps sharing it. The bar shows a red
     camera icon while another app has the camera; it's a `camera` status icon

@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 
+use crate::beat::Beat;
 use crate::capture::{self, Cmd};
 use crate::gestures::{self, Tracker};
 use crate::users::User;
@@ -64,6 +65,8 @@ struct State {
     last_gesture_frame: Instant,
     /// Kept free for another app until then
     aside_until: Option<Instant>,
+    /// An app opening the camera on a fixed beat, only to list devices
+    beat: Beat,
     feedback: bool,
 }
 
@@ -87,6 +90,7 @@ pub fn run(opts: Options, out: Out, rx: Receiver<Msg>, capture: capture::Handle)
         resume_at: None,
         last_gesture_frame: Instant::now(),
         aside_until: None,
+        beat: Beat::default(),
         feedback: false,
     };
     s.out.emit(json!({
@@ -141,6 +145,9 @@ impl State {
             }
             Msg::DirectUsers(u) => {
                 self.direct_users = u;
+                if !self.direct_users.is_empty() {
+                    self.beat.reset_learning();
+                }
                 self.report_users();
                 self.yield_or_resume();
             }
@@ -241,6 +248,25 @@ impl State {
     fn device_opened(&mut self) {
         // Our own stream starting makes PipeWire open the device: that's us
         if self.capturing && self.started.elapsed() < Duration::from_millis(1500) {
+            return;
+        }
+        // A poller's opens (Discord's, every 3 s) don't mean it wants the camera.
+        // Its beat is learned only from opens while the camera was free: an app
+        // that wanted it then would have kept it open.
+        let had_beat = self.beat.period().is_some();
+        let learn = !self.capturing && self.direct_users.is_empty();
+        if self.beat.on_beat(Instant::now(), learn) {
+            if !had_beat && let Some(p) = self.beat.period() {
+                eprintln!(
+                    "ignoring an app that opens the camera every {:.1} s to list devices",
+                    p.as_secs_f32()
+                );
+                // What sent us aside was the poller too: carry on
+                if self.direct_users.is_empty() {
+                    self.aside_until = None;
+                    self.yield_or_resume();
+                }
+            }
             return;
         }
         // One-off readings take under a second; only gestures hold the camera
