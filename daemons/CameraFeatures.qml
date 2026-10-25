@@ -24,7 +24,9 @@ Scope {
     required property Lock lock
 
     readonly property bool locked: lock.lock.locked
-    readonly property bool available: GlobalConfig.camera.enabled && Camera.running
+    readonly property bool available: GlobalConfig.camera.enabled && Camera.running && Camera.hasCamera
+    // Presence needs the face model (ONNX Runtime); light and photos don't
+    readonly property bool canSee: available && Camera.vision
 
     property bool idle
     property bool present
@@ -143,7 +145,7 @@ Scope {
     }
 
     IdleMonitor {
-        enabled: root.available && GlobalConfig.camera.presence.enabled
+        enabled: root.canSee && GlobalConfig.camera.presence.enabled
         timeout: GlobalConfig.camera.presence.checkAfter
         respectInhibitors: false
         onIsIdleChanged: {
@@ -154,7 +156,7 @@ Scope {
     }
 
     Timer {
-        running: root.available && GlobalConfig.camera.presence.enabled && root.idle && !root.locked
+        running: root.canSee && GlobalConfig.camera.presence.enabled && root.idle && !root.locked
         interval: GlobalConfig.camera.presence.interval * 1000
         repeat: true
         triggeredOnStart: true
@@ -162,7 +164,7 @@ Scope {
     }
 
     Timer {
-        running: root.available && GlobalConfig.camera.presence.enabled && GlobalConfig.camera.presence.wakeOnReturn && root.locked
+        running: root.canSee && GlobalConfig.camera.presence.enabled && GlobalConfig.camera.presence.wakeOnReturn && root.locked
         interval: GlobalConfig.camera.presence.lockedInterval * 1000
         repeat: true
         onTriggered: root.checkReturn()

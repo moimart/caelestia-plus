@@ -68,15 +68,15 @@ PageBase {
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: Camera.running ? (Camera.inUse ? Tr.tr("In use by %1").arg(Camera.others.map(u => u.name).join(", ")) : Tr.tr("Ready, and off")) : Tr.tr("Camera daemon not running")
+                        text: !Camera.running ? Tr.tr("Camera daemon not running") : !Camera.hasCamera ? Tr.tr("No camera found") : Camera.inUse ? Tr.tr("In use by %1").arg(Camera.others.map(u => u.name).join(", ")) : Tr.tr("Ready, and off")
                         font: Tokens.font.title.medium
                         elide: Text.ElideRight
                     }
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: Camera.running ? Tr.tr("The camera only turns on while a feature needs a frame, and steps aside whenever an app wants it.") : (Camera.error || Tr.tr("Install the shell package with caelestia-camerad, and onnxruntime-cpu"))
-                        color: Camera.running ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3error
+                        text: !Camera.running ? (Camera.error || Tr.tr("Install the shell package with caelestia-camerad")) : !Camera.hasCamera ? Tr.tr("Plug in a webcam, or set the device below") : !Camera.vision ? Tr.tr("%1. Presence and gestures are off; the rest works.").arg(Camera.visionError) : Tr.tr("The camera only turns on while a feature needs a frame, and steps aside whenever an app wants it.")
+                        color: Camera.running && Camera.hasCamera && Camera.vision ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3error
                         font: Tokens.font.body.small
                         wrapMode: Text.WordWrap
                     }
@@ -117,7 +117,8 @@ PageBase {
         ToggleRow {
             first: true
             text: Tr.trCtx("Enabled", "toggle label")
-            subtext: Tr.tr("While you're idle, check whether you're still at the desk")
+            subtext: Camera.vision ? Tr.tr("While you're idle, check whether you're still at the desk") : Camera.visionError
+            disabled: !Camera.vision
             checked: GlobalConfig.camera.presence.enabled
             onToggled: GlobalConfig.camera.presence.enabled = checked
         }
@@ -278,7 +279,8 @@ PageBase {
         ToggleRow {
             first: true
             text: Tr.trCtx("Enabled", "toggle label")
-            subtext: Camera.gesturesState === "paused" ? Tr.tr("Paused while another app uses the camera") : Tr.tr("Keeps the camera on while enabled; pauses whenever an app needs it")
+            subtext: !Camera.vision ? Camera.visionError : Camera.gesturesState === "paused" ? Tr.tr("Paused while another app uses the camera") : Tr.tr("Keeps the camera on while enabled; pauses whenever an app needs it")
+            disabled: !Camera.vision
             checked: GlobalConfig.camera.gestures.enabled
             onToggled: {
                 // The first time, the tutorial turns them on at its end
@@ -312,6 +314,7 @@ PageBase {
                 TextButton {
                     text: Tr.tr("Gesture tutorial")
                     type: TextButton.Tonal
+                    disabled: !Camera.vision
                     onClicked: Camera.tutorial = true
                 }
             }

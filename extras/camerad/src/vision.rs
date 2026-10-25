@@ -146,6 +146,8 @@ pub struct Hand {
 }
 
 pub struct Models {
+    /// Whether ONNX Runtime and the models are there, or why not
+    pub available: Result<(), String>,
     env: Option<Environment>,
     face: Option<Session>,
     palm: Option<Session>,
@@ -167,6 +169,28 @@ fn session(env: &Environment, path: &Path) -> anyhow::Result<Session> {
     builder
         .commit_from_file(path)
         .map_err(|e| anyhow::anyhow!("loading {}: {e}", path.display()))
+}
+
+/// Whether inference can work: ONNX Runtime loadable (the onnxruntime-cpu
+/// package, or ORT_DYLIB_PATH) and the three models present
+fn check(dir: &Path) -> Result<(), String> {
+    let lib = std::env::var("ORT_DYLIB_PATH").unwrap_or_else(|_| "libonnxruntime.so".into());
+    let c = std::ffi::CString::new(lib).map_err(|e| e.to_string())?;
+    // SAFETY: dlopen/dlclose with a valid C string; the handle is only closed
+    let handle = unsafe { libc::dlopen(c.as_ptr(), libc::RTLD_LAZY | libc::RTLD_LOCAL) };
+    if handle.is_null() {
+        return Err("ONNX Runtime isn't installed (install onnxruntime-cpu)".into());
+    }
+    unsafe { libc::dlclose(handle) };
+    for model in [FACE, PALM, HAND] {
+        if !dir.join(model).is_file() {
+            return Err(format!(
+                "camera model {model} is missing from {}",
+                dir.display()
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// The palm detector's anchors: one per cell of a 24x24 grid (twice) and a
@@ -192,6 +216,7 @@ fn sigmoid(v: f32) -> f32 {
 impl Models {
     pub fn new(dir: &Path) -> Self {
         Self {
+            available: check(dir),
             env: None,
             face: None,
             palm: None,
@@ -204,11 +229,16 @@ impl Models {
     /// ONNX Runtime (libonnxruntime.so) is loaded on first use, then each model
     /// as a feature needs it, so features that are off never cost memory
     fn load(
+        available: &Result<(), String>,
         env: &mut Option<Environment>,
         slot: &mut Option<Session>,
         dir: &Path,
         file: &str,
     ) -> anyhow::Result<()> {
+        // ort panics when it can't load the library, so never get that far
+        if let Err(why) = available {
+            anyhow::bail!("{why}");
+        }
         if slot.is_none() {
             if env.is_none() {
                 *env = Some(
@@ -230,7 +260,13 @@ impl Models {
     }
 
     pub fn faces(&mut self, img: &Rgb) -> anyhow::Result<Vec<Face>> {
-        Self::load(&mut self.env, &mut self.face, &self.dir, FACE)?;
+        Self::load(
+            &self.available,
+            &mut self.env,
+            &mut self.face,
+            &self.dir,
+            FACE,
+        )?;
         let face = self.face.as_mut().unwrap();
         // YuNet: 640x640, BGR, 0..255
         let (input, s, px, py) = letterbox(img, 640, true, true, 1.0);
@@ -279,7 +315,13 @@ impl Models {
     }
 
     pub fn palm(&mut self, img: &Rgb) -> anyhow::Result<Option<Palm>> {
-        Self::load(&mut self.env, &mut self.palm, &self.dir, PALM)?;
+        Self::load(
+            &self.available,
+            &mut self.env,
+            &mut self.palm,
+            &self.dir,
+            PALM,
+        )?;
         let palm = self.palm.as_mut().unwrap();
         // 192x192, RGB, 0..1, NHWC
         let (input, s, px, py) = letterbox(img, 192, false, false, 1.0 / 255.0);
@@ -322,7 +364,13 @@ impl Models {
     /// MediaPipe: rotated so wrist -> middle finger points up, shifted towards
     /// the fingers and enlarged to take in the whole hand.
     pub fn hand(&mut self, img: &Rgb, palm: &Palm) -> anyhow::Result<Option<Hand>> {
-        Self::load(&mut self.env, &mut self.hand, &self.dir, HAND)?;
+        Self::load(
+            &self.available,
+            &mut self.env,
+            &mut self.hand,
+            &self.dir,
+            HAND,
+        )?;
         let hand = self.hand.as_mut().unwrap();
         let (wx, wy) = palm.kps[0]; // wrist
         let (mx, my) = palm.kps[2]; // middle finger base

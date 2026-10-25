@@ -89,8 +89,14 @@ pub fn run(opts: Options, out: Out, rx: Receiver<Msg>, capture: capture::Handle)
         aside_until: None,
         feedback: false,
     };
-    s.out
-        .emit(json!({ "event": "ready", "device": s.opts.device }));
+    s.out.emit(json!({
+        "event": "ready",
+        "device": s.opts.device,
+        // A camera node exists, and presence/gestures can run (or why not)
+        "camera": std::path::Path::new(&s.opts.device).exists(),
+        "vision": s.models.available.is_ok(),
+        "visionError": s.models.available.as_ref().err(),
+    }));
 
     loop {
         let first = match rx.recv_timeout(Duration::from_millis(200)) {
@@ -164,6 +170,13 @@ impl State {
                             ),
                         },
                     };
+                if !std::path::Path::new(&self.opts.device).exists() {
+                    return self.fail(&p, "no camera");
+                }
+                if let (Pending::Presence, Err(why)) = (&p, &self.models.available) {
+                    let why = why.clone();
+                    return self.fail(&p, &why);
+                }
                 if self.foreign() {
                     return self.fail(&p, "busy");
                 }
@@ -171,7 +184,12 @@ impl State {
                 self.start_capture();
             }
             "gestures" => {
-                let on = v["on"].as_bool().unwrap_or(false);
+                let mut on = v["on"].as_bool().unwrap_or(false);
+                if on && let Err(why) = &self.models.available {
+                    self.out
+                        .emit(json!({ "event": "error", "message": format!("gestures: {why}") }));
+                    on = false;
+                }
                 self.gestures = on;
                 // The shell's gesture tutorial wants to see what the camera sees
                 self.feedback = on && v["feedback"].as_bool().unwrap_or(false);

@@ -357,7 +357,8 @@ Item {
                         Feature {
                             icon: "person_search"
                             text: Tr.tr("Presence")
-                            subtext: Tr.tr("Keep awake while you're here, lock when you leave")
+                            subtext: Camera.vision ? Tr.tr("Keep awake while you're here, lock when you leave") : Camera.visionError
+                            disabled: !Camera.vision
                             checked: GlobalConfig.camera.presence.enabled
                             onToggled: GlobalConfig.camera.presence.enabled = checked
                         }
@@ -373,7 +374,8 @@ Item {
                         Feature {
                             icon: "back_hand"
                             text: Tr.tr("Gestures")
-                            subtext: Camera.gesturesState === "paused" ? Tr.tr("Paused while another app uses the camera") : Camera.gesturesState === "running" ? Tr.tr("Watching for gestures") : Tr.tr("Palm to pause, swipe to skip")
+                            subtext: !Camera.vision ? Camera.visionError : Camera.gesturesState === "paused" ? Tr.tr("Paused while another app uses the camera") : Camera.gesturesState === "running" ? Tr.tr("Watching for gestures") : Tr.tr("Palm to pause, swipe to skip")
+                            disabled: !Camera.vision
                             checked: GlobalConfig.camera.gestures.enabled
                             onToggled: {
                                 // The first time, the tutorial turns them on at its end
@@ -510,6 +512,7 @@ Item {
         property alias text: featureText.text
         property alias subtext: featureSub.text
         property alias checked: featureSwitch.checked
+        property alias disabled: featureSwitch.disabled
 
         signal toggled
 

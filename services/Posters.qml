@@ -3,6 +3,8 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Caelestia
+import Caelestia.I18n
 import qs.utils
 
 // Poster frames for video wallpapers, extracted with ffmpeg and cached. A
@@ -88,6 +90,8 @@ exit 1`, "sh", video, `${root.dir}/${Qt.md5(video)}`]
                     });
                 } else {
                     console.warn(`Posters: could not extract a frame from ${video}`);
+                    // Without a poster the video can't be set; most often ffmpeg is missing
+                    Toaster.toast(Tr.tr("Couldn't use this video"), Tr.tr("No frame could be read from it. Video wallpapers need ffmpeg installed."), "movie_off", Toast.Warning);
                     root.failed = Object.assign({}, root.failed, {
                         [video]: true
                     });

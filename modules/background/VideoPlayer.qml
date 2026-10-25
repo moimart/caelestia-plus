@@ -3,7 +3,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Caelestia
 import Caelestia.Config
+import Caelestia.I18n
 
 // Plays a video wallpaper on one screen with mpvpaper, on the background layer
 // beneath this shell's background surface (which turns transparent while a
@@ -17,6 +19,7 @@ Scope {
     property real startTime
     property bool paused
 
+    property bool warnedMissing
     readonly property bool active: proc.running
     property bool playing
 
@@ -92,6 +95,11 @@ exec setpriv --pdeathsig KILL mpvpaper -o "$@"`, "sh", root.socketPath, opts.joi
                 root.start();
             else if (root.video)
                 console.warn(`VideoPlayer: mpvpaper on ${root.screenName} exited (${code})`);
+            // The shell couldn't run mpvpaper at all: the wallpaper stays a still
+            if (code === 127 && root.video && !root.warnedMissing) {
+                root.warnedMissing = true;
+                Toaster.toast(Tr.tr("Video wallpaper shown as a still"), Tr.tr("Install mpvpaper to play video wallpapers"), "movie_off", Toast.Warning);
+            }
         }
     }
 

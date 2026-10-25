@@ -136,7 +136,7 @@ StyledRect {
                     delegate: Toggle {
                         icon: "back_hand"
                         checked: GlobalConfig.camera.gestures.enabled
-                        disabled: !GlobalConfig.camera.enabled
+                        disabled: !GlobalConfig.camera.enabled || !Camera.vision
                         onClicked: {
                             if (!GlobalConfig.camera.gestures.enabled && !Camera.tutorialDone)
                                 root.screenState.utilities = false;

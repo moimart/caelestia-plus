@@ -3,7 +3,9 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Caelestia
 import Caelestia.Config
+import Caelestia.I18n
 import qs.utils
 
 // The webcam, through caelestia-camerad (extras/camerad): who's using it, its
@@ -16,6 +18,10 @@ Singleton {
     readonly property bool running: proc.running && ready
     property bool ready
     property string error
+    // From the daemon: a camera device exists; presence and gestures can run (or why not)
+    property bool hasCamera: true
+    property bool vision: true
+    property string visionError
 
     // [{ pid, name, via: "pipewire" | "direct", self, shell }]
     property var users: []
@@ -82,13 +88,17 @@ Singleton {
     function syncGestures(): void {
         send({
             cmd: "gestures",
-            on: (GlobalConfig.camera.gestures.enabled || tutorial) && !mirror,
+            on: (GlobalConfig.camera.gestures.enabled || tutorial) && !mirror && vision,
             feedback: tutorial
         });
     }
 
     // Turning gestures on the first time goes through the tutorial instead
     function setGesturesEnabled(on: bool): void {
+        if (on && !vision) {
+            Toaster.toast(Tr.tr("Gestures need ONNX Runtime"), visionError, "back_hand", Toast.Warning);
+            return;
+        }
         if (on && !tutorialDone)
             tutorial = true;
         else
@@ -178,6 +188,9 @@ Singleton {
         case "ready":
             ready = true;
             error = "";
+            hasCamera = msg.camera ?? true;
+            vision = msg.vision ?? true;
+            visionError = msg.visionError ?? "";
             syncGestures();
             break;
         case "users":
