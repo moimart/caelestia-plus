@@ -71,13 +71,21 @@ refreshes whenever Hyprland reloads. Search, filter by who handles a shortcut
 
 ## Emoji picker
 
-<img src="docs/screenshots/emoji.jpg" alt="The emoji picker" width="380">
+![The emoji picker: frequently used and categories, a search for "heart", and the skin tones of the waving hand](docs/screenshots/emoji.png)
 
 **Ctrl+Super+Space** opens an emoji picker next to the pointer, like
-Ctrl+Cmd+Space on a Mac. Type to search ("lol" finds 😂), use the arrows and
-Enter, or click; the emoji is typed straight into the app you were in.
-Your most-used emoji come first. Right-click an emoji with a dot under it
-(or press Tab) for its skin tones, and it remembers your choice.
+Ctrl+Cmd+Space on a Mac. Pick one and it lands in the text box you were
+typing in, in Chrome, Discord, a terminal or anywhere else.
+
+- **Search as you type**, by name or keyword: "lol" finds 😂, "heart" finds
+  every heart. Arrows and Enter, or a click, pick one; Esc closes.
+- **Frequently used** emoji come first; the categories run along the bottom.
+- **Skin tones**: emoji with a dot under them come in five. Right-click one, or
+  press Tab, and pick; it remembers your choice for that emoji.
+- **Into any app**: terminals get the emoji typed; other apps get it pasted,
+  since Chrome and other Chromium-based apps garble emoji typed through a
+  virtual keyboard. Whatever you had copied is put back afterwards.
+- All of Unicode's emoji, with CLDR's keywords; also `>Emoji` in the launcher.
 
 ## Window cards
 
@@ -160,6 +168,7 @@ Everything is reachable over the shell's IPC, from the command line
 
 ```sh
 caelestia shell keybinds toggle
+caelestia shell emoji search heart
 caelestia shell cards flip
 caelestia shell widgets add eyes DP-1
 caelestia shell camera toggleGestures

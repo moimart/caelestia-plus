@@ -477,7 +477,8 @@ Item {
             width: toneRow.implicitWidth + Tokens.padding.small * 2
             height: root.cell + Tokens.padding.small * 2
             x: Math.max(Tokens.padding.small, Math.min(sheet.width - width - Tokens.padding.small, at.x + root.cell / 2 - width / 2))
-            y: at.y > height + Tokens.padding.small ? at.y - height - 2 : at.y + root.cell + 2
+            // Above the emoji if that stays within the grid, else below it
+            y: at.y - height - 2 >= list.y ? at.y - height - 2 : at.y + root.cell + 2
             radius: Tokens.rounding.large
             color: Colours.palette.m3surfaceContainerHigh
 

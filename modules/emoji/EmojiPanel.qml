@@ -122,9 +122,9 @@ Scope {
         function search(query: string): string {
             Emoji.ensureLoaded();
             return JSON.stringify(Emoji.search(query).slice(0, 30).map(e => ({
-                            emoji: Emoji.toned(e),
-                            name: e.n
-                        })));
+                        emoji: Emoji.toned(e),
+                        name: e.n
+                    })));
         }
 
         // Types text (an emoji) into the focused window
