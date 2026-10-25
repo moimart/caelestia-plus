@@ -32,6 +32,7 @@ Scope {
         function onPanelOpenChanged(): void {
             if (!Emoji.panelOpen)
                 return;
+            Emoji.target = Hypr.activeToplevel?.address ?? "";
             Emoji.ensureLoaded();
             cursor.running = true;
         }
@@ -91,7 +92,10 @@ Scope {
                 shown: root.open
                 anchorPoint: root.anchorPoint
                 onCloseRequested: root.hide()
-                onHidden: loader.active = false
+                onHidden: {
+                    Emoji.flush();
+                    loader.active = false;
+                }
             }
         }
     }

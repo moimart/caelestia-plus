@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Caelestia
 import Caelestia.I18n
+import qs.services
 import qs.utils
 
 // The emoji picker's data: every emoji (assets/emoji/emoji.json, built by
@@ -22,6 +23,10 @@ Singleton {
     // { base emoji: skin tone index 0-5 (0 = none) }, and the last tone picked
     property var tones: ({})
     property int lastTone: 0
+    // An emoji waiting for the picker to close before it's typed
+    property bool pending
+    // The window that had focus when the picker opened: it gets the emoji
+    property string target
 
     // Most used first, recent use breaking ties
     readonly property var recentEmojis: {
@@ -110,10 +115,26 @@ Singleton {
         type(toned(e));
     }
 
+    // The picker holds the keyboard until its window is gone, so while it's
+    // open, typing waits for it to close (EmojiPanel calls flush())
     function type(text: string): void {
-        panelOpen = false;
         typer.text = text;
-        // Let keyboard focus go back to the app first
+        if (panelOpen) {
+            pending = true;
+            panelOpen = false;
+        } else {
+            typeTimer.restart();
+        }
+    }
+
+    function flush(): void {
+        if (!pending)
+            return;
+        pending = false;
+        // Hyprland doesn't hand the keyboard back after an exclusive layer
+        // closes, so focus the window again, then type once it has settled
+        if (target)
+            Hypr.dispatch(Hypr.usingLua ? `hl.dsp.focus({ window = "address:0x${target}" })` : `focuswindow address:0x${target}`);
         typeTimer.restart();
     }
 
