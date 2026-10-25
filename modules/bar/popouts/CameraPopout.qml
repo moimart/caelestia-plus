@@ -8,13 +8,19 @@ import qs.components
 import qs.components.controls
 import qs.services
 
-// Who has the camera, from the bar's camera indicator
+// The camera's state, from the bar's camera icon: who's using it, and the features
 ColumnLayout {
     spacing: Tokens.spacing.small
 
     StyledText {
-        text: Tr.tr("Camera in use")
+        text: !GlobalConfig.camera.enabled ? Tr.tr("Camera off") : Camera.inUse ? Tr.tr("Camera in use") : Tr.tr("Camera idle")
         font: Tokens.font.title.small
+    }
+
+    StyledText {
+        visible: GlobalConfig.camera.enabled && !Camera.inUse
+        text: Tr.tr("No app is using the camera")
+        color: Colours.palette.m3onSurfaceVariant
     }
 
     Repeater {
@@ -42,6 +48,22 @@ ColumnLayout {
                 color: Colours.palette.m3outline
                 font: Tokens.font.label.small
             }
+        }
+    }
+
+    RowLayout {
+        visible: GlobalConfig.camera.enabled && GlobalConfig.camera.gestures.enabled
+        spacing: Tokens.spacing.small
+
+        MaterialIcon {
+            text: "back_hand"
+            color: Colours.palette.m3onSurfaceVariant
+            fontStyle: Tokens.font.icon.small
+        }
+
+        StyledText {
+            text: Camera.gesturesState === "paused" ? Tr.tr("Gestures paused for another app") : Tr.tr("Gestures on")
+            color: Colours.palette.m3onSurfaceVariant
         }
     }
 
