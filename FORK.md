@@ -52,8 +52,11 @@ package, which replaces the AUR `caelestia-shell`.
 
 - **Emoji picker** (`modules/emoji/`, `services/Emoji.qml`): like macOS's
   Ctrl+Cmd+Space. Ctrl+Super+Space (`caelestia:emoji`) opens it next to the
-  pointer; pick an emoji and it's typed into the window that had focus,
-  through `wtype`. Without `wtype` it goes on the clipboard instead.
+  pointer; pick an emoji and it goes into the window that had focus
+  (`assets/emoji/type-emoji.sh`). Terminals get it typed with `wtype`;
+  other apps get it pasted (Ctrl+V), because Chromium-based apps garble
+  characters past U+FFFF from a virtual keyboard. The clipboard is put back
+  afterwards. Without `wtype` it's left on the clipboard instead.
   - **Using it:** type to search names and keywords ("lol" finds 😂), arrows
     and Enter to pick, Esc to close. Most-used emoji come first, and the
     categories run along the bottom.

@@ -27,6 +27,9 @@ Singleton {
     property bool pending
     // The window that had focus when the picker opened: it gets the emoji
     property string target
+    property string targetClass
+    // Ctrl+V doesn't paste in terminals, but typing works there
+    readonly property var terminals: ["kitty", "foot", "footclient", "alacritty", "org.wezfurlong.wezterm", "com.mitchellh.ghostty", "konsole", "org.kde.konsole", "org.gnome.console", "org.gnome.terminal", "gnome-terminal-server", "xterm", "urxvt", "st", "st-256color", "tilix", "terminator", "ptyxis", "org.gnome.ptyxis"]
 
     // Most used first, recent use breaking ties
     readonly property var recentEmojis: {
@@ -119,6 +122,9 @@ Singleton {
     // open, typing waits for it to close (EmojiPanel calls flush())
     function type(text: string): void {
         typer.text = text;
+        if (!panelOpen)
+            targetClass = Hypr.activeToplevel?.lastIpcObject?.class ?? "";
+        typer.mode = terminals.includes(targetClass.toLowerCase()) ? "wtype" : "paste";
         if (panelOpen) {
             pending = true;
             panelOpen = false;
@@ -193,13 +199,14 @@ Singleton {
         onTriggered: typer.running = true
     }
 
-    // wtype types through a virtual keyboard, so it works in any Wayland app
+    // Types it with wtype, or pastes it (see type-emoji.sh)
     Process {
         id: typer
 
         property string text
+        property string mode
 
-        command: ["wtype", "--", text]
+        command: ["sh", Quickshell.shellPath("assets/emoji/type-emoji.sh"), mode, text]
         onExited: code => {
             if (code === 0)
                 return;

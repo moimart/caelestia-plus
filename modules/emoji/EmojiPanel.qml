@@ -33,6 +33,7 @@ Scope {
             if (!Emoji.panelOpen)
                 return;
             Emoji.target = Hypr.activeToplevel?.address ?? "";
+            Emoji.targetClass = Hypr.activeToplevel?.lastIpcObject?.class ?? "";
             Emoji.ensureLoaded();
             cursor.running = true;
         }
