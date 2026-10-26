@@ -34,8 +34,6 @@ perspective, then hands back to the live window.
 
 ### Plugins: desktop widgets
 
-![Eyes in three styles and the daruma, following the pointer](shell/docs/screenshots/widgets.webp)
-
 Upstream's empty plugin page made real, starting with widgets that live on the
 desktop, above the wallpaper:
 
