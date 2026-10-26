@@ -52,11 +52,10 @@ jobs:
           cd ~
           git clone -q https://aur.archlinux.org/yay-bin.git
           (cd yay-bin && makepkg -si --noconfirm)
+          mkdir -p ~/aur ~/out
           yay -S --noconfirm --needed --builddir ~/aur $AUR_PACKAGES
-          mkdir -p ~/out
-          for pkg in $AUR_PACKAGES; do
-              cp ~/aur/"$pkg"/*.pkg.tar.zst ~/out/
-          done
+          # Everything built, including AUR dependencies (python-materialyoucolor)
+          cp ~/aur/*/*.pkg.tar.zst ~/out/
           EOF
 
       - name: Build caelestia-plus
