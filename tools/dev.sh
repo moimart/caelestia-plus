@@ -245,6 +245,12 @@ check() {
     if grep -q '^shell/.*\.qml$' <<< "$list"; then
         (cd shell && quiet python3 scripts/trs-check.py) || fail=1
     fi
+    # Tests for the logic they cover, when it changed (and Node is there)
+    if grep -q -e '^shell/modules/nexus/pages/displays/arrange\.js$' -e '^tools/tests/' <<< "$list" && command -v node > /dev/null; then
+        for t in tools/tests/*.test.js; do
+            quiet node "$t" || fail=1
+        done
+    fi
     if grep -q '^shell/extras/camerad/.*\.rs$' <<< "$list"; then
         (cd shell/extras/camerad && cargo fmt --check) || fail=1
     fi
