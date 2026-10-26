@@ -1,10 +1,12 @@
 #!/bin/bash
 # caelestia-plus-setup: make this user's desktop caelestia-plus.
 #
-#   caelestia-plus-setup [--host NAME] [--dry-run]
+#   caelestia-plus-setup [--overlay GIT-URL] [--host NAME] [--dry-run]
 #
 # Creates the small files in ~/.config that load the packaged defaults, picks
-# a host profile, and enables the user services. It never overwrites
+# a host profile, and enables the user services. --overlay clones your
+# private overlay (host profiles, your personal layer) into
+# ~/.config/caelestia-plus. It never overwrites
 # anything: a config you already have is left alone (and mentioned), so it's
 # safe to run again, e.g. after an update adds something new.
 
@@ -15,10 +17,11 @@ share=${CAELESTIA_PLUS_SHARE:-/usr/share/caelestia-plus}
 lib=${CAELESTIA_PLUS_LIB:-/usr/lib/caelestia-plus}
 config=${XDG_CONFIG_HOME:-$HOME/.config}
 host=
+overlay=
 dry=0
 
 usage() {
-    sed -n '2,10s/^# \{0,1\}//p' "$0"
+    sed -n '2,12s/^# \{0,1\}//p' "$0"
     exit "${1:-0}"
 }
 
@@ -26,6 +29,8 @@ while [ $# -gt 0 ]; do
     case $1 in
         --host) host=${2:?--host needs a name}; shift 2 ;;
         --host=*) host=${1#--host=}; shift ;;
+        --overlay) overlay=${2:?--overlay needs a git URL}; shift 2 ;;
+        --overlay=*) overlay=${1#--overlay=}; shift ;;
         --dry-run|-n) dry=1; shift ;;
         -h|--help) usage ;;
         *) echo "unknown option: $1" >&2; usage 2 ;;
@@ -86,6 +91,21 @@ own_setup() {
     [ -L "$config/$1" ]
 }
 
+# ---- Your private overlay ----
+# Cloned into ~/.config/caelestia-plus, around a host file already there
+plus=$config/caelestia-plus
+if [ -n "$overlay" ]; then
+    if [ -d "$plus/.git" ]; then
+        kept+=("$plus (an overlay is already there: git -C $plus pull to update it)")
+    else
+        run mkdir -p "$plus"
+        run git -C "$plus" init -q -b main
+        run git -C "$plus" remote add origin "$overlay"
+        run git -C "$plus" pull -q origin main
+        done_+=("$plus (your overlay, from $overlay)")
+    fi
+fi
+
 # ---- Host profile ----
 hostfile=$config/caelestia-plus/host
 if [ -z "$host" ] && [ -f "$hostfile" ]; then
@@ -124,12 +144,16 @@ fi
 # (/etc/xdg/caelestia/shell.json and the host profile's caelestia/)
 if ! own_setup caelestia; then
     seed "$share/setup/caelestia/cli.json" "$config/caelestia/cli.json"
-    for dir in "$config/caelestia-plus/hosts/$host" "$share/hosts/$host"; do
-        [ -n "$host" ] && [ -f "$dir/caelestia/lock-ha.json" ] || continue
+    # Home Assistant lock cards: from this host's profile, else your personal
+    # layer (an example is in $share/caelestia/lock-ha.example.json)
+    for dir in ${host:+"$plus/hosts/$host" "$share/hosts/$host"} "$plus/personal"; do
+        [ -f "$dir/caelestia/lock-ha.json" ] || continue
         seed "$dir/caelestia/lock-ha.json" "$config/caelestia/lock-ha.json"
         break
     done
 fi
+# A profile picture until you choose one (your personal layer can set a video)
+seed "$share/caelestia/assets/face-placeholder.png" "$HOME/.face"
 
 # ---- Terminals: include the packaged config ----
 if ! own_setup kitty; then

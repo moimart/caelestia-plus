@@ -22,7 +22,7 @@ local function load(path)
   return true
 end
 
-local user = os.getenv("USER") or "moimart"
+local user = os.getenv("USER") or ""
 local hyprpm_cache = "/var/cache/hyprpm/" .. user
 
 -- Parse <repo>/state.toml and return `enabled` for the named plugin section.

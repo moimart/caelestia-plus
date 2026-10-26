@@ -1,7 +1,11 @@
 -- caelestia-plus: the Hyprland config (Lua, Hyprland 0.55+).
 -- See: https://wiki.hypr.land/Configuring/
 --
--- This is the default config: complete on its own. Two layers can extend it:
+-- This is the default config: complete on its own. Layers can extend it:
+--   * your personal layer, the same on all your machines (private things:
+--     your face, your home's devices, your own binds):
+--     ~/.config/caelestia-plus/personal/. Its hypr/personal.lua runs after
+--     the defaults; its caelestia/ layers under your shell config.
 --   * a host profile, for what belongs to one machine (monitors, scaling...):
 --     hosts/<name>/hypr/. Its modules replace the default ones of the same
 --     name (monitors.lua), and its host.lua runs after the defaults. The name
@@ -48,16 +52,29 @@ if hostName and hostName ~= "" then
   end
 end
 
-package.loaded.paths = { home = home, root = root, user = user, host = hostDir, hostName = hostName }
+-- Your personal layer (a private overlay; see the comment at the top)
+local personalDir = home .. "/.config/caelestia-plus/personal"
+if not exists(personalDir) then
+  personalDir = nil
+end
 
--- The profile's other configs (caelestia/shell.json, caelestia/monitors/...)
--- reach apps through $XDG_CONFIG_DIRS: the shell layers them under yours
-if hostDir then
-  local profile = hostDir:gsub("/hypr$", "")
-  local dirs = os.getenv("XDG_CONFIG_DIRS") or "/etc/xdg"
-  if not (":" .. dirs .. ":"):find(":" .. profile .. ":", 1, true) then
-    hl.env("XDG_CONFIG_DIRS", profile .. ":" .. dirs)
+package.loaded.paths = {
+  home = home, root = root, user = user,
+  host = hostDir, hostName = hostName, personal = personalDir,
+}
+
+-- The layers' other configs (caelestia/shell.json, caelestia/monitors/...)
+-- reach apps through $XDG_CONFIG_DIRS, the host profile before your personal
+-- layer: the shell layers them under your own files
+local dirs = os.getenv("XDG_CONFIG_DIRS") or "/etc/xdg"
+local layered = dirs
+for _, dir in ipairs({ personalDir or false, hostDir and hostDir:gsub("/hypr$", "") or false }) do
+  if dir and not (":" .. layered .. ":"):find(":" .. dir .. ":", 1, true) then
+    layered = dir .. ":" .. layered
   end
+end
+if layered ~= dirs then
+  hl.env("XDG_CONFIG_DIRS", layered)
 end
 
 local searchPath = { root .. "/lua/?.lua", root .. "/scheme/?.lua", package.path }
@@ -95,7 +112,10 @@ require("execs")
 require("keybinds")
 require("scheme_watcher")
 
--- The host profile's additions
+-- Your personal additions, then the host profile's
+if personalDir and exists(personalDir .. "/hypr/personal.lua") then
+  dofile(personalDir .. "/hypr/personal.lua")
+end
 if hostDir and exists(hostDir .. "/host.lua") then
   require("host")
 end
