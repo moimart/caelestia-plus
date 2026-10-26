@@ -251,7 +251,7 @@
                 }
             ]
         },
-        "logo": "~/.config/caelestia/assets/daruma-logo.png"
+        "logo": "/usr/share/caelestia-plus/caelestia/assets/daruma-logo.png"
     },
     "launcher": {
         "actionPrefix": ">",
@@ -478,8 +478,8 @@
         "hideDelay": 2000
     },
     "paths": {
-        "mediaGif": "~/.config/caelestia/assets/daruma-media.webp",
-        "sessionGif": "~/.config/caelestia/assets/daruma.webp",
+        "mediaGif": "/usr/share/caelestia-plus/caelestia/assets/daruma-media.webp",
+        "sessionGif": "/usr/share/caelestia-plus/caelestia/assets/daruma.webp",
         "wallpaperDir": "~/Pictures/Wallpapers"
     },
     "services": {
