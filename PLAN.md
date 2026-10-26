@@ -173,6 +173,14 @@ keyring package).
    from the symlinked checkouts to the packages; `--rollback` undoes it.
    Rehearsed in a fake home shaped like behemoth's: the layers rebuild the
    live shell settings exactly, and rollback restores every link.
+
+   Done on 2026-10-26. The VM test passed with CI's packages: a fresh Arch
+   install trusted the key, installed from the signed repo, ran setup and
+   started Hyprland with no config errors and the shell running. Behemoth
+   then switched over: libcava 1.0.0 came along (the new shell links
+   libcava.so.1), and gammastep, geoclue, qt6ct, trash-cli and zoxide became
+   optional so the install pulled in nothing that would change the desktop.
+   Its shell.json is now `{}`: every setting matches the layers.
 7. **Go public.** The private things are in the overlay; the packages hold
    nothing personal. `tools/purge-private-history.sh --push` rewrites this
    repo's history without the face video, `lock-ha.json` and the lock
