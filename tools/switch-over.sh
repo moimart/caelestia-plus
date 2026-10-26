@@ -16,7 +16,8 @@ set -euo pipefail
 config=${XDG_CONFIG_HOME:-$HOME/.config}
 data=${XDG_DATA_HOME:-$HOME/.local/share}
 state=$data/caelestia-plus/switch-over
-share=/usr/share/caelestia-plus
+# Overridable to rehearse against a staged install
+xdg=${CAELESTIA_PLUS_XDG:-/etc/xdg}
 host=
 overlay=git@github.com:moimart/caelestia-plus-private.git
 dry=0
@@ -60,6 +61,9 @@ if [ $rollback = 1 ]; then
     done < "$state/services"
     fc-cache -f "$data/fonts" >/dev/null 2>&1 || true
     hyprctl reload >/dev/null 2>&1 || true
+    stamp=$(date +%Y%m%d-%H%M%S)
+    mv "$state/links" "$state/links.rolled-back-$stamp"
+    mv "$state/services" "$state/services.rolled-back-$stamp"
     echo "Rolled back. What the switch-over made is kept in $state/after-*."
     exit 0
 fi
@@ -74,7 +78,8 @@ if [ "$(caelestia shell lock isLocked 2>/dev/null)" = true ]; then
 fi
 [ -f "$state/links" ] && [ $dry = 0 ] && { echo "already switched over (see $state); --rollback first" >&2; exit 1; }
 
-run mkdir -p "$state"
+# A dry run keeps its notes somewhere throwaway
+if [ $dry = 1 ]; then state=$(mktemp -d); else mkdir -p "$state"; fi
 
 echo "== Recording the links"
 : > "${state}/links.new"
@@ -92,7 +97,7 @@ for unit in "${services[@]}"; do
     esac
 done
 if [ $dry = 1 ]; then
-    rm -f "$state/links.new" "$state/services.new"
+    rm -rf "$state"
 else
     mv "$state/links.new" "$state/links"
     mv "$state/services.new" "$state/services"
@@ -126,7 +131,7 @@ if [ -L "$config/caelestia" ]; then
     # Your shell.json, minus what the layers now provide
     if [ $dry = 0 ]; then
         python3 - "$oldcaelestia/shell.json" "$config/caelestia/shell.json" \
-            /etc/xdg/caelestia/shell.json "$plus/personal/caelestia/shell.json" "$plus/hosts/$host/caelestia/shell.json" <<'EOF'
+            "$xdg/caelestia/shell.json" "$plus/personal/caelestia/shell.json" "$plus/hosts/$host/caelestia/shell.json" <<'EOF'
 import json, os, sys
 live, out, *bases = sys.argv[1:]
 home = os.path.expanduser("~")
