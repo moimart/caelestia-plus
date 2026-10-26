@@ -158,9 +158,24 @@ keyring package).
    template, makes the same calls as the repo's; setup in a fresh home made
    every file, and a second run left them alone. Not yet tested on a real
    install: that's the VM in step 6.
-5. **CI and the pacman repo.** Build, sign, publish; the weekly AUR rebuild.
-6. **Switch behemoth over** from symlinks to packages, then test a fresh Arch
-   install in a VM.
-7. **Go public.** Done early: the private things are in the overlay, and the
-   packages hold nothing personal. Left: purge them from this repo's
-   history, then flip it public; add AUR recipes.
+5. **CI and the pacman repo.** `.github/workflows/packages.yml` builds the
+   AUR packages Arch lacks (libcava, ttf-rubik-vf, quickshell-git,
+   caelestia-cli, app2unit, and their AUR dependencies) and caelestia-plus,
+   uploads them as an artifact, signs them (key
+   `BC40964C5AA4206E09F6148BD849D193EECADBBB`, in
+   `~/.local/share/caelestia-plus/signing/`) and publishes the repo to the
+   gh-pages branch of the public `moimart/caelestia-plus-packages` (GitHub
+   Pages). Creating that repo and storing the secrets is
+   `pkg/bootstrap-publishing.sh`, run by hand.
+6. **Test, then switch behemoth over.** `tools/vm/run.sh` installs the
+   packages in a fresh Arch VM (nested; software rendering), runs setup and
+   starts Hyprland. `tools/switch-over.sh --host behemoth` moves behemoth
+   from the symlinked checkouts to the packages; `--rollback` undoes it.
+   Rehearsed in a fake home shaped like behemoth's: the layers rebuild the
+   live shell settings exactly, and rollback restores every link.
+7. **Go public.** The private things are in the overlay; the packages hold
+   nothing personal. `tools/purge-private-history.sh --push` rewrites this
+   repo's history without the face video, `lock-ha.json` and the lock
+   screenshot's unblurred versions (checked on a clone); then the repo can
+   be made public. The AUR recipe is in `aur/caelestia-plus-git`
+   (`tools/aur.sh`); publishing it needs an AUR account.
