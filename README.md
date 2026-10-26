@@ -100,6 +100,15 @@ pointer:
   it pasted (Chrome and other Chromium apps garble emoji typed through a
   virtual keyboard), terminals get it typed, and your clipboard is put back.
 
+### Launchpad
+
+![Launchpad: every app in a grid over the blurred desktop](shell/docs/screenshots/launchpad.jpg)
+
+**Shift+Super+Space**, like Launchpad on a Mac: every app in a grid of pages in
+the middle of the screen, over the desktop dimmed and blurred. Start typing
+and it narrows to what you write; Enter or a click launches. The wheel, a drag
+or the dots turn the pages.
+
 <table>
 <tr>
 <td width="50%" valign="top">

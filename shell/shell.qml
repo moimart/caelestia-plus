@@ -15,6 +15,7 @@ import qs.modules.cards
 import qs.modules.drawers
 import qs.modules.emoji
 import qs.modules.keybinds
+import qs.modules.launchpad
 import qs.modules.lock
 import qs.modules.widgets
 import qs.daemons
@@ -53,6 +54,7 @@ ShellRoot {
     AreaPicker {}
     KeybindsPanel {}
     EmojiPanel {}
+    Launchpad {}
     WindowCards {}
     WidgetsEditor {}
     CameraPanel {}
