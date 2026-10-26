@@ -264,7 +264,7 @@ install_pkgs() {
     [ -f "$cache/last" ] || die "nothing built yet: tools/dev.sh build"
     local ver
     ver=$(cat "$cache/last")
-    [ "$ver" = "$(pacman -Q caelestia-plus 2> /dev/null | cut -d' ' -f2 | sed 's/-[0-9]*$//')" ] \
+    [ "$ver" = "$(pacman -Q caelestia-plus 2> /dev/null | cut -d' ' -f2)" ] \
         && note "$ver is already installed; reinstalling"
     sudo pacman -U --noconfirm "$cache"/out/*-"$ver"-*.pkg.tar.zst
     if [ -L "$link" ]; then
