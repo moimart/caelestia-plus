@@ -360,7 +360,8 @@ def toggle(args):
     return {args["feature"]: ipc(args["feature"], "isEnabled") == "true"}
 
 
-@tool("panel", "Open/close a shell panel (drawer) such as launcher, dashboard, session, sidebar; or 'settings' to open the settings window. Use action 'list' to see drawer names.",
+@tool("panel", "Open/close a shell panel (drawer) such as launcher, dashboard, session, sidebar; 'launchpad' for the app grid "
+      "(Shift+Super+Space); or 'settings' to open the settings window. Use action 'list' to see drawer names.",
       {"name": S, "action": {"type": "string", "enum": ["toggle", "status", "list"]}}, ["action"])
 def panel(args):
     action, name = args["action"], args.get("name")
@@ -371,6 +372,10 @@ def panel(args):
     if name == "settings":
         ipc("nexus", "open")
         return {"opened": "settings"}
+    if name == "launchpad":
+        if action == "toggle":
+            ipc("launchpad", "toggle")
+        return {name: ipc("launchpad", "isOpen")}
     if action == "toggle":
         ipc("drawers", "toggle", name)
     return {name: ipc("drawers", "isOpen", name)}

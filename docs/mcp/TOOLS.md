@@ -203,7 +203,7 @@ Turn game mode or the idle inhibitor (keep awake) on/off, or read their state.
 
 ### `panel`
 
-Open/close a shell panel (drawer) such as launcher, dashboard, session, sidebar; or 'settings' to open the settings window. Use action 'list' to see drawer names.
+Open/close a shell panel (drawer) such as launcher, dashboard, session, sidebar; 'launchpad' for the app grid (Shift+Super+Space); or 'settings' to open the settings window. Use action 'list' to see drawer names.
 
 | Parameter | Type | Required | Description |
 | --- | --- | --- | --- |

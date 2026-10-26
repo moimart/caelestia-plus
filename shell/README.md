@@ -17,6 +17,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Video wallpapers](#video-wallpapers)
 - [Desktop widgets and plugins](#desktop-widgets-and-plugins)
 - [Keyboard shortcuts panel](#keyboard-shortcuts-panel)
+- [Launchpad](#launchpad)
 - [Emoji picker](#emoji-picker)
 - [Window cards](#window-cards)
 - [Camera](#camera)
@@ -68,6 +69,21 @@ nothing is hardcoded. It follows `hyprland.lua` and the modules it loads (or
 app or your own comments, groups them by your config's sections, and
 refreshes whenever Hyprland reloads. Search, filter by who handles a shortcut
 (the shell, Hyprland or an app), and see the shell actions still waiting for a key.
+
+## Launchpad
+
+![Launchpad: every app in a grid over the blurred desktop, with the search on top and a dot per page](docs/screenshots/launchpad.jpg)
+
+**Shift+Super+Space** opens every app in a grid in the middle of the screen,
+like Launchpad on a Mac, over the desktop dimmed and blurred:
+
+- **Type to filter**: the grid narrows to what you write, best match first;
+  Enter launches it.
+- **A to Z**, in pages: the wheel, a drag, Page Up/Down or the dots turn them.
+- **Arrows** move the selection, across pages too; Escape clears the search,
+  then closes.
+- It only launches apps. The same apps as the launcher (Super+Space): its
+  hidden apps and fuzzy search setting apply.
 
 ## Emoji picker
 
@@ -173,6 +189,7 @@ Everything is reachable over the shell's IPC, from the command line
 ```sh
 caelestia shell keybinds toggle
 caelestia shell emoji search heart
+caelestia shell launchpad toggle
 caelestia shell cards flip
 caelestia shell widgets add eyes DP-1
 caelestia shell camera toggleGestures
@@ -190,13 +207,14 @@ without a way to take photos).
 | --- | --- |
 | Super+/ | Keyboard shortcuts panel |
 | Super+Ctrl+W | Place and resize desktop widgets |
+| Shift+Super+Space | Launchpad |
 | Ctrl+Super+Space | Emoji picker |
 | Super+Alt+Tab · Super+Tab · Super+Shift+Tab | Pair a window card · flip it · split it |
 | Super+Alt+C | Camera panel |
 | Super+Alt+G | Hand gestures on/off |
 
 These are bound in the Hyprland config; the shell registers them as global
-shortcuts (`caelestia:keybinds`, `caelestia:emoji`, `caelestia:widgets`, `caelestia:cardPair`,
+shortcuts (`caelestia:keybinds`, `caelestia:launchpad`, `caelestia:emoji`, `caelestia:widgets`, `caelestia:cardPair`,
 `caelestia:cardFlip`, `caelestia:cardUnpair`, `caelestia:camera`,
 `caelestia:cameraGestures`), so you can bind them to anything.
 
