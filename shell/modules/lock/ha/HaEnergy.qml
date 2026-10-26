@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
+import Caelestia.I18n
 import qs.components
 import qs.services
 
@@ -58,7 +59,7 @@ StyledRect {
 
             StyledText {
                 Layout.fillWidth: true
-                text: root.card.title ?? qsTr("Energy")
+                text: root.card.title ?? Tr.tr("Energy")
                 color: Colours.palette.m3primary
                 font: Tokens.font.title.small
                 elide: Text.ElideRight
@@ -66,7 +67,7 @@ StyledRect {
 
             StyledText {
                 visible: !isNaN(root.autarky)
-                text: qsTr("%1% autarky").arg(Math.round(root.autarky))
+                text: Tr.tr("%1% autarky").arg(Math.round(root.autarky))
                 color: Colours.palette.m3onSurfaceVariant
                 font: Tokens.font.body.small
             }
@@ -81,7 +82,7 @@ StyledRect {
             Stat {
                 visible: !!root.card.solar
                 icon: "wb_sunny"
-                label: qsTr("Solar")
+                label: Tr.tr("Solar")
                 value: root.power(root.solar)
                 accent: root.solar > 0
             }
@@ -89,22 +90,22 @@ StyledRect {
             Stat {
                 visible: !!root.card.home
                 icon: "home"
-                label: qsTr("Home")
+                label: Tr.tr("Home")
                 value: root.power(root.home)
             }
 
             Stat {
                 visible: !!root.card.grid
                 icon: "electrical_services"
-                label: root.grid < 0 ? qsTr("Exporting") : qsTr("Grid")
+                label: root.grid < 0 ? Tr.tr("Exporting") : Tr.tr("Grid")
                 value: root.power(root.grid)
             }
 
             Stat {
                 visible: !!root.card.battery_soc
                 icon: root.batteryPower < 0 ? "battery_charging_full" : "battery_full"
-                label: isNaN(root.soc) ? qsTr("Battery") : qsTr("Battery %1%").arg(Math.round(root.soc))
-                value: root.batteryPower < 0 ? qsTr("+%1").arg(root.power(root.batteryPower)) : root.power(root.batteryPower)
+                label: isNaN(root.soc) ? Tr.tr("Battery") : Tr.tr("Battery %1%").arg(Math.round(root.soc))
+                value: root.batteryPower < 0 ? Tr.tr("+%1").arg(root.power(root.batteryPower)) : root.power(root.batteryPower)
                 accent: root.batteryPower < 0
                 fill: isNaN(root.soc) ? 0 : root.soc / 100
             }

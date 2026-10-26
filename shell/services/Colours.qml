@@ -110,6 +110,11 @@ Singleton {
             root.reloadHyprRules();
         }
 
+        // At login the shell can start before it knows Hyprland runs Lua
+        function onUsingLuaChanged(): void {
+            root.reloadHyprRules();
+        }
+
         target: Hypr
     }
 
