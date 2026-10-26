@@ -259,22 +259,52 @@ hl.bind("SUPER + R",             function() hl.dispatch(hl.dsp.workspace.toggle_
 -- Apps
 -- =====================================================================
 hl.bind("SUPER + Return",     hl.dsp.exec_cmd("app2unit -- " .. V.terminal))
--- SUPER + SHIFT + Return → floating terminal at the pointer, kept on screen
-hl.bind("SHIFT + SUPER + Return", function()
+-- A floating terminal at the pointer, kept on screen, running `args` if given
+local function terminal_at_pointer(args)
+  local cmd = "app2unit -- " .. V.terminal .. (args and (" " .. args) or "")
   local m, c = hl.get_monitor_at_cursor(), hl.get_cursor_pos()
   if not m or not c then
-    return hl.exec_cmd("app2unit -- " .. V.terminal)
+    return hl.exec_cmd(cmd)
   end
   local w, h, gap = 960, 600, 10
   local r = m.reserved
   local right, bottom = m.x + m.width / m.scale, m.y + m.height / m.scale
   local x = math.max(m.x + r.left + gap, math.min(right - r.right - w - gap, c.x - w / 2))
   local y = math.max(m.y + r.top + gap, math.min(bottom - r.bottom - h - gap, c.y - h / 2))
-  hl.exec_cmd("app2unit -- " .. V.terminal, {
+  hl.exec_cmd(cmd, {
     float = true,
     size  = w .. " " .. h,
     move  = math.floor(x) .. " " .. math.floor(y),
   })
+end
+
+-- Which Shift keys are held. A bind only sees "SHIFT", not which one, so
+-- both are tracked here (without taking the keys from apps). A press only
+-- counts for 10 s, so a release that never arrived (the screen locked
+-- meanwhile, say) can't leave a Shift stuck down.
+local shiftDown = {}
+for _, key in ipairs({ "Shift_L", "Shift_R" }) do
+  hl.bind(key, function() shiftDown[key] = os.time() end,
+          { ignore_mods = true, non_consuming = true, locked = true })
+  hl.bind(key, function() shiftDown[key] = nil end,
+          { ignore_mods = true, non_consuming = true, locked = true, release = true })
+end
+local function both_shifts()
+  for _, key in ipairs({ "Shift_L", "Shift_R" }) do
+    if not shiftDown[key] or os.time() - shiftDown[key] > 10 then return false end
+  end
+  return true
+end
+
+-- SUPER + SHIFT + Return → floating terminal at the pointer, kept on screen.
+-- With both Shifts held: it runs the clipboard's text as a command, and
+-- closes when that ends
+hl.bind("SHIFT + SUPER + Return", function()
+  if both_shifts() then
+    terminal_at_pointer("--title 'Clipboard command' " .. P.root .. "/scripts/clip-run.sh")
+  else
+    terminal_at_pointer()
+  end
 end)
 hl.bind("SHIFT + SUPER + B",  hl.dsp.exec_cmd("app2unit -- " .. V.browser))
 hl.bind("SUPER + C",          hl.dsp.exec_cmd("app2unit -- " .. V.editor))
