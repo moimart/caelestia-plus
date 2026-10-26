@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
@@ -65,14 +66,53 @@ Item {
         }
     }
 
-    MaterialIcon {
+    // The window's icon, in colour: the page's favicon for a browser window,
+    // else the app's own icon (web apps get their site's), else a symbol for
+    // its category. The size stays the symbol's, so the layout doesn't move.
+    Item {
         id: icon
 
-        anchors.horizontalCenter: parent.horizontalCenter
+        readonly property string windowClass: Hypr.activeToplevel?.lastIpcObject.class ?? ""
+        readonly property DesktopEntry entry: Icons.entryForClass(windowClass)
+        readonly property bool hasFavicon: favicon.status === Image.Ready
+        readonly property bool hasAppIcon: !hasFavicon && !!entry && !appIcon.missing
 
-        animate: true
-        text: Icons.getAppCategoryIcon(Hypr.activeToplevel?.lastIpcObject.class, "desktop_windows")
-        color: root.colour
+        anchors.horizontalCenter: parent.horizontalCenter
+        implicitWidth: symbol.implicitWidth
+        implicitHeight: symbol.implicitHeight
+
+        Image {
+            id: favicon
+
+            anchors.centerIn: parent
+            width: Math.round(parent.implicitHeight * 0.9)
+            height: width
+            source: Favicons.current ? `file://${Favicons.current}` : ""
+            sourceSize: Qt.size(width * 2, height * 2)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            asynchronous: true
+            visible: icon.hasFavicon
+        }
+
+        AppIcon {
+            id: appIcon
+
+            anchors.centerIn: parent
+            entry: icon.entry
+            implicitSize: Math.round(parent.implicitHeight * 1.05)
+            visible: icon.hasAppIcon
+        }
+
+        MaterialIcon {
+            id: symbol
+
+            anchors.centerIn: parent
+            animate: true
+            text: Icons.getAppCategoryIcon(icon.windowClass, "desktop_windows")
+            color: root.colour
+            visible: !icon.hasFavicon && !icon.hasAppIcon
+        }
     }
 
     Title {

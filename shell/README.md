@@ -211,7 +211,10 @@ a normal window, and `>Settings` and `>Shortcuts` in the launcher open things di
 
 Smaller things along the way: apps and notifications without an icon get a tidy
 tile in the scheme's colours instead of the checkerboard, and web apps (Chrome
-PWAs) get their real icons in the bar.
+PWAs) get their real icons in the bar. The bar's window title shows the window's
+own icon in colour, and for a browser the favicon of the page you're on (from the
+browser's own history, read on this machine only; private windows keep the
+browser's icon).
 
 ## Control from scripts and agents
 
