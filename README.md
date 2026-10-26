@@ -36,8 +36,23 @@ caelestia-plus-setup
 
 Log out, choose Hyprland (uwsm), and you're in. The repo also carries the
 AUR packages the shell needs (Quickshell, the Caelestia CLI, ...), built
-together so they always match. There's also an AUR recipe,
-[`caelestia-plus-git`](aur/caelestia-plus-git).
+together so they always match.
+
+### Or build it yourself
+
+The same packages, from source, without trusting the binary repo:
+
+```sh
+git clone https://github.com/moimart/caelestia-plus.git
+cd caelestia-plus/pkg
+makepkg -si          # builds the commit you have checked out
+caelestia-plus-setup
+```
+
+This needs the AUR packages the shell depends on (`quickshell-git`,
+`caelestia-cli`, `libcava`, `app2unit`, `ttf-rubik-vf`) from your AUR helper
+first. An AUR recipe, [`caelestia-plus-git`](aur/caelestia-plus-git), is
+ready for when AUR registration reopens.
 
 ## Make it yours
 
