@@ -8,7 +8,9 @@
 #include <qjsonobject.h>
 #include <qloggingcategory.h>
 #include <qsavefile.h>
+#include <qstandardpaths.h>
 
+#include <ranges>
 #include <utility>
 
 #include "util/i18n.hpp"
@@ -29,11 +31,66 @@ namespace {
 // Max retries for loads which fail due to malformed JSON, e.g. partial writes
 constexpr int k_maxLoadRetries = 3;
 
+// A file under the user's config dir (~/.config/caelestia/shell.json) can have
+// base files at the same place under each system config dir
+// ($XDG_CONFIG_DIRS, /etc/xdg by default): defaults a package ships, or a host
+// profile. They're read first and the user's file goes on top, and only what
+// differs from them is written back. Lowest priority first.
+QStringList basePathsFor(const QString& path) {
+    auto dirs = QStandardPaths::standardLocations(QStandardPaths::GenericConfigLocation);
+    if (dirs.isEmpty())
+        return {};
+
+    const auto userDir = QDir::cleanPath(dirs.takeFirst()) + u'/';
+    const auto absolute = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
+    if (!absolute.startsWith(userDir))
+        return {};
+
+    const auto relative = absolute.mid(userDir.size());
+    QStringList bases;
+    for (const auto& dir : std::views::reverse(dirs))
+        bases << QDir::cleanPath(dir) + u'/' + relative;
+    return bases;
+}
+
+// Objects merge key by key; anything else in `over` replaces what's in `base`
+QJsonObject merged(QJsonObject base, const QJsonObject& over) {
+    for (auto it = over.constBegin(); it != over.constEnd(); ++it) {
+        const auto under = base.value(it.key());
+        if (under.isObject() && it->isObject())
+            base.insert(it.key(), merged(under.toObject(), it->toObject()));
+        else
+            base.insert(it.key(), *it);
+    }
+    return base;
+}
+
+// What in `full` differs from `base`
+QJsonObject without(const QJsonObject& full, const QJsonObject& base) {
+    QJsonObject diff;
+    for (auto it = full.constBegin(); it != full.constEnd(); ++it) {
+        if (!base.contains(it.key())) {
+            diff.insert(it.key(), *it);
+            continue;
+        }
+        const auto under = base.value(it.key());
+        if (under.isObject() && it->isObject()) {
+            const auto sub = without(it->toObject(), under.toObject());
+            if (!sub.isEmpty())
+                diff.insert(it.key(), sub);
+        } else if (*it != under) {
+            diff.insert(it.key(), *it);
+        }
+    }
+    return diff;
+}
+
 } // namespace
 
 SettingsFile::SettingsFile(bool watch, QString path, QObject* parent)
     : QObject(parent)
     , m_path(std::move(path))
+    , m_basePaths(basePathsFor(m_path))
     , m_watcher(watch ? new QFileSystemWatcher(this) : nullptr)
     , m_saveDebounce(new QTimer(this))
     , m_loadDebounce(watch ? new QTimer(this) : nullptr)
@@ -60,6 +117,24 @@ SettingsFile::~SettingsFile() {
 
 std::optional<QJsonValue> SettingsFile::read() const {
     return m_lastData;
+}
+
+QJsonObject SettingsFile::readBases() {
+    QJsonObject base;
+    for (const auto& path : std::as_const(m_basePaths)) {
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly))
+            continue;
+        QJsonParseError error;
+        const auto doc = QJsonDocument::fromJson(file.readAll(), &error);
+        if (error.error != QJsonParseError::NoError || !doc.isObject()) {
+            qCWarning(lcSettingsFile, "Ignoring base file %s: %s", qUtf8Printable(path),
+                qUtf8Printable(error.error != QJsonParseError::NoError ? error.errorString() : u"not an object"_s));
+            continue;
+        }
+        base = merged(base, doc.object());
+    }
+    return base;
 }
 
 void SettingsFile::write(const QJsonValue& json) {
@@ -95,6 +170,11 @@ void SettingsFile::initWatcher() {
 
     if (info.exists() && !m_watcher->files().contains(m_path))
         m_watcher->addPath(m_path);
+
+    // Base files change when a package updates
+    for (const auto& path : std::as_const(m_basePaths))
+        if (QFile::exists(path) && !m_watcher->files().contains(path))
+            m_watcher->addPath(path);
 }
 
 void SettingsFile::scheduleLoad() {
@@ -119,6 +199,18 @@ void SettingsFile::onLoadDebounced() {
 
 SettingsFile::LoadResult SettingsFile::load(bool reportErrors) {
     QFile file(m_path);
+    m_base = readBases();
+
+    if (!file.exists() && !m_base.isEmpty()) {
+        // Only the base files: they are the whole config
+        const QJsonValue json(m_base);
+        if (json == m_lastData)
+            return LoadResult::Unchanged;
+        m_pendingWrite = std::nullopt;
+        m_lastData = json;
+        emit changed();
+        return LoadResult::Changed;
+    }
 
     if (!file.exists()) {
         if (m_lastData) {
@@ -154,7 +246,9 @@ SettingsFile::LoadResult SettingsFile::load(bool reportErrors) {
         return LoadResult::ParseError;
     }
 
-    const auto json = doc.isObject() ? QJsonValue(doc.object()) : QJsonValue(doc.array());
+    auto json = doc.isObject() ? QJsonValue(doc.object()) : QJsonValue(doc.array());
+    if (!m_base.isEmpty() && json.isObject())
+        json = merged(m_base, json.toObject());
 
     if (json == m_lastData)
         return LoadResult::Unchanged;
@@ -193,7 +287,9 @@ void SettingsFile::writeNow() {
         return;
 
     const auto json = *m_pendingWrite;
-    const auto data = (json.isObject() ? QJsonDocument(json.toObject()) : QJsonDocument(json.toArray())).toJson();
+    // Only what differs from the base files goes in the user's file
+    const auto own = !m_base.isEmpty() && json.isObject() ? QJsonValue(without(json.toObject(), m_base)) : json;
+    const auto data = (own.isObject() ? QJsonDocument(own.toObject()) : QJsonDocument(own.toArray())).toJson();
     m_pendingWrite = std::nullopt;
 
     const auto dir = QFileInfo(m_path).absolutePath();

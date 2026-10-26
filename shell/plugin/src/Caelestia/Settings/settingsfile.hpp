@@ -1,6 +1,7 @@
 #pragma once
 
 #include <qfilesystemwatcher.h>
+#include <qjsonobject.h>
 #include <qjsonvalue.h>
 #include <qobject.h>
 #include <qtimer.h>
@@ -33,6 +34,8 @@ signals:
 
 private:
     QString m_path;
+    QStringList m_basePaths;
+    QJsonObject m_base;            // The base files merged
     QFileSystemWatcher* m_watcher; // Null when not watching
     QTimer* m_saveDebounce;
     QTimer* m_loadDebounce; // Null when not watching
@@ -40,6 +43,7 @@ private:
     std::optional<QJsonValue> m_lastData;
     std::optional<QJsonValue> m_pendingWrite;
 
+    QJsonObject readBases();
     void onFileChanged();
     void onDirChanged();
 
