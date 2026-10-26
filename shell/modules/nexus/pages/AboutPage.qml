@@ -68,11 +68,24 @@ PageBase {
                     Layout.preferredHeight: implicitHeight
                 }
 
-                StyledText {
+                // caelestia-plus: Caelestia with a +, in the accent colour
+                Row {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.topMargin: Tokens.spacing.small
-                    text: "Caelestia"
-                    font: Tokens.font.headline.builders.large.width(110).build()
+                    spacing: Tokens.spacing.small
+
+                    StyledText {
+                        id: title
+
+                        text: "Caelestia"
+                        font: Tokens.font.headline.builders.large.width(110).build()
+                    }
+
+                    StyledText {
+                        text: "+"
+                        color: Colours.palette.m3primary
+                        font: title.font
+                    }
                 }
 
                 StyledText {
