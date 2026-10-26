@@ -1,7 +1,7 @@
 local V = require("variables")
 
--- Display scaling
-hl.env("GDK_SCALE", "2.0")
+-- Display scaling (GDK_SCALE and the like) belongs to a monitor, so it's set
+-- by the host profile's host.lua
 
 -- Themes
 hl.env("QT_QPA_PLATFORMTHEME",            "qt6ct")
