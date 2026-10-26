@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
+import Caelestia.State
 import qs.services
 import qs.utils
 import qs.modules.lock
@@ -58,7 +59,9 @@ Scope {
             }
             root.present = false;
             root.awayChecks++;
-            if (root.awayChecks >= GlobalConfig.camera.presence.awayAfter && GlobalConfig.camera.presence.lockWhenAway && !root.locked)
+            // Keep awake, turned on by hand, holds this off too (apps' inhibitors don't:
+            // leaving with a video playing still locks)
+            if (root.awayChecks >= GlobalConfig.camera.presence.awayAfter && GlobalConfig.camera.presence.lockWhenAway && !root.locked && !RuntimeState.inhibitIdle)
                 root.lock.lock.locked = true;
         });
     }
