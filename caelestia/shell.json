@@ -141,7 +141,8 @@
         "tray": {
             "background": true,
             "compact": false,
-            "iconSubs": [],
+            "iconSubs": [
+            ],
             "recolour": true
         },
         "workspaces": {
@@ -157,7 +158,8 @@
             "showWindows": true,
             "showWindowsOnSpecialWorkspaces": true,
             "shown": 5,
-            "specialWorkspaceIcons": []
+            "specialWorkspaceIcons": [
+            ]
         }
     },
     "border": {
@@ -166,7 +168,7 @@
     },
     "camera": {
         "gestures": {
-            "enabled": true
+            "enabled": false
         }
     },
     "dashboard": {
@@ -292,6 +294,19 @@
                 "enabled": true,
                 "icon": "keyboard",
                 "name": "Shortcuts"
+            },
+            {
+                "command": [
+                    "caelestia",
+                    "shell",
+                    "emoji",
+                    "open"
+                ],
+                "dangerous": false,
+                "description": "Pick an emoji and type it",
+                "enabled": true,
+                "icon": "add_reaction",
+                "name": "Emoji"
             },
             {
                 "command": [
@@ -431,7 +446,8 @@
         "dragThreshold": 50,
         "enableDangerousActions": false,
         "enabled": true,
-        "hiddenApps": [],
+        "hiddenApps": [
+        ],
         "maxShown": 7,
         "maxWallpapers": 9,
         "showOnHover": false,
@@ -534,8 +550,10 @@
             "enabled": false,
             "provider": [
                 {
-                    "connectCmd": [],
-                    "disconnectCmd": [],
+                    "connectCmd": [
+                    ],
+                    "disconnectCmd": [
+                    ],
                     "displayName": "",
                     "id": "vpn-mvjy6z8h-455sv",
                     "interface": "",
