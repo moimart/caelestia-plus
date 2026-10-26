@@ -1,0 +1,189 @@
+# Maintainer: moimart
+# caelestia-plus: a Caelestia-based Hyprland desktop (the shell, Hyprland
+# config and app configs), built from git. Generated from pkg/PKGBUILD by
+# tools/aur.sh in https://github.com/moimart/caelestia-plus.
+
+pkgbase=caelestia-plus-git
+pkgname=(caelestia-plus caelestia-shell-moimart caelestia-plus-hypr caelestia-plus-config)
+pkgver=2.5.0
+pkgrel=1
+arch=('x86_64' 'aarch64')
+url='https://github.com/moimart/caelestia-plus'
+license=('GPL-3.0-only')
+makedepends=('cmake' 'ninja' 'git' 'qt6-shadertools' 'cargo' 'clang'
+             # What the shell's build links against (makepkg -s only installs these)
+             'qt6-base' 'qt6-declarative' 'qt6-multimedia' 'aubio' 'libcava' 'libpipewire' 'libqalculate')
+# Camera models for caelestia-camerad, from opencv_zoo (Apache-2.0 / MIT)
+_zoo=https://github.com/opencv/opencv_zoo/raw/main/models
+source=("caelestia-plus::git+https://github.com/moimart/caelestia-plus.git"
+        "m3shapes::git+https://github.com/soramanew/m3shapes.git"
+        "${_zoo}/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+        "${_zoo}/palm_detection_mediapipe/palm_detection_mediapipe_2023feb.onnx"
+        "${_zoo}/handpose_estimation_mediapipe/handpose_estimation_mediapipe_2023feb.onnx")
+sha256sums=('SKIP' 'SKIP'
+            '8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4'
+            '78ff51c38496b7fc8b8ebdb6cc8c1abb02fa6c38427c6848254cdaba57fcce7c'
+            'db0898ae717b76b075d9bf563af315b29562e11f8df5027a1ef07b02bef6d81c')
+noextract=('face_detection_yunet_2023mar.onnx' 'palm_detection_mediapipe_2023feb.onnx' 'handpose_estimation_mediapipe_2023feb.onnx')
+
+_share=usr/share/caelestia-plus
+_lib=usr/lib/caelestia-plus
+
+prepare() {
+    cd "${srcdir}/caelestia-plus/shell/extras/camerad"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+pkgver() {
+    cd "${srcdir}/caelestia-plus"
+    git describe --long --tags --match 'v*' | sed 's/^v//; s/\([^-]*-g\)/r\1/; s/-/./g'
+}
+
+build() {
+    cmake -S "${srcdir}/m3shapes" -B "${srcdir}/build-m3shapes" -G Ninja \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/usr
+    cmake --build "${srcdir}/build-m3shapes"
+
+    cd "${srcdir}/caelestia-plus/shell"
+
+    cmake -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DCMAKE_INSTALL_PREFIX=/ \
+        -DVERSION="$(git describe --tags --abbrev=0 | sed 's/^v//')" \
+        -DGIT_REVISION="$(git rev-parse HEAD)" \
+        -DDISTRIBUTOR="caelestia-plus (package: caelestia-shell-moimart)"
+    cmake --build build
+
+    # The camera daemon
+    cd extras/camerad
+    export RUSTUP_TOOLCHAIN=stable CARGO_TARGET_DIR=target
+    cargo build --frozen --release
+}
+
+package_caelestia-plus() {
+    pkgdesc='A Caelestia-based Hyprland desktop: the shell, Hyprland config and app configs'
+    depends=('caelestia-shell-moimart' 'caelestia-plus-hypr' 'caelestia-plus-config')
+}
+
+package_caelestia-shell-moimart() {
+    pkgdesc='The desktop shell for the Caelestia dotfiles (moimart fork)'
+    depends=(
+        'caelestia-cli' 'quickshell-git' 'glibc' 'gcc-libs'
+        # Brightness
+        'ddcutil' 'brightnessctl'
+        # Services
+        'libcava' 'networkmanager' 'lm_sensors' 'aubio' 'libpipewire' 'libqalculate' 'power-profiles-daemon'
+        # Fonts
+        'ttf-material-symbols-variable' 'ttf-rubik-vf' 'ttf-cascadia-code-nerd'
+        # Qt modules
+        'qt6-base' 'qt6-declarative' 'qt6-imageformats' 'qt6-multimedia'
+        # Extra functionality
+        'swappy' 'wtype' 'fish' 'bash'
+    )
+    optdepends=(
+        'fprintd: fingerprint unlock for the lock screen'
+        'mpvpaper: video wallpapers'
+        'ffmpeg: video wallpaper posters and thumbnails, camera recordings'
+        'onnxruntime-cpu: camera presence, gestures (caelestia-camerad)'
+        'howdy: face unlock on the lock screen'
+    )
+    # Upstream split M3Shapes (Material shapes QML module) out of the shell
+    # build; it's built here too so this stays a single package.
+    provides=('caelestia-shell' 'qt6-m3shapes')
+    conflicts=('caelestia-shell' 'caelestia-shell-git' 'qt6-m3shapes-git')
+
+    DESTDIR="$pkgdir" cmake --install "${srcdir}/build-m3shapes"
+
+    cd "${srcdir}/caelestia-plus/shell"
+
+    DESTDIR="$pkgdir" cmake --install build
+    install -Dm755 extras/camerad/target/release/caelestia-camerad "$pkgdir"/usr/lib/caelestia/caelestia-camerad
+    for model in "${noextract[@]}"; do
+        install -Dm644 "${srcdir}/${model}" "$pkgdir/usr/lib/caelestia/camera-models/${model}"
+    done
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+package_caelestia-plus-hypr() {
+    pkgdesc='The caelestia-plus Hyprland config (Lua), with host profiles'
+    depends=(
+        'hyprland' 'hypridle' 'xdg-desktop-portal-hyprland' 'uwsm' 'app2unit' 'caelestia-cli'
+        'polkit-gnome' 'gcr-4' 'cliphist' 'wl-clipboard' 'trash-cli' 'geoclue' 'gammastep'
+        'bluez-utils' 'qt6ct' 'capitaine-cursors' 'fish' 'kitty'
+    )
+    optdepends=(
+        'google-chrome: the default browser (SUPER + SHIFT + B)'
+        'nautilus: the default file manager (SUPER + SHIFT + F)'
+        'vim: the default editor (SUPER + C)'
+    )
+
+    cd "${srcdir}/caelestia-plus"
+
+    install -d "$pkgdir/$_share"
+    cp -r --no-preserve=ownership hypr "$pkgdir/$_share/hypr"
+    rm -f "$pkgdir/$_share/hypr/scheme/current.conf" # Yours: the shell writes it
+    install -Dm644 setup/templates/hypr/hyprland.lua "$pkgdir/$_share/setup/hypr/hyprland.lua"
+}
+
+package_caelestia-plus-config() {
+    pkgdesc='caelestia-plus defaults: the shell config and art, app configs, scripts, fonts and caelestia-plus-setup'
+    depends=('caelestia-shell-moimart' 'fish' 'starship' 'eza' 'zoxide' 'kitty' 'fastfetch' 'python' 'bash' 'git')
+    optdepends=(
+        'foot: alternative terminal'
+        'ghostty: alternative terminal, with an amber CRT shader'
+        'btop: system monitor'
+        'micro: terminal editor'
+        'direnv: per-directory environments in fish'
+        'lazygit: the lg abbreviation in fish'
+    )
+    backup=('etc/xdg/caelestia/shell.json')
+
+    cd "${srcdir}/caelestia-plus"
+
+    # The shell's defaults, layered under ~/.config/caelestia/shell.json
+    install -Dm644 config/caelestia/shell.json "$pkgdir/etc/xdg/caelestia/shell.json"
+    install -d "$pkgdir/$_share/caelestia"
+    cp -r --no-preserve=ownership config/caelestia/assets "$pkgdir/$_share/caelestia/assets"
+    install -Dm644 config/caelestia/cli.json "$pkgdir/$_share/setup/caelestia/cli.json"
+    install -Dm644 config/caelestia/lock-ha.example.json "$pkgdir/$_share/caelestia/lock-ha.example.json"
+
+    # Host profiles: the example and the README (yours live in your overlay)
+    cp -r --no-preserve=ownership hosts "$pkgdir/$_share/hosts"
+
+    # App configs (the upstream dots' own hypr/ is replaced by hypr/)
+    install -d "$pkgdir/$_share/dots"
+    for item in dots/*; do
+        case ${item##*/} in
+            hypr | bin | install.fish | PKGBUILD | README.md) continue ;;
+        esac
+        cp -r --no-preserve=ownership "$item" "$pkgdir/$_share/dots/"
+    done
+    install -Dm644 dots/fastfetch/config.jsonc "$pkgdir/etc/xdg/fastfetch/config.jsonc"
+    install -Dm644 setup/fish/caelestia-plus.fish "$pkgdir/usr/share/fish/vendor_conf.d/caelestia-plus.fish"
+    for f in dots/fish/functions/*.fish; do
+        install -Dm644 "$f" "$pkgdir/usr/share/fish/vendor_functions.d/${f##*/}"
+    done
+
+    # Scripts, put on PATH by the Hyprland config
+    for f in dots/bin/*; do
+        install -Dm755 "$f" "$pkgdir/$_lib/bin/${f##*/}"
+    done
+
+    # Download sorter and AppImage launcher entries, as user services
+    for f in config/download-sorter/*.py config/download-sorter/config.example.toml; do
+        install -Dm644 "$f" "$pkgdir/$_lib/download-sorter/${f##*/}"
+    done
+    for f in config/download-sorter/*.service; do
+        install -Dm644 "$f" "$pkgdir/usr/lib/systemd/user/${f##*/}"
+    done
+
+    # Instrument Serif, the clock font
+    for f in config/fonts/InstrumentSerif/*.ttf; do
+        install -Dm644 "$f" "$pkgdir/usr/share/fonts/caelestia-plus/${f##*/}"
+    done
+    install -Dm644 config/fonts/InstrumentSerif/OFL.txt "$pkgdir/usr/share/licenses/$pkgname/InstrumentSerif-OFL.txt"
+
+    install -Dm755 setup/caelestia-plus-setup "$pkgdir/usr/bin/caelestia-plus-setup"
+}
