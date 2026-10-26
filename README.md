@@ -27,9 +27,80 @@ hold your changes.
 ![A browser and Steam paired into a window card, flipping over in 3D](shell/docs/screenshots/cards.webp)
 
 Pair two windows into one card and flip it over in 3D to show the other:
-**Super+Alt+Tab** pairs, **Super+Tab** flips, **Super+Shift+Tab** splits them
-again. No Hyprland plugin: a card is a locked window group, and the shell
-draws the turn with real perspective.
+**Super+Alt+Tab** pairs (the focused window is the front; pick the back),
+**Super+Tab** flips, **Super+Shift+Tab** splits them again. No Hyprland plugin:
+a card is a locked window group, and the shell draws the turn with real
+perspective, then hands back to the live window.
+
+### Plugins: desktop widgets
+
+![Eyes in three styles and the daruma, following the pointer](shell/docs/screenshots/widgets.webp)
+
+Upstream's empty plugin page made real, starting with widgets that live on the
+desktop, above the wallpaper:
+
+- **Eyes**, like xeyes but quiet: three abstract styles (orbit, almond, dots)
+  that follow your pointer, blink, and half-close when it rests.
+- **Daruma**: the winking daruma, its painted eye following the pointer. It
+  winks now and then, and shuts both eyes when the pointer is still.
+- **The editor** (**Super+Ctrl+W**): drag widgets to move them, drag a corner
+  to resize, add more from the palette. Each widget's settings are in
+  Settings → Plugins.
+- **Your own**: a widget is a folder with a small manifest and a QML file, in
+  `~/.config/caelestia/plugins/widgets/`. [PLUGINS.md](shell/PLUGINS.md)
+  explains how, and [`examples/widgets/clock`](shell/examples/widgets/clock) is
+  a working template.
+
+<img src="shell/docs/screenshots/widgets-editor.jpg" alt="The widget editor with the eyes and daruma widgets" width="70%">
+
+### Camera
+
+<img src="shell/docs/screenshots/tutorial.jpg" alt="The hand gesture tutorial" width="70%">
+
+One small Rust daemon, `caelestia-camerad`, is the only thing that touches the
+webcam. It reads frames through PipeWire, and only while a feature needs one,
+so the camera and its light are off the rest of the time.
+
+- **Presence**: while you're idle, it checks whether you're still at the desk.
+  Reading or watching without touching anything? The screen stays on. Gone?
+  It locks. Back? The screen wakes and face unlock starts.
+- **Face unlock**, with [howdy](https://github.com/boltgolt/howdy), through the
+  lock screen. Tries count in a row, so failed ones overnight don't lock you
+  out in the morning.
+- **Hand gestures** (**Super+Alt+G**): an open palm plays or pauses, swipes
+  skip tracks, thumbs up and down run whatever you assign. A guided tutorial,
+  with a live view of your hand, teaches them the first time.
+- **The camera panel** (**Super+Alt+C**): a mirror to check yourself before a
+  call; zoom, pan, tilt, focus, white balance and image controls; saved
+  presets; and **video recording** to `~/Videos/Camera`, with sound from the
+  camera's microphone.
+- **Who's using it**: a camera icon in the bar turns red while any app has the
+  camera, and its popout says which.
+- **Unlock-attempt photos**: after three wrong passwords, a photo of whoever is
+  at the keyboard, shown to you once you unlock.
+- **Light sensor**: the room's light can set your monitor's brightness and
+  switch between light and dark.
+- **It gives way**: apps sharing the camera through PipeWire (Chrome with its
+  PipeWire camera flag, Firefox, OBS) run alongside it at full speed; apps
+  that open the camera directly make the daemon let go at once.
+
+Faces come from YuNet and gestures from MediaPipe's palm and hand models, on
+ONNX Runtime.
+
+### Emoji picker
+
+![The emoji picker: frequently used and categories, a search for "heart", and the skin tones of the waving hand](shell/docs/screenshots/emoji.png)
+
+**Ctrl+Super+Space**, like Ctrl+Cmd+Space on a Mac, opens it next to your
+pointer:
+
+- **Search as you type**, by name or keyword: "lol" finds 😂, "heart" finds every heart.
+- **Frequently used** first, and the categories along the bottom.
+- **Skin tones**: right-click, or press Tab, on an emoji with a dot under it;
+  it remembers your choice for that emoji.
+- **Into any app**: pick one and it lands in what you were typing in. Apps get
+  it pasted (Chrome and other Chromium apps garble emoji typed through a
+  virtual keyboard), terminals get it typed, and your clipboard is put back.
 
 <table>
 <tr>
@@ -38,26 +109,12 @@ draws the turn with real perspective.
 ### Video wallpapers
 
 The desktop at the top is one. Any video in your wallpapers folder, picked
-like an image and played through
-mpvpaper with hardware decoding, behind the desktop clock and widgets. It
-pauses when it can't be seen, each monitor can have its own, and the colour
-scheme follows it.
+like an image and played through mpvpaper with hardware decoding, behind the
+desktop clock and widgets. It pauses when it can't be seen, each monitor can
+have its own, and the colour scheme follows it.
 
 </td>
 <td width="50%" valign="top">
-
-### Desktop widgets
-
-<img src="shell/docs/screenshots/widgets-editor.jpg" alt="The widget editor with the eyes and daruma widgets">
-
-Upstream's empty plugin page made real: widgets you place and resize on the
-desktop (**Super+Ctrl+W**). Eyes that follow your pointer, a winking daruma,
-and your own in `~/.config/caelestia/plugins/widgets`.
-
-</td>
-</tr>
-<tr>
-<td valign="top">
 
 ### Keyboard shortcuts panel
 
@@ -67,32 +124,8 @@ and your own in `~/.config/caelestia/plugins/widgets`.
 nothing is hardcoded. Searchable, grouped by your config's sections.
 
 </td>
-<td valign="top">
-
-### Emoji picker
-
-<img src="shell/docs/screenshots/emoji.png" alt="The emoji picker: the grid, a search, and skin tones">
-
-**Ctrl+Super+Space**, like macOS: search by name or keyword, skin tones, your
-most used first, and the emoji lands in whatever you were typing in.
-
-</td>
 </tr>
 <tr>
-<td valign="top">
-
-### A camera that knows you're there
-
-<img src="shell/docs/screenshots/tutorial.jpg" alt="The hand gesture tutorial">
-
-One small Rust daemon reads the webcam only when a feature needs it, and steps
-aside for any other app. It keeps the screen awake while you read, locks when
-you leave, wakes it with face unlock when you're back, and plays or skips
-music with hand gestures (taught by a tutorial). The camera panel
-(**Super+Alt+C**) has a mirror, the camera's controls, presets and video
-recording.
-
-</td>
 <td valign="top">
 
 ### Lock screen
@@ -100,11 +133,9 @@ recording.
 <img src="shell/docs/screenshots/lock.jpg" alt="The lock screen with an animated profile picture and Home Assistant cards (blurred here)">
 
 An animated profile picture, read-only Home Assistant cards (a camera, energy,
-your devices), face unlock, and photos of anyone who gets the password wrong.
+your devices), and face unlock.
 
 </td>
-</tr>
-<tr>
 <td valign="top">
 
 ### The daruma
@@ -115,7 +146,9 @@ A winking daruma replaces Caelestia's mascots: the bar logo, the session
 menu, and the media card while music plays.
 
 </td>
-<td valign="top">
+</tr>
+<tr>
+<td colspan="2" valign="top">
 
 ### Settings for all of it
 
