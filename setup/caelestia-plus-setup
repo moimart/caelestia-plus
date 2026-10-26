@@ -114,7 +114,7 @@ if own_setup hypr; then
     kept+=("$config/hypr (a link to your own config)")
 else
     seed "$share/setup/hypr/hyprland.lua" "$config/hypr/hyprland.lua"
-    if [ -f "$config/hypr/hyprland.lua" ] && ! grep -q "$share/hypr/hyprland.lua" "$config/hypr/hyprland.lua"; then
+    if [ -f "$config/hypr/hyprland.lua" ] && ! grep -q "caelestia-plus/hypr/hyprland.lua" "$config/hypr/hyprland.lua"; then
         echo "note: $config/hypr/hyprland.lua doesn't load the caelestia-plus config;"
         echo "      add this line at the top: dofile(\"$share/hypr/hyprland.lua\")"
     fi
