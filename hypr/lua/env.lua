@@ -26,4 +26,5 @@ hl.env("XDG_SESSION_DESKTOP", "Hyprland")
 hl.env("_JAVA_AWT_WM_NONREPARENTING", "1")
 
 -- PATH
-hl.env("PATH", os.getenv("HOME") .. "/.local/share/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin")
+-- Your scripts first (~/.local/share/bin), then the ones caelestia-plus ships
+hl.env("PATH", os.getenv("HOME") .. "/.local/share/bin:/usr/lib/caelestia-plus/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin")
