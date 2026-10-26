@@ -2,6 +2,7 @@
 # Tests a fresh install of caelestia-plus in a throwaway Arch VM.
 #
 #   tools/vm/run.sh <dir with *.pkg.tar.zst>
+#   tools/vm/run.sh --published     the public repo, as a new user would
 #
 # Boots Arch's cloud image (cached in ~/.cache/caelestia-plus-vm), serves it a
 # signed pacman repo made from the packages given plus cloud-init data, then
@@ -15,7 +16,12 @@
 
 set -euo pipefail
 
-pkgs=$(realpath "${1:?usage: run.sh <dir with packages>}")
+published=https://moimart.github.io/caelestia-plus-packages
+if [ "${1:?usage: run.sh <dir with packages> | --published}" = --published ]; then
+    pkgs=
+else
+    pkgs=$(realpath "$1")
+fi
 cache=~/.cache/caelestia-plus-vm
 work=$cache/run
 keys=~/.local/share/caelestia-plus/signing
@@ -30,16 +36,21 @@ mkdir -p "$cache"
 rm -rf "$work" && mkdir -p "$work/www/x86_64"
 cp "$cache/base.qcow2" "$work/disk.qcow2"
 
-# A signed repo, as CI publishes it
-export GNUPGHOME=$keys/gnupg
 fpr=$(cat "$keys/fingerprint")
-cp "$pkgs"/*.pkg.tar.zst "$work/www/x86_64/"
-(
-    cd "$work/www/x86_64"
-    for p in ./*.pkg.tar.zst; do gpg --batch --yes --detach-sign --local-user "$fpr" "$p"; done
-    repo-add -q --sign --key "$fpr" caelestia-plus.db.tar.zst ./*.pkg.tar.zst
-)
-cp "$keys/caelestia-plus.asc" "$work/www/"
+if [ -n "$pkgs" ]; then
+    # A signed repo, as CI publishes it
+    export GNUPGHOME=$keys/gnupg
+    cp "$pkgs"/*.pkg.tar.zst "$work/www/x86_64/"
+    (
+        cd "$work/www/x86_64"
+        for p in ./*.pkg.tar.zst; do gpg --batch --yes --detach-sign --local-user "$fpr" "$p"; done
+        repo-add -q --sign --key "$fpr" caelestia-plus.db.tar.zst ./*.pkg.tar.zst
+    )
+    cp "$keys/caelestia-plus.asc" "$work/www/"
+    repo_url=http://10.0.2.2:$port
+else
+    repo_url=$published
+fi
 
 # cloud-init: a user with this SSH key and passwordless sudo
 ssh-keygen -q -t ed25519 -N '' -f "$work/ssh_key"
@@ -97,14 +108,14 @@ ssh_vm sudo bash -euo pipefail <<EOF
 echo "== Trusting the signing key"
 pacman-key --init >/dev/null 2>&1 || true
 pacman-key --populate archlinux >/dev/null 2>&1 || true
-curl -sSf http://10.0.2.2:$port/caelestia-plus.asc | pacman-key --add - >/dev/null
+curl -sSfL $repo_url/caelestia-plus.asc | pacman-key --add - >/dev/null
 pacman-key --lsign-key $fpr >/dev/null
 echo "== Adding the repo"
 cat >> /etc/pacman.conf <<'CONF'
 
 [caelestia-plus]
 SigLevel = Required
-Server = http://10.0.2.2:$port/\$arch
+Server = $repo_url/\$arch
 CONF
 echo "== Installing caelestia-plus"
 pacman -Syu --noconfirm --needed caelestia-plus 2>&1 | tail -5
