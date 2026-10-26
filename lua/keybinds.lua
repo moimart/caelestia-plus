@@ -74,6 +74,8 @@ hl.bind("CTRL + ALT + Delete",   hl.dsp.global("caelestia:session"))
 hl.bind("CTRL + ALT + C",        hl.dsp.global("caelestia:clearNotifs"), { locked = true })
 hl.bind("SUPER + K",             hl.dsp.global("caelestia:showall"))
 hl.bind("SUPER + L",             hl.dsp.global("caelestia:lock"))
+hl.bind("SUPER + slash",         hl.dsp.global("caelestia:keybinds"))  -- keyboard shortcuts panel
+hl.bind("CTRL + SUPER + Space",  hl.dsp.global("caelestia:emoji"))     -- emoji picker, like macOS
 
 -- Restore lockscreen if it crashed
 hl.bind("SUPER + ALT + L", hl.dsp.exec_cmd("caelestia shell -d"),  { locked = true })
@@ -87,7 +89,6 @@ hl.bind("XF86MonBrightnessUp",   hl.dsp.global("caelestia:brightnessUp"),   { lo
 hl.bind("XF86MonBrightnessDown", hl.dsp.global("caelestia:brightnessDown"), { locked = true })
 
 -- Media (also wired to the Fn-row keys for laptops)
-hl.bind("CTRL + SUPER + Space",  hl.dsp.global("caelestia:mediaToggle"), { locked = true })
 hl.bind("XF86AudioPlay",         hl.dsp.global("caelestia:mediaToggle"), { locked = true })
 hl.bind("XF86AudioPause",        hl.dsp.global("caelestia:mediaToggle"), { locked = true })
 hl.bind("CTRL + SUPER + Equal",  hl.dsp.global("caelestia:mediaNext"),   { locked = true })
@@ -188,6 +189,24 @@ hl.bind("SUPER + SHIFT + Comma",    hl.dsp.group.lock_active({ action = "toggle"
 -- hyprexpo binds live in lua/hyprexpo.lua, next to the plugin config.
 
 -- =====================================================================
+-- Window cards (caelestia: two windows paired into one that flips over)
+-- =====================================================================
+hl.bind("SUPER + Tab",       hl.dsp.global("caelestia:cardFlip"))    -- flip the focused card
+hl.bind("SUPER + ALT + Tab", hl.dsp.global("caelestia:cardPair"))    -- pair the focused window with one you pick
+hl.bind("SUPER + SHIFT + Tab", hl.dsp.global("caelestia:cardUnpair"))  -- split the card back into two windows
+
+-- =====================================================================
+-- Desktop widgets (caelestia plugins)
+-- =====================================================================
+hl.bind("SUPER + CTRL + W", hl.dsp.global("caelestia:widgets"))  -- place and resize desktop widgets
+
+-- =====================================================================
+-- Camera (caelestia)
+-- =====================================================================
+hl.bind("SUPER + ALT + C", hl.dsp.global("caelestia:camera"))          -- camera panel: mirror, controls, presets
+hl.bind("SUPER + ALT + G", hl.dsp.global("caelestia:cameraGestures"))  -- hand gestures on/off
+
+-- =====================================================================
 -- Window movement / focus / resizing
 -- =====================================================================
 hl.bind("SUPER + N", hl.dsp.exec_cmd("caelestia shell drawers toggle sidebar"))
@@ -240,14 +259,32 @@ hl.bind("SUPER + R",             function() hl.dispatch(hl.dsp.workspace.toggle_
 -- =====================================================================
 hl.bind("SUPER + A",          hl.dsp.exec_cmd(home .. "/.local/bin/hal-command"))
 hl.bind("SUPER + Return",     hl.dsp.exec_cmd("app2unit -- " .. V.terminal))
+-- SUPER + SHIFT + Return → floating terminal at the pointer, kept on screen
+hl.bind("SHIFT + SUPER + Return", function()
+  local m, c = hl.get_monitor_at_cursor(), hl.get_cursor_pos()
+  if not m or not c then
+    return hl.exec_cmd("app2unit -- " .. V.terminal)
+  end
+  local w, h, gap = 960, 600, 10
+  local r = m.reserved
+  local right, bottom = m.x + m.width / m.scale, m.y + m.height / m.scale
+  local x = math.max(m.x + r.left + gap, math.min(right - r.right - w - gap, c.x - w / 2))
+  local y = math.max(m.y + r.top + gap, math.min(bottom - r.bottom - h - gap, c.y - h / 2))
+  hl.exec_cmd("app2unit -- " .. V.terminal, {
+    float = true,
+    size  = w .. " " .. h,
+    move  = math.floor(x) .. " " .. math.floor(y),
+  })
+end)
 hl.bind("SHIFT + SUPER + B",  hl.dsp.exec_cmd("app2unit -- " .. V.browser))
 hl.bind("SUPER + C",          hl.dsp.exec_cmd("app2unit -- " .. V.editor))
 hl.bind("SHIFT + SUPER + F",  hl.dsp.exec_cmd("app2unit -- " .. V.fileExplorer))
 hl.bind("SUPER + ALT + E",    hl.dsp.exec_cmd("app2unit -- nemo"))
 hl.bind("CTRL + ALT + Escape", hl.dsp.exec_cmd("app2unit -- qps"))
 hl.bind("CTRL + ALT + V",     hl.dsp.exec_cmd("app2unit -- pavucontrol"))
--- iPhone Mirror (USB if plugged in, else Wi-Fi); focuses the window if already running
-hl.bind("SUPER + SHIFT + I",  hl.dsp.exec_cmd(home .. "/.local/bin/iphone-mirror start"),
+-- iPhone Mirror (USB if plugged in, else Wi-Fi); focuses the window if already running.
+-- The wrapper re-mounts the developer image over USB and notifies on failure.
+hl.bind("SUPER + SHIFT + I",  hl.dsp.exec_cmd(home .. "/.local/bin/iphone-mirror-launch"),
         { description = "iPhone Mirror" })
 
 -- Web apps (description shows up in `hyprctl binds`)
@@ -339,12 +376,6 @@ hl.bind("SUPER + Period",    hl.dsp.exec_cmd("pkill fuzzel || caelestia emoji -p
 hl.bind("CTRL + SHIFT + ALT + V",
         hl.dsp.exec_cmd("sleep 0.5s && ydotool type -d 1 \"$(cliphist list | head -1 | cliphist decode)\""),
         { locked = true })
-
--- =====================================================================
--- Video wallpaper selector
--- =====================================================================
-hl.bind("SUPER + SHIFT + ALT + B", hl.dsp.exec_cmd("video-wallpaper"),
-        { description = "Video Wallpaper" })
 
 -- =====================================================================
 -- Testing
