@@ -120,6 +120,15 @@ if hostDir and exists(hostDir .. "/host.lua") then
   require("host")
 end
 
+-- What you changed in the shell's Settings → Displays (it writes this file):
+-- after the host profile, so it wins, and before your own overrides
+if exists(cConf .. "/displays.lua") then
+  local ok, err = pcall(dofile, cConf .. "/displays.lua")
+  if not ok then
+    print("caelestia-plus: displays.lua failed: " .. tostring(err))
+  end
+end
+
 -- Your own overrides: load ~/.config/caelestia/hypr-user.lua only if it
 -- actually exists (avoids the noisy "module not found" log line Hyprland
 -- emits for failing requires).

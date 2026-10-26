@@ -11,6 +11,7 @@ import qs.modules.nexus.pages
 import qs.modules.nexus.pages.apps
 import qs.modules.nexus.pages.audio
 import qs.modules.nexus.pages.bluetooth
+import qs.modules.nexus.pages.displays
 import qs.modules.nexus.pages.network
 import qs.modules.nexus.pages.panels
 import qs.modules.nexus.pages.services
@@ -41,6 +42,14 @@ QtObject {
         },
 
         // Connectivity
+        Component {
+            // Displays
+            StackPage {
+                Component {
+                    DisplaysPage {}
+                }
+            }
+        },
         Component {
             // Network
             StackPage {

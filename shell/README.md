@@ -17,6 +17,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Video wallpapers](#video-wallpapers)
 - [Desktop widgets and plugins](#desktop-widgets-and-plugins)
 - [Keyboard shortcuts panel](#keyboard-shortcuts-panel)
+- [Displays](#displays)
 - [Launchpad](#launchpad)
 - [Emoji picker](#emoji-picker)
 - [Window cards](#window-cards)
@@ -69,6 +70,30 @@ nothing is hardcoded. It follows `hyprland.lua` and the modules it loads (or
 app or your own comments, groups them by your config's sections, and
 refreshes whenever Hyprland reloads. Search, filter by who handles a shortcut
 (the shell, Hyprland or an app), and see the shell actions still waiting for a key.
+
+## Displays
+
+![Settings → Displays: the arrangement, the displays, and the selected one's settings](docs/screenshots/displays.jpg)
+
+Settings → Displays, like macOS's:
+
+- **Arrangement**: drag a display; it snaps against the edge of another, so
+  the pointer can always cross, and it can't overlap one.
+- **Resolution, refresh rate, scale and rotation**, from what the display
+  reports. Scales are the ones that divide its resolution into whole pixels,
+  with the size things look like.
+- **Variable refresh rate**, **mirroring**, and turning a display **off**
+  (never the last one).
+- **The shell per display**: the bar, wallpaper, widgets and panels on it or
+  not, for a TV or a capture display (never off on the last one).
+- **Keep these display settings?** A resolution, refresh, scale, rotation,
+  mirror or on/off change asks on every screen, and undoes itself after
+  15 seconds if nobody answers.
+- Changes apply at once and are saved to `~/.config/caelestia/displays.lua`,
+  which the Hyprland config loads after the host profile: only the fields you
+  changed, so a profile's own setup (10-bit colour, HDR) stays. "Reset"
+  forgets them. Also over IPC (`caelestia shell displays list`) and the MCP
+  server (`displays`).
 
 ## Launchpad
 
