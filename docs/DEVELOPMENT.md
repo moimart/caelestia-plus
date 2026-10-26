@@ -32,6 +32,10 @@ it. From then on:
 - **Every save reloads the shell**, in about a second. A broken edit doesn't
   take the shell down: Quickshell keeps the last version that loaded and logs
   the error. Watch the log with `tools/dev.sh shell log`.
+  Tools that replace a file instead of writing into it (`sed -i`, some
+  editors' safe-save) can lose the watch: if a change doesn't show, run
+  `tools/dev.sh shell restart`. Open settings windows keep the old page
+  until you close them.
 - **Your shortcuts keep working**: it's still the `caelestia` config, so
   `qs -c caelestia ipc ...`, `caelestia shell ...` and the MCP server all
   reach it.

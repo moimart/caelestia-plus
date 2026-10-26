@@ -39,6 +39,7 @@ For other clients, the server command is `caelestia-mcp` with no arguments
 | Emoji | Search emoji, type one into the focused window, the picker | `emoji` |
 | Window cards | List cards, pair two windows, flip, split | `cards` |
 | Desktop widgets | Plugins and placed widgets: add, place, resize, configure, remove, the editor | `widgets` |
+| Displays | Resolution, refresh rate, scale, rotation, VRR, mirroring, arrangement, on or off, the shell per display; risky changes undo themselves unless kept | `displays` |
 | Camera | Who's using it, its controls and presets, gestures on or off, the camera panel | `camera` |
 | Anything else | Every IPC function the shell has | `ipc_list`, `ipc_call` |
 

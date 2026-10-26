@@ -12,6 +12,7 @@ import qs.modules.areapicker
 import qs.modules.background
 import qs.modules.camera
 import qs.modules.cards
+import qs.modules.displays
 import qs.modules.drawers
 import qs.modules.emoji
 import qs.modules.keybinds
@@ -58,6 +59,7 @@ ShellRoot {
     WindowCards {}
     WidgetsEditor {}
     CameraPanel {}
+    DisplayConfirm {}
     Lock {
         id: lock
     }

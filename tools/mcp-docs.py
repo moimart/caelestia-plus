@@ -28,6 +28,7 @@ areas = [
     ("Emoji", ["emoji"]),
     ("Window cards", ["cards"]),
     ("Desktop widgets", ["widgets"]),
+    ("Displays", ["displays"]),
     ("Camera", ["camera"]),
     ("Anything else", ["ipc_list", "ipc_call"]),
 ]

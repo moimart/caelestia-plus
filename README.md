@@ -100,6 +100,18 @@ pointer:
   it pasted (Chrome and other Chromium apps garble emoji typed through a
   virtual keyboard), terminals get it typed, and your clipboard is put back.
 
+### Displays
+
+<img src="shell/docs/screenshots/displays.jpg" alt="Settings → Displays: the arrangement, the displays, and the selected one's resolution, refresh rate, scale and rotation" width="70%">
+
+Settings → Displays, like macOS's: drag the displays into place (they snap
+edge to edge), pick a resolution, refresh rate, scale and rotation, turn
+VRR and mirroring on or off, and choose which displays get the shell. A
+change that could leave a screen black asks "Keep these display settings?"
+on every screen, and undoes itself after 15 seconds if you can't answer.
+What you change is saved on top of your config, so a host profile's own
+setup (10-bit colour, a TV as a cast target) stays as it is.
+
 ### Launchpad
 
 <table>
@@ -181,9 +193,9 @@ agents through an MCP server.
 ### Talk to your desktop: the MCP server
 
 An MCP server lets AI agents like Claude Code see and drive the desktop:
-screenshots, wallpapers and colours, any setting, media, the shortcuts, window
-cards, widgets, emoji and the camera (deliberately without a way to take
-photos). 29 tools, set up with one line:
+screenshots, wallpapers and colours, any setting, the displays, media, the
+shortcuts, window cards, widgets, emoji and the camera (deliberately without a way to take
+photos). 30 tools, set up with one line:
 
 ```sh
 claude mcp add --scope user caelestia -- caelestia-mcp
@@ -254,6 +266,7 @@ Settings stack in layers, each overriding the one before:
 2. **Your personal layer**: what's yours on every machine (your face, your
    Home Assistant cards, your own binds).
 3. **A host profile**: what belongs to one machine (monitors, scaling).
+   Settings → Displays saves on top of it, in `~/.config/caelestia/displays.lua`.
 4. **Your files in `~/.config`**: `~/.config/hypr/hyprland.lua` loads the
    defaults and then your changes; `~/.config/caelestia/shell.json` holds
    only the settings you changed in the shell.

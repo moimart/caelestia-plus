@@ -34,6 +34,12 @@ Both are usually private, so they live in an overlay outside this repo:
 The layers stack in this order, each overriding the ones before: the
 defaults, your personal layer, the host profile, then your own files in
 `~/.config` (`~/.config/hypr/hyprland.lua`, `~/.config/caelestia/shell.json`).
+Settings → Displays saves what you change there in
+`~/.config/caelestia/displays.lua` (from `displays.json`), loaded after the
+host profile, as partial rules: only the fields you changed, so the rest of
+the profile's monitor rules stays. Its "Reset" forgets them again. Which
+displays get the shell is `monitors/<output>/shell.json` (`enabled`), on top
+of the profile's.
 The shell gets the layers' `caelestia/` folders through `$XDG_CONFIG_DIRS`,
 which the Hyprland config sets.
 

@@ -492,6 +492,39 @@ def widgets(args):
     return {"ok": True}
 
 
+@tool("displays", "The displays, as in Settings → Displays: 'list' (each display's mode, available modes, position, scale, "
+      "rotation, VRR, mirror, on/off and what Settings saved); 'set' changes one (fields: mode like '3840x2160@60.00' from its "
+      "modes, position like '0x-2160', scale, transform 0-3, vrr 0/1, mirror (an output, or '' for off), disabled). "
+      "Mode, scale, rotation, mirror and on/off changes undo themselves after 15 s unless 'keep' follows (check the screen "
+      "first); 'revert' undoes at once; 'reset' forgets what Settings saved for a display; 'shell' turns the shell (bar, "
+      "wallpaper, widgets) on or off for a display.",
+      {"action": {"type": "string", "enum": ["list", "set", "keep", "revert", "pending", "reset", "shell"]},
+       "name": {"type": "string", "description": "The output, e.g. DP-1 (see 'list')."},
+       "fields": {"type": "object", "description": "For 'set': the fields to change."},
+       "on": {"type": "boolean", "description": "For 'shell': true to show the shell on this display."}}, ["action"])
+def displays(args):
+    action, name = args["action"], args.get("name")
+    if action == "list":
+        return json.loads(ipc("displays", "list") or "[]")
+    if action in ("keep", "revert"):
+        ipc("displays", action)
+        return {"ok": True}
+    if action == "pending":
+        out = ipc("displays", "pending")
+        return json.loads(out) if out else {"pending": None}
+    if not name:
+        raise ToolError("name is required")
+    if action == "set":
+        return {"result": ipc("displays", "set", name, json.dumps(args.get("fields") or {}))}
+    if action == "reset":
+        ipc("displays", "reset", name)
+    elif action == "shell":
+        if args.get("on") is None:
+            raise ToolError("on is required")
+        ipc("displays", "setShell", name, "true" if args["on"] else "false")
+    return {"ok": True}
+
+
 @tool("camera", "The webcam (caelestia-camerad): 'status' (who's using it, gestures state, last light/presence readings), "
       "'controls' (zoom, focus, white balance, ...), 'set' a control, 'presets' / 'apply' a saved preset, "
       "'gestures' on/off, 'panel' to open the camera panel. Photos are deliberately not available here.",
