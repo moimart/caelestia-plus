@@ -1,41 +1,52 @@
-# Host profiles
+# Host profiles, and your personal layer
 
-A host profile holds what belongs to one machine: its monitors, display
-scaling, a TV setup. Everything else is the default config, shared by every
-machine.
+The default config is complete on its own. Two layers can extend it:
+
+- **A host profile**: what belongs to one machine (its monitors, display
+  scaling, a TV setup).
+- **Your personal layer**: what's yours on every machine (your profile
+  picture, your home's Home Assistant cards, your own binds).
+
+Both are usually private, so they live in an overlay outside this repo:
+`~/.config/caelestia-plus/`, best kept as your own private git repo.
+`caelestia-plus-setup --overlay <git URL>` clones it there.
 
 ```
-hosts/<name>/
-  hypr/
-    monitors.lua   replaces hypr/lua/monitors.lua (any default module can be
-                   replaced by one of the same name)
-    host.lua       runs after the default config: extra env, binds, modules
-  caelestia/
-    shell.json     settings on top of config/caelestia/shell.json
-    monitors/      per-monitor shell settings
-    ...            other files for ~/.config/caelestia (lock-ha.json, assets)
+~/.config/caelestia-plus/
+  host                     the profile this machine uses (not in git)
+  hosts/<name>/
+    hypr/
+      monitors.lua         replaces hypr/lua/monitors.lua (any default module
+                           can be replaced by one of the same name)
+      host.lua             runs last: extra env, binds, modules
+    caelestia/
+      shell.json           shell settings on top of the defaults
+      monitors/            per-monitor shell settings
+  personal/
+    hypr/personal.lua      runs after the defaults, before host.lua
+    caelestia/
+      shell.json           shell settings on top of the defaults
+      lock-ha.json         Home Assistant lock cards (setup copies it to
+                           ~/.config/caelestia; see lock-ha.example.json)
+      assets/              files your settings point at
 ```
+
+The layers stack in this order, each overriding the ones before: the
+defaults, your personal layer, the host profile, then your own files in
+`~/.config` (`~/.config/hypr/hyprland.lua`, `~/.config/caelestia/shell.json`).
+The shell gets the layers' `caelestia/` folders through `$XDG_CONFIG_DIRS`,
+which the Hyprland config sets.
 
 The profile name comes from, in order: `$CAELESTIA_PLUS_HOST`,
 `~/.config/caelestia-plus/host`, the hostname. A machine without a profile
-gets the defaults: every monitor at its preferred mode and scale.
+gets the defaults: every monitor at its preferred mode and scale. Profiles
+shipped here (`hosts/example`) are searched after your overlay.
 
-Profiles can also live outside the repo, in
-`~/.config/caelestia-plus/hosts/<name>/`, which is searched first. That's
-where private ones go.
-
-## behemoth
-
-The desktop: a 7680x2160 ultrawide on DP-1 (scale 1.6666, 10-bit) and a TV
-behind an AVR on HDMI-A-1, used as a cast target (`tv_sink.lua`), with the
-shell off on it. Also `GDK_SCALE=2`, the Home Assistant lock cards and the
-animated profile picture.
-
-## Checking a profile
+## Checking a config
 
 `hypr/tools/record.lua` runs the Hyprland config outside Hyprland and prints
 every call it makes, so two versions can be compared:
 
 ```sh
-CAELESTIA_PLUS_HOST=behemoth lua5.4 hypr/tools/record.lua "$PWD/hypr/hyprland.lua"
+CAELESTIA_PLUS_HOST=example lua5.4 hypr/tools/record.lua "$PWD/hypr/hyprland.lua"
 ```

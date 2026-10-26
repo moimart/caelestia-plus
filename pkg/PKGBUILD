@@ -127,7 +127,7 @@ package_caelestia-plus-hypr() {
 
 package_caelestia-plus-config() {
     pkgdesc='caelestia-plus defaults: the shell config and art, app configs, scripts, fonts and caelestia-plus-setup'
-    depends=('caelestia-shell-moimart' 'fish' 'starship' 'eza' 'zoxide' 'kitty' 'fastfetch' 'python' 'bash')
+    depends=('caelestia-shell-moimart' 'fish' 'starship' 'eza' 'zoxide' 'kitty' 'fastfetch' 'python' 'bash' 'git')
     optdepends=(
         'foot: alternative terminal'
         'ghostty: alternative terminal, with an amber CRT shader'
@@ -145,8 +145,9 @@ package_caelestia-plus-config() {
     install -d "$pkgdir/$_share/caelestia"
     cp -r --no-preserve=ownership config/caelestia/assets "$pkgdir/$_share/caelestia/assets"
     install -Dm644 config/caelestia/cli.json "$pkgdir/$_share/setup/caelestia/cli.json"
+    install -Dm644 config/caelestia/lock-ha.example.json "$pkgdir/$_share/caelestia/lock-ha.example.json"
 
-    # Host profiles
+    # Host profiles: the example and the README (yours live in your overlay)
     cp -r --no-preserve=ownership hosts "$pkgdir/$_share/hosts"
 
     # App configs (the upstream dots' own hypr/ is replaced by hypr/)

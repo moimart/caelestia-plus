@@ -257,7 +257,6 @@ hl.bind("SUPER + R",             function() hl.dispatch(hl.dsp.workspace.toggle_
 -- =====================================================================
 -- Apps
 -- =====================================================================
-hl.bind("SUPER + A",          hl.dsp.exec_cmd(home .. "/.local/bin/hal-command"))
 hl.bind("SUPER + Return",     hl.dsp.exec_cmd("app2unit -- " .. V.terminal))
 -- SUPER + SHIFT + Return → floating terminal at the pointer, kept on screen
 hl.bind("SHIFT + SUPER + Return", function()

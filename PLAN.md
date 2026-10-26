@@ -82,12 +82,17 @@ written back. Without base files nothing changes.
 
 ### Private things
 
-Some of what's here can't go public: `config/caelestia/assets/face.mp4` (a
-video of a face), the Home Assistant lock cards (`lock-ha.json` names a home's
-entities), and the behemoth host profile. Before the repo goes public these
-move to a private overlay (a small private repo, or a local folder) that
-`caelestia-plus-setup` layers on top. Secrets (the HA token) were never
-tracked and stay that way.
+Host profiles and the personal layer live in a private overlay,
+`~/.config/caelestia-plus/` (moimart's: the private repo
+`moimart/caelestia-plus-private`, cloned by `caelestia-plus-setup --overlay`).
+The defaults have placeholders instead: a daruma profile picture seeded to
+`~/.face`, and `lock-ha.example.json` (the Home Assistant cards stay off
+without a real `lock-ha.json`). See `hosts/README.md`.
+
+Before this repo goes public, its history needs the private files purged
+(`git filter-repo`): the face video, `lock-ha.json` and the behemoth profile
+came in with the dotfiles and hypr-config histories. Secrets (the HA token)
+were never tracked.
 
 ## Packages
 
@@ -156,4 +161,6 @@ keyring package).
 5. **CI and the pacman repo.** Build, sign, publish; the weekly AUR rebuild.
 6. **Switch behemoth over** from symlinks to packages, then test a fresh Arch
    install in a VM.
-7. **Go public.** Move private things to the overlay, add AUR recipes.
+7. **Go public.** Done early: the private things are in the overlay, and the
+   packages hold nothing personal. Left: purge them from this repo's
+   history, then flip it public; add AUR recipes.
