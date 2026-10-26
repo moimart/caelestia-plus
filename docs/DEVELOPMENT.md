@@ -87,7 +87,9 @@ tools/dev.sh check --all       # everything (~20 s)
 
 Runs what CI's linters would complain about: Qt 6 `qmlformat` and the QML
 conventions, the translation checks, `clang-format`, `cargo fmt`, and a syntax
-check of Lua, Python, shell and JSON files. Fix QML formatting with
+check of Lua, Python, shell and JSON files. Logic with tests in `tools/tests/` (the display
+arrangement so far, `node tools/tests/arrange.test.js`) gets them run when it
+changes. Fix QML formatting with
 `/usr/lib/qt6/bin/qmlformat -i <file>` (not plain `qmlformat`: that's Qt 5's).
 
 ### 3. Build and install

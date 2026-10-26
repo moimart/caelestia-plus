@@ -5,6 +5,7 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.services
+import "arrange.js" as Arrange
 
 // The displays as they sit on the desktop, scaled down. Click one to select
 // it; drag one to move it: it snaps against the edge of another, so the
@@ -34,53 +35,58 @@ Item {
         const x1 = Math.max(...rects.map(r => r.x + r.width)), y1 = Math.max(...rects.map(r => r.y + r.height));
         return Qt.rect(x0, y0, x1 - x0, y1 - y0);
     }
-    readonly property real pad: Tokens.padding.extraLarge
-    readonly property real factor: Math.min((width - pad * 2) / bounds.width, (height - pad * 2) / bounds.height)
-    readonly property point origin: Qt.point((width - bounds.width * factor) / 2, (height - bounds.height * factor) / 2)
+    // The layout with room around it to drag a display to any side
+    readonly property real room: Math.max(bounds.width, bounds.height) * 0.15
+    readonly property rect view: Qt.rect(bounds.x - room, bounds.y - room, bounds.width + room * 2, bounds.height + room * 2)
+    readonly property real pad: Tokens.padding.large
+    readonly property real factor: Math.min((width - pad * 2) / view.width, (height - pad * 2) / view.height)
+    readonly property point origin: Qt.point((width - view.width * factor) / 2, (height - view.height * factor) / 2)
+
+    // Displays the pointer can't get to from the one you're on
+    readonly property var isolated: Arrange.unreachable(rects, Hypr.focusedMonitor?.name ?? "")
+
+    // While dragging: the display, and where it would land (desktop pixels)
+    property string dragging
+    property point landing
 
     signal picked(name: string)
 
-    // Where a display dropped at (x, y), in desktop pixels, ends up: flush
-    // against the nearest edge of another, overlapping it along that edge,
-    // with edges and centres snapping into line when close
-    function snap(name: string, x: real, y: real): point {
-        const me = rects.find(r => r.name === name);
-        const others = rects.filter(r => r.name !== name);
-        if (!me || others.length === 0)
-            return Qt.point(me?.x ?? 0, me?.y ?? 0);
-        const w = me.width, h = me.height;
-        const minOverlap = 40;
-        const near = 0.08;
-        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-        // Line up starts, ends or centres along the shared edge when close
-        const align = (v, start, length, size) => {
-            for (const t of [start, start + length - size, start + (length - size) / 2])
-                if (Math.abs(v - t) < Math.max(size, length) * near)
-                    return t;
-            return v;
-        };
-        const overlaps = (cx, cy) => others.some(o => cx < o.x + o.width && cx + w > o.x && cy < o.y + o.height && cy + h > o.y);
-
-        let best = null;
-        for (const o of others) {
-            const vy = align(clamp(y, o.y - h + minOverlap, o.y + o.height - minOverlap), o.y, o.height, h);
-            const vx = align(clamp(x, o.x - w + minOverlap, o.x + o.width - minOverlap), o.x, o.width, w);
-            for (const c of [Qt.point(o.x + o.width, vy), Qt.point(o.x - w, vy), Qt.point(vx, o.y + o.height), Qt.point(vx, o.y - h)]) {
-                const p = Qt.point(Math.round(c.x), Math.round(c.y));
-                if (overlaps(p.x, p.y))
-                    continue;
-                const d = Math.hypot(p.x - x, p.y - y);
-                if (!best || d < best.d)
-                    best = {
-                        p: p,
-                        d: d
-                    };
-            }
-        }
-        return best ? best.p : Qt.point(me.x, me.y);
+    function toCanvas(x: real, y: real): point {
+        return Qt.point(origin.x + (x - view.x) * factor, origin.y + (y - view.y) * factor);
     }
 
-    implicitHeight: 240
+    function toDesktop(x: real, y: real): point {
+        return Qt.point(view.x + (x - origin.x) / factor, view.y + (y - origin.y) / factor);
+    }
+
+    // Where a display dropped at (x, y), in desktop pixels, ends up
+    // (arrange.js): flush against an edge within 24 px on screen, lined up
+    // within 10; further away, where you dropped it
+    function snap(name: string, x: real, y: real): point {
+        const p = Arrange.snap(rects, name, x, y, 24 / factor, 10 / factor);
+        return Qt.point(p.x, p.y);
+    }
+
+    // As tall as the layout's shape needs (stacked displays get more room),
+    // within reason; more displays just get smaller
+    implicitHeight: Math.max(200, Math.min(440, (width - pad * 2) * view.height / view.width + pad * 2))
+
+    // Where the dragged display will land
+    StyledRect {
+        readonly property var me: root.rects.find(r => r.name === root.dragging) ?? null
+        readonly property point at: root.toCanvas(root.landing.x, root.landing.y)
+
+        visible: !!me
+        x: at.x
+        y: at.y
+        width: (me?.width ?? 0) * root.factor
+        height: (me?.height ?? 0) * root.factor
+        radius: Tokens.rounding.small
+        color: "transparent"
+        border.width: 2
+        border.color: Colours.palette.m3primary
+        opacity: 0.8
+    }
 
     Repeater {
         model: root.rects
@@ -90,11 +96,15 @@ Item {
 
             required property var modelData
             readonly property bool isSelected: root.selected === modelData.name
-            readonly property real homeX: root.origin.x + (modelData.x - root.bounds.x) * root.factor
-            readonly property real homeY: root.origin.y + (modelData.y - root.bounds.y) * root.factor
+            readonly property point home: root.toCanvas(modelData.x, modelData.y)
 
-            x: homeX
-            y: homeY
+            function landingFor(): point {
+                const d = root.toDesktop(x, y);
+                return root.snap(modelData.name, d.x, d.y);
+            }
+
+            x: home.x
+            y: home.y
             width: Math.max(8, modelData.width * root.factor)
             height: Math.max(8, modelData.height * root.factor)
             z: mover.drag.active ? 2 : (isSelected ? 1 : 0)
@@ -102,6 +112,16 @@ Item {
             color: isSelected ? Colours.palette.m3primaryContainer : Colours.palette.m3surfaceContainerHighest
             border.width: isSelected ? 2 : 0
             border.color: Colours.palette.m3primary
+            opacity: mover.drag.active ? 0.85 : 1
+
+            onXChanged: {
+                if (mover.drag.active)
+                    root.landing = landingFor();
+            }
+            onYChanged: {
+                if (mover.drag.active)
+                    root.landing = landingFor();
+            }
 
             Column {
                 anchors.centerIn: parent
@@ -113,7 +133,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     text: screenRect.modelData.name
                     color: screenRect.isSelected ? Colours.palette.m3onPrimaryContainer : Colours.palette.m3onSurface
-                    font: Tokens.font.label.large
+                    font: screenRect.height > 36 ? Tokens.font.label.large : Tokens.font.label.small
                     elide: Text.ElideRight
                 }
 
@@ -135,20 +155,33 @@ Item {
                 cursorShape: root.rects.length > 1 ? (pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor) : Qt.PointingHandCursor
                 drag.target: root.rects.length > 1 ? screenRect : null
                 drag.threshold: 4
+                // Kept inside the canvas
+                drag.minimumX: 0
+                drag.minimumY: 0
+                drag.maximumX: root.width - screenRect.width
+                drag.maximumY: root.height - screenRect.height
+                drag.onActiveChanged: {
+                    if (drag.active) {
+                        root.landing = screenRect.landingFor();
+                        root.dragging = screenRect.modelData.name;
+                    }
+                }
                 onPressed: root.picked(screenRect.modelData.name)
                 onReleased: {
-                    if (!mover.drag.active && Math.abs(screenRect.x - screenRect.homeX) < 1 && Math.abs(screenRect.y - screenRect.homeY) < 1)
+                    if (root.dragging !== screenRect.modelData.name)
                         return;
-                    const x = root.bounds.x + (screenRect.x - root.origin.x) / root.factor;
-                    const y = root.bounds.y + (screenRect.y - root.origin.y) / root.factor;
-                    const p = root.snap(screenRect.modelData.name, x, y);
-                    // Back to the bound position; the real one comes back from Hyprland
-                    screenRect.x = Qt.binding(() => screenRect.homeX);
-                    screenRect.y = Qt.binding(() => screenRect.homeY);
-                    if (p.x !== screenRect.modelData.x || p.y !== screenRect.modelData.y)
-                        Displays.change(screenRect.modelData.name, {
-                            position: `${p.x}x${p.y}`
-                        });
+                    const p = screenRect.landingFor();
+                    root.dragging = "";
+                    if (p.x === screenRect.modelData.x && p.y === screenRect.modelData.y) {
+                        screenRect.x = Qt.binding(() => screenRect.home.x);
+                        screenRect.y = Qt.binding(() => screenRect.home.y);
+                        return;
+                    }
+                    // Sit where it lands until Hyprland reports the new layout
+                    const at = root.toCanvas(p.x, p.y);
+                    screenRect.x = at.x;
+                    screenRect.y = at.y;
+                    Displays.arrange(screenRect.modelData.name, `${p.x}x${p.y}`);
                 }
             }
         }

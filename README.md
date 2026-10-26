@@ -104,13 +104,13 @@ pointer:
 
 <img src="shell/docs/screenshots/displays.jpg" alt="Settings → Displays: the arrangement, the displays, and the selected one's resolution, refresh rate, scale and rotation" width="70%">
 
-Settings → Displays, like macOS's: drag the displays into place (they snap
-edge to edge), pick a resolution, refresh rate, scale and rotation, turn
+Settings → Displays, like macOS's: drag the displays into place (near an edge
+they snap flush; further away they stay where you drop them), pick a resolution, refresh rate, scale and rotation, turn
 VRR and mirroring on or off, and choose which displays get the shell. A
 change that could leave a screen black asks "Keep these display settings?"
 on every screen, and undoes itself after 15 seconds if you can't answer.
-What you change is saved on top of your config, so a host profile's own
-setup (10-bit colour, a TV as a cast target) stays as it is.
+What you change is saved on top of your config, per display, keeping its
+10-bit or HDR colour; Reset hands a display back to your config.
 
 ### Launchpad
 

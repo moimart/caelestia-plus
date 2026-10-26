@@ -26,6 +26,8 @@ Singleton {
     // A change waiting to be kept: { name, before, after }
     property var pending: null
     property int countdown: 0
+    property bool refreshAgain
+    property bool reloadAfterSave
 
     readonly property int confirmSeconds: 15
     readonly property string jsonPath: `${Paths.config}/displays.json`
@@ -93,13 +95,15 @@ Singleton {
         return m.transform % 2 === 1 ? Qt.size(h, w) : Qt.size(w, h);
     }
 
-    // The values a change touches, as they are now (for undoing it)
+    // A display's settings now, as hl.monitor() fields
     function currentValues(m: var, keys: var): var {
         const now = {
             mode: currentMode(m)?.mode ?? `${m.width}x${m.height}@${m.refreshRate.toFixed(2)}`,
             position: `${m.x}x${m.y}`,
             scale: m.scale,
             transform: m.transform,
+            bitdepth: /2101010/.test(m.currentFormat ?? "") ? 10 : 8,
+            cm: m.colorManagementPreset || "srgb",
             vrr: m.vrr ? 1 : 0,
             mirror: m.mirrorOf && m.mirrorOf !== "none" ? m.mirrorOf : "",
             disabled: !!m.disabled
@@ -108,6 +112,22 @@ Singleton {
         for (const k of keys)
             out[k] = now[k];
         return out;
+    }
+
+    // The rule saved for a display: complete for its mode, position, scale
+    // and rotation (and 10-bit or HDR colour, if it has them), because a
+    // display with no rule of its own in the config gets a new one from
+    // scratch, and a partial rule would lose its mode. Other fields in the
+    // config's rule (VRR, HDR brightness...) stay as they are.
+    function baseSpec(m: var): var {
+        if (!m.width || m.disabled)
+            return {};
+        const keys = ["mode", "position", "scale", "transform"];
+        if (/2101010/.test(m.currentFormat ?? ""))
+            keys.push("bitdepth");
+        if (m.colorManagementPreset && m.colorManagementPreset !== "srgb")
+            keys.push("cm");
+        return currentValues(m, keys);
     }
 
     // True if the change can leave a screen unusable, so it waits to be kept
@@ -119,21 +139,52 @@ Singleton {
         const m = monitor(name);
         if (!m)
             return;
+        if (Object.keys(fields).length === 1 && "position" in fields) {
+            arrange(name, fields.position);
+            return;
+        }
         if (pending)
             keep();
-        const before = currentValues(m, Object.keys(fields));
-        applyLive(name, fields);
+        const full = Object.assign(baseSpec(m), fields);
+        const before = currentValues(m, Object.keys(full));
+        applyLive(name, full);
         if (risky(fields)) {
             pending = {
                 name: name,
                 before: before,
-                after: fields
+                after: full
             };
             countdown = confirmSeconds;
             countdownTimer.restart();
         } else {
-            commit(name, fields);
+            commit(name, full);
         }
+    }
+
+    // Moves a display, and saves where every display is, like macOS: what
+    // the arrangement shows is what you get, and Hyprland's automatic
+    // placement can't shift another display afterwards
+    function arrange(name: string, position: string): void {
+        if (pending)
+            keep();
+        const next = Object.assign({}, saved);
+        for (const m of monitors) {
+            if (m.disabled || (m.mirrorOf && m.mirrorOf !== "none"))
+                continue;
+            const spec = Object.assign({}, next[m.name], baseSpec(m));
+            if (m.name === name)
+                spec.position = position;
+            next[m.name] = spec;
+        }
+        // The others first, where they are (no change, but no longer "auto"),
+        // then the one that moved
+        for (const [n, spec] of Object.entries(next))
+            if (n !== name && monitor(n))
+                applyLive(n, spec);
+        if (next[name])
+            applyLive(name, next[name]);
+        saved = next;
+        save();
     }
 
     function keep(): void {
@@ -157,8 +208,9 @@ Singleton {
         const next = Object.assign({}, saved);
         delete next[name];
         saved = next;
+        // Hyprland reloads once the new displays.lua is on disk, not before
+        reloadAfterSave = true;
         save();
-        Quickshell.execDetached(["hyprctl", "reload"]);
     }
 
     // The shell (bar, wallpaper, widgets) on a display or not: its per-display
@@ -198,14 +250,19 @@ Singleton {
 
     function save(): void {
         jsonFile.setText(JSON.stringify(saved, null, 4) + "\n");
-        const lines = ["-- Written by the shell (Settings → Displays) from displays.json; changes", "-- here are overwritten. Loaded after the host profile, so only what you", "-- changed in Settings is here.", ""];
+        const lines = ["-- Written by the shell (Settings → Displays) from displays.json; changes", "-- here are overwritten. Loaded after the host profile: the displays you", "-- changed in Settings, with their mode, position, scale and rotation.", ""];
         for (const [name, fields] of Object.entries(saved))
             lines.push(luaSpec(name, fields));
         luaFile.setText(lines.join("\n") + "\n");
     }
 
+    // A refresh asked for while one runs (its answer may predate the change)
+    // runs again afterwards
     function refresh(): void {
-        proc.running = true;
+        if (proc.running)
+            refreshAgain = true;
+        else
+            proc.running = true;
     }
 
     Component.onCompleted: refresh()
@@ -214,6 +271,12 @@ Singleton {
         id: proc
 
         command: ["hyprctl", "monitors", "all", "-j"]
+        onExited: {
+            if (root.refreshAgain) {
+                root.refreshAgain = false;
+                refreshTimer.restart();
+            }
+        }
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
@@ -329,5 +392,11 @@ Singleton {
 
         path: root.luaPath
         printErrors: false
+        onSaved: {
+            if (root.reloadAfterSave) {
+                root.reloadAfterSave = false;
+                Quickshell.execDetached(["hyprctl", "reload"]);
+            }
+        }
     }
 }

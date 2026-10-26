@@ -77,8 +77,11 @@ refreshes whenever Hyprland reloads. Search, filter by who handles a shortcut
 
 Settings → Displays, like macOS's:
 
-- **Arrangement**: drag a display; it snaps against the edge of another, so
-  the pointer can always cross, and it can't overlap one.
+- **Arrangement**: drag a display; an outline shows where it lands. Near
+  another's edge it snaps flush (edges and centres line up when close); further
+  away it stays where you drop it, and the page warns that the pointer can't
+  get there. It never overlaps one. The canvas grows with the layout, so more
+  displays just get smaller.
 - **Resolution, refresh rate, scale and rotation**, from what the display
   reports. Scales are the ones that divide its resolution into whole pixels,
   with the size things look like.
@@ -90,9 +93,10 @@ Settings → Displays, like macOS's:
   mirror or on/off change asks on every screen, and undoes itself after
   15 seconds if nobody answers.
 - Changes apply at once and are saved to `~/.config/caelestia/displays.lua`,
-  which the Hyprland config loads after the host profile: only the fields you
-  changed, so a profile's own setup (10-bit colour, HDR) stays. "Reset"
-  forgets them. Also over IPC (`caelestia shell displays list`) and the MCP
+  which the Hyprland config loads after the host profile: each display you
+  change gets its mode, position, scale and rotation (keeping 10-bit or HDR
+  colour), and moving one saves where they all are, so nothing shifts on its
+  own. "Reset" hands a display back to your config. Also over IPC (`caelestia shell displays list`) and the MCP
   server (`displays`).
 
 ## Launchpad

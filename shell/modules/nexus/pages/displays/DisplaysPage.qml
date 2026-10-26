@@ -81,8 +81,8 @@ PageBase {
             Layout.topMargin: Tokens.spacing.small
             Layout.leftMargin: Tokens.padding.large
             visible: Displays.monitors.length > 1
-            text: Tr.tr("Drag a display to arrange it; it snaps against the others.")
-            color: Colours.palette.m3outline
+            text: arrangement.isolated.length > 0 ? Tr.tr("%1 doesn't touch another display: the pointer can't get there (windows still can, by moving workspaces).").arg(arrangement.isolated.join(", ")) : Tr.tr("Drag a display to arrange it. Near another's edge it snaps flush; further away it stays where you drop it.")
+            color: arrangement.isolated.length > 0 ? Colours.palette.m3error : Colours.palette.m3outline
             font: Tokens.font.label.small
             wrapMode: Text.WordWrap
         }
