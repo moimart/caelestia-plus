@@ -32,13 +32,34 @@ Scope {
         function onPanelOpenChanged(): void {
             if (!Emoji.panelOpen)
                 return;
+            // A first guess, then Hyprland's own answer: the shell's view of the
+            // active window can lag behind (focus moved by a dispatch, say)
             Emoji.target = Hypr.activeToplevel?.address ?? "";
             Emoji.targetClass = Hypr.activeToplevel?.lastIpcObject.class ?? "";
             Emoji.ensureLoaded();
+            active.running = true;
             cursor.running = true;
         }
 
         target: Emoji
+    }
+
+    // The window that has focus right now: it gets the emoji
+    Process {
+        id: active
+
+        command: ["hyprctl", "activewindow", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const w = JSON.parse(text);
+                    if (w.address) {
+                        Emoji.target = w.address.replace(/^0x/, "");
+                        Emoji.targetClass = w.class ?? "";
+                    }
+                } catch (e) {}
+            }
+        }
     }
 
     // Where the pointer is, to open next to it (on the focused monitor only)
