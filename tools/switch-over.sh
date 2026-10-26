@@ -72,10 +72,8 @@ fi
 for pkg in caelestia-plus-hypr caelestia-plus-config caelestia-shell-moimart; do
     pacman -Q "$pkg" >/dev/null 2>&1 || { echo "install $pkg first" >&2; exit 1; }
 done
-if [ "$(caelestia shell lock isLocked 2>/dev/null)" = true ]; then
-    echo "the session is locked; unlock first" >&2
-    exit 1
-fi
+# (It doesn't restart the shell, so a locked session is fine: restart the
+# shell yourself once unlocked.)
 [ -f "$state/links" ] && [ $dry = 0 ] && { echo "already switched over (see $state); --rollback first" >&2; exit 1; }
 
 # A dry run keeps its notes somewhere throwaway
