@@ -193,7 +193,7 @@ if [ -f "$share/dots/default-bashrc" ]; then
 
 # Your settings below override the defaults above."; then
         :
-    elif ! grep -q "$share/dots/default-bashrc" "$HOME/.bashrc"; then
+    elif ! grep -q "default-bashrc" "$HOME/.bashrc"; then
         echo "note: for the caelestia-plus bash defaults, add to the top of ~/.bashrc:"
         echo "      source $share/dots/default-bashrc"
     fi
