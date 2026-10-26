@@ -26,7 +26,7 @@ local V = require("variables")
 -- (Workspace 3 previously had layout_opts = { direction = "down" } and an
 --  auto-flow 3-per-row grid handler; dropped so ws 3 behaves like every
 --  other numbered workspace. To bring it back, restore this line and
---  re-enable require("tv_grid") in hosts/behemoth/hypr/host.lua.)
+--  re-enable require("tv_grid") in the host profile's host.lua.)
 -- hl.workspace_rule({ workspace = "3", layout_opts = { direction = "down" } })
 
 -- Single-window workspaces (tiled or floating, no special) use a smaller gap
