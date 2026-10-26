@@ -17,6 +17,8 @@ ColumnLayout {
     required property ScreenState screenState
     required property BarPopouts.Wrapper popouts
     required property bool fullscreen
+    // The window preview was opened by its shortcut, not by hovering
+    property bool previewByShortcut
     readonly property int vPadding: Tokens.padding.large
 
     function closeTray(): void {
@@ -73,6 +75,26 @@ ColumnLayout {
             popouts.currentCenter = (ch.item as Item).mapToItem(root, 0, (ch.item as Item).implicitHeight / 2).y ?? 0;
             popouts.hasCurrent = true;
         }
+    }
+
+    // The focused window's popout (its preview), as hovering its title opens
+    // it, for a shortcut (double-tapping Super). The pointer jumps onto it, so
+    // it then behaves as if hovered: move away and it closes. It also closes
+    // on the same shortcut, or when the focused window changes.
+    function toggleWindowPreview(): void {
+        if (popouts.hasCurrent && popouts.currentName === "activewindow") {
+            popouts.hasCurrent = false;
+            return;
+        }
+        const entry = children.find(c => (c as EntryWrapper)?.entryId === "activeWindow") as EntryWrapper;
+        if (!entry?.item || !Hypr.activeToplevel)
+            return;
+        closeTray();
+        popouts.currentName = "activewindow";
+        popouts.currentCenter = (entry.item as Item).mapToItem(root, 0, (entry.item as Item).implicitHeight / 2).y;
+        popouts.hasCurrent = true;
+        previewByShortcut = true;
+        pointerToPreview.restart();
     }
 
     function handleWheel(y: real, angleDelta: point): void {
@@ -181,6 +203,31 @@ ColumnLayout {
                 }
             }
         }
+    }
+
+    // Once the popout has slid into place, the pointer goes to its middle
+    Timer {
+        id: pointerToPreview
+
+        interval: root.popouts.animLength
+        onTriggered: {
+            const popout = root.popouts;
+            if (!popout.hasCurrent || popout.currentName !== "activewindow")
+                return;
+            const p = popout.mapToItem(null, popout.width / 2, popout.height / 2);
+            Hypr.dispatch(`hl.dsp.cursor.move({ x = ${Math.round(root.screen.x + p.x)}, y = ${Math.round(root.screen.y + p.y)} })`);
+        }
+    }
+
+    // A preview opened by the shortcut closes when the focused window changes
+    Connections {
+        function onActiveToplevelChanged(): void {
+            if (root.previewByShortcut && root.popouts.currentName === "activewindow")
+                root.popouts.hasCurrent = false;
+            root.previewByShortcut = false;
+        }
+
+        target: Hypr
     }
 
     component EntryWrapper: Item {

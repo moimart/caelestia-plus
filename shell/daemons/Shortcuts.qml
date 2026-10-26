@@ -62,6 +62,14 @@ Scope {
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
+        name: "windowPreview"
+        description: "Toggle the focused window's preview, from the bar"
+        onPressed: ShellState.componentsForActive()?.bar?.toggleWindowPreview()
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
         name: "launcher"
         description: "Toggle launcher"
         onPressed: root.launcherInterrupted = false
@@ -118,6 +126,11 @@ Scope {
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
             }
+        }
+
+        // The focused window's popout from the bar (its preview)
+        function windowPreview(): void {
+            ShellState.componentsForActive()?.bar?.toggleWindowPreview();
         }
 
         function list(): string {

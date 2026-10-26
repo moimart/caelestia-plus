@@ -32,6 +32,10 @@ Item {
         (content.item as Bar)?.checkPopout(y);
     }
 
+    function toggleWindowPreview(): void {
+        (content.item as Bar)?.toggleWindowPreview();
+    }
+
     function handleWheel(y: real, angleDelta: point): void {
         (content.item as Bar)?.handleWheel(y, angleDelta);
     }
