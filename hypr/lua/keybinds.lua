@@ -59,14 +59,57 @@ hl.bind("SUPER + Space",
 -- summons it — this bind is the way to bring it up.
 hl.bind("SUPER + E",
         hl.dsp.exec_cmd("qs -c caelestia ipc call drawers toggle dashboard"))
+-- Double-tap Super → the focused window's preview (the popout of its title in
+-- the bar). A tap is Super pressed and released with nothing else in between:
+-- no other key, no mouse button or wheel (Super + drag moves windows); two
+-- taps within 350 ms make a double tap. Watches every key through Hyprland's
+-- key event, which binds can't (they only see the combo they're for).
+local superTap = { held = false, used = false, pending = false, gen = 0 }
+-- Super_L and Super_R as the key event numbers them (XKB codes; also the
+-- evdev ones, in case)
+local SUPER_KEYS = { [133] = true, [134] = true, [125] = true, [126] = true }
+
+local function super_used()
+  if superTap.held then superTap.used = true end
+  superTap.pending = false
+end
+
+if _G.__superTapSub then pcall(function() _G.__superTapSub:remove() end) end
+_G.__superTapSub = hl.on("input.keyboard.key", function(code, _, state)
+  if SUPER_KEYS[code] or code == _G.__superTapTestKey then
+    if state == 1 then
+      superTap.held, superTap.used = true, false
+    elseif superTap.held then
+      superTap.held = false
+      if superTap.used then return end
+      if superTap.pending then
+        superTap.pending = false
+        hl.dispatch(hl.dsp.global("caelestia:windowPreview"))
+      else
+        superTap.pending = true
+        superTap.gen = superTap.gen + 1
+        local gen = superTap.gen
+        -- Kept, or the collector can take the timer before it fires
+        superTap.timer = hl.timer(function()
+          if superTap.gen == gen then superTap.pending = false end
+        end, { timeout = 350, type = "oneshot" })
+      end
+    end
+  elseif state == 1 then
+    super_used()
+  end
+end)
+
 -- The original `bindin = Super, catchall, ...` line was dropped: `catchall`
 -- is a submap-only keysym in the new API. The mouse/wheel interrupts below
--- cover the common cases the user wired up.
+-- cover the common cases the user wired up (and stop a Super tap).
 for _, k in ipairs({ "mouse:272", "mouse:273", "mouse:274",
                      "mouse:275", "mouse:276", "mouse:277",
                      "mouse_up", "mouse_down" }) do
-  hl.bind("SUPER + " .. k, hl.dsp.global("caelestia:launcherInterrupt"),
-          { ignore_mods = true, non_consuming = true })
+  hl.bind("SUPER + " .. k, function()
+    super_used()
+    hl.dispatch(hl.dsp.global("caelestia:launcherInterrupt"))
+  end, { ignore_mods = true, non_consuming = true })
 end
 
 -- Misc shell actions

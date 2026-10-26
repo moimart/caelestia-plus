@@ -243,13 +243,14 @@ without a way to take photos).
 | Super+/ | Keyboard shortcuts panel |
 | Super+Ctrl+W | Place and resize desktop widgets |
 | Shift+Super+Space | Launchpad |
+| Super, Super (double tap) | The focused window's preview, from the bar |
 | Ctrl+Super+Space | Emoji picker |
 | Super+Alt+Tab · Super+Tab · Super+Shift+Tab | Pair a window card · flip it · split it |
 | Super+Alt+C | Camera panel |
 | Super+Alt+G | Hand gestures on/off |
 
 These are bound in the Hyprland config; the shell registers them as global
-shortcuts (`caelestia:keybinds`, `caelestia:launchpad`, `caelestia:emoji`, `caelestia:widgets`, `caelestia:cardPair`,
+shortcuts (`caelestia:keybinds`, `caelestia:launchpad`, `caelestia:windowPreview`, `caelestia:emoji`, `caelestia:widgets`, `caelestia:cardPair`,
 `caelestia:cardFlip`, `caelestia:cardUnpair`, `caelestia:camera`,
 `caelestia:cameraGestures`), so you can bind them to anything.
 

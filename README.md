@@ -207,6 +207,8 @@ examples: [docs/mcp](docs/mcp).
 
 Around the shell, from the Hyprland config and app configs:
 
+- **Double-tap Super**: the focused window's preview from the bar, with the
+  pointer on it (move away and it closes).
 - **Super+Shift+Enter**: a floating terminal right at your pointer, kept on screen.
 - **Super+both Shifts+Enter**: the same terminal shows the command on your
   clipboard, runs it when you press Enter (any other key cancels), and closes
