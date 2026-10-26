@@ -10,7 +10,9 @@ pkgrel=1
 arch=('x86_64' 'aarch64')
 url='https://github.com/moimart/caelestia-plus'
 license=('GPL-3.0-only')
-makedepends=('cmake' 'ninja' 'git' 'qt6-shadertools' 'cargo' 'clang')
+makedepends=('cmake' 'ninja' 'git' 'qt6-shadertools' 'cargo' 'clang'
+             # What the shell's build links against (makepkg -s only installs these)
+             'qt6-base' 'qt6-declarative' 'qt6-multimedia' 'aubio' 'libcava' 'libpipewire' 'libqalculate')
 # Camera models for caelestia-camerad, from opencv_zoo (Apache-2.0 / MIT)
 _zoo=https://github.com/opencv/opencv_zoo/raw/main/models
 source=("${pkgbase}::git+file://$(realpath "${startdir}/..")"

@@ -1,0 +1,116 @@
+name: Packages
+
+# Builds every package (ours and the AUR ones they need), signs them, and
+# publishes the pacman repo to moimart/caelestia-plus-packages (GitHub Pages).
+#
+# Secrets:
+#   PACKAGE_SIGNING_KEY   the armored private signing key (gpg --export-secret-keys --armor)
+#   PACKAGES_DEPLOY_KEY   an SSH key with write access to caelestia-plus-packages (a deploy key)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md", "docs/**"]
+  schedule:
+    # Weekly, for the AUR packages (quickshell-git follows its upstream)
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: packages
+  cancel-in-progress: true
+
+env:
+  REPO_NAME: caelestia-plus
+  PACKAGES_REPO: git@github.com:moimart/caelestia-plus-packages.git
+  AUR_PACKAGES: libcava quickshell-git caelestia-cli app2unit
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container: archlinux:base-devel
+
+    steps:
+      - name: Set up the build system
+        run: |
+          pacman -Syu --noconfirm --needed git openssh sudo
+          # No debug packages, and use every core
+          sed -i 's/^OPTIONS=(\(.*\)debug/OPTIONS=(\1!debug/' /etc/makepkg.conf
+          echo "MAKEFLAGS=\"-j$(nproc)\"" >> /etc/makepkg.conf
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/builder
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the version comes from the shell's tags
+
+      - name: Build the AUR packages
+        run: |
+          chown -R builder: "$GITHUB_WORKSPACE"
+          sudo -u builder bash -euo pipefail <<'EOF'
+          cd ~
+          git clone -q https://aur.archlinux.org/yay-bin.git
+          (cd yay-bin && makepkg -si --noconfirm)
+          yay -S --noconfirm --needed --builddir ~/aur $AUR_PACKAGES
+          mkdir -p ~/out
+          for pkg in $AUR_PACKAGES; do
+              cp ~/aur/"$pkg"/*.pkg.tar.zst ~/out/
+          done
+          EOF
+
+      - name: Build caelestia-plus
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          sudo -u builder git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          sudo -u builder bash -euo pipefail <<EOF
+          cd "$GITHUB_WORKSPACE/pkg"
+          makepkg -s --noconfirm
+          cp ./*.pkg.tar.zst ~/out/
+          EOF
+
+      - name: Sign and make the repo
+        env:
+          SIGNING_KEY: ${{ secrets.PACKAGE_SIGNING_KEY }}
+        run: |
+          export GNUPGHOME=$(mktemp -d)
+          echo "$SIGNING_KEY" | gpg --batch --import
+          fpr=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr/ { print $10; exit }')
+          site=$(mktemp -d)
+          mkdir -p "$site/x86_64"
+          cp /home/builder/out/*.pkg.tar.zst "$site/x86_64/"
+          cd "$site/x86_64"
+          for pkg in ./*.pkg.tar.zst; do
+              gpg --batch --yes --detach-sign --local-user "$fpr" "$pkg"
+          done
+          repo-add --sign --key "$fpr" "$REPO_NAME.db.tar.zst" ./*.pkg.tar.zst
+          # GitHub Pages serves files, not symlinks
+          for link in "$REPO_NAME.db" "$REPO_NAME.files" "$REPO_NAME.db.sig" "$REPO_NAME.files.sig"; do
+              [ -L "$link" ] && cp --remove-destination "$(readlink -f "$link")" "$link"
+          done
+          gpg --armor --export "$fpr" > "$site/caelestia-plus.asc"
+          touch "$site/.nojekyll"
+          {
+              echo "<!doctype html><title>caelestia-plus packages</title><h1>caelestia-plus packages</h1>"
+              echo "<p>A pacman repo. See <a href=\"https://github.com/moimart/caelestia-plus-packages\">the README</a>.</p><ul>"
+              for f in ./*.pkg.tar.zst; do echo "<li>${f#./}</li>"; done
+              echo "</ul>"
+          } > "$site/index.html"
+          ls -la "$site/x86_64"
+          echo "SITE=$site" >> "$GITHUB_ENV"
+
+      - name: Publish
+        env:
+          DEPLOY_KEY: ${{ secrets.PACKAGES_DEPLOY_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes"
+          cd "$SITE"
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name="caelestia-plus CI" -c user.email="ci@caelestia-plus.invalid" \
+              commit -qm "Packages from ${GITHUB_SHA::8}"
+          # Only the current packages: no history of binaries
+          git push --force "$PACKAGES_REPO" gh-pages
