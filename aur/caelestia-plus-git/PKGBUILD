@@ -110,10 +110,13 @@ package_caelestia-plus-hypr() {
     pkgdesc='The caelestia-plus Hyprland config (Lua), with host profiles'
     depends=(
         'hyprland' 'hypridle' 'xdg-desktop-portal-hyprland' 'uwsm' 'app2unit' 'caelestia-cli'
-        'polkit-gnome' 'gcr-4' 'cliphist' 'wl-clipboard' 'trash-cli' 'geoclue' 'gammastep'
-        'bluez-utils' 'qt6ct' 'capitaine-cursors' 'fish' 'kitty'
+        'polkit-gnome' 'gcr-4' 'cliphist' 'wl-clipboard' 'bluez-utils' 'capitaine-cursors' 'fish' 'kitty'
     )
     optdepends=(
+        'gammastep: warmer colours in the evening (with geoclue for your location)'
+        'geoclue: your location, for gammastep'
+        'qt6ct: Qt app theming (the config sets QT_QPA_PLATFORMTHEME=qt6ct)'
+        'trash-cli: empty trash older than 30 days at login'
         'google-chrome: the default browser (SUPER + SHIFT + B)'
         'nautilus: the default file manager (SUPER + SHIFT + F)'
         'vim: the default editor (SUPER + C)'
@@ -129,7 +132,7 @@ package_caelestia-plus-hypr() {
 
 package_caelestia-plus-config() {
     pkgdesc='caelestia-plus defaults: the shell config and art, app configs, scripts, fonts and caelestia-plus-setup'
-    depends=('caelestia-shell-moimart' 'fish' 'starship' 'eza' 'zoxide' 'kitty' 'fastfetch' 'python' 'bash' 'git')
+    depends=('caelestia-shell-moimart' 'fish' 'starship' 'eza' 'kitty' 'fastfetch' 'python' 'bash' 'git')
     optdepends=(
         'foot: alternative terminal'
         'ghostty: alternative terminal, with an amber CRT shader'
@@ -137,6 +140,7 @@ package_caelestia-plus-config() {
         'micro: terminal editor'
         'direnv: per-directory environments in fish'
         'lazygit: the lg abbreviation in fish'
+        'zoxide: a smarter cd in fish'
     )
     backup=('etc/xdg/caelestia/shell.json')
 
