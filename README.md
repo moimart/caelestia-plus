@@ -12,18 +12,133 @@ the shell, the Hyprland config and the app configs, installed as packages.
 > authors intend it, use [caelestia-dots](https://github.com/caelestia-dots).
 > If this particular taste suits you, you're welcome to it.
 
-![A fresh Arch install with caelestia-plus, seconds after setup (in a VM)](docs/fresh-install.png)
+![moimart's desktop: a video wallpaper, the eyes and daruma widgets, and the clock](shell/docs/screenshots/desktop.jpg)
+
+The shell is [moimart's fork of Caelestia's](shell/README.md). Around it: a
+Hyprland config in Lua, and configs for fish, kitty, foot, ghostty, btop and
+friends. Everything installs as pacman packages, and nothing in your home
+folder is overwritten: the packages ship defaults, and your own files only
+hold your changes.
+
+## What's in it
+
+### Window cards
 
 ![A browser and Steam paired into a window card, flipping over in 3D](shell/docs/screenshots/cards.webp)
 
-The shell is [moimart's fork of Caelestia's](shell/README.md), with video
-wallpapers, desktop widgets, window cards, an emoji picker, a camera that
-knows when you're there and more. Around it: a Hyprland config in Lua, and
-configs for fish, kitty, foot, ghostty, btop and friends.
+Pair two windows into one card and flip it over in 3D to show the other:
+**Super+Alt+Tab** pairs, **Super+Tab** flips, **Super+Shift+Tab** splits them
+again. No Hyprland plugin: a card is a locked window group, and the shell
+draws the turn with real perspective.
 
-Everything installs as pacman packages, and nothing in your home folder is
-overwritten: the packages ship defaults, and your own files only hold your
-changes.
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### Video wallpapers
+
+The desktop at the top is one. Any video in your wallpapers folder, picked
+like an image and played through
+mpvpaper with hardware decoding, behind the desktop clock and widgets. It
+pauses when it can't be seen, each monitor can have its own, and the colour
+scheme follows it.
+
+</td>
+<td width="50%" valign="top">
+
+### Desktop widgets
+
+<img src="shell/docs/screenshots/widgets-editor.jpg" alt="The widget editor with the eyes and daruma widgets">
+
+Upstream's empty plugin page made real: widgets you place and resize on the
+desktop (**Super+Ctrl+W**). Eyes that follow your pointer, a winking daruma,
+and your own in `~/.config/caelestia/plugins/widgets`.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### Keyboard shortcuts panel
+
+<img src="shell/docs/screenshots/keybinds.jpg" alt="The keyboard shortcuts panel">
+
+**Super+/** lists every shortcut you have, read from your own Hyprland config:
+nothing is hardcoded. Searchable, grouped by your config's sections.
+
+</td>
+<td valign="top">
+
+### Emoji picker
+
+<img src="shell/docs/screenshots/emoji.png" alt="The emoji picker: the grid, a search, and skin tones">
+
+**Ctrl+Super+Space**, like macOS: search by name or keyword, skin tones, your
+most used first, and the emoji lands in whatever you were typing in.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### A camera that knows you're there
+
+<img src="shell/docs/screenshots/tutorial.jpg" alt="The hand gesture tutorial">
+
+One small Rust daemon reads the webcam only when a feature needs it, and steps
+aside for any other app. It keeps the screen awake while you read, locks when
+you leave, wakes it with face unlock when you're back, and plays or skips
+music with hand gestures (taught by a tutorial). The camera panel
+(**Super+Alt+C**) has a mirror, the camera's controls, presets and video
+recording.
+
+</td>
+<td valign="top">
+
+### Lock screen
+
+<img src="shell/docs/screenshots/lock.jpg" alt="The lock screen with an animated profile picture and Home Assistant cards (blurred here)">
+
+An animated profile picture, read-only Home Assistant cards (a camera, energy,
+your devices), face unlock, and photos of anyone who gets the password wrong.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+### The daruma
+
+<img src="shell/docs/screenshots/session.jpg" alt="The session menu with the winking daruma">
+
+A winking daruma replaces Caelestia's mascots: the bar logo, the session
+menu, and the media card while music plays.
+
+</td>
+<td valign="top">
+
+### Settings for all of it
+
+<img src="shell/docs/screenshots/settings.jpg" alt="Settings pages for plugins, the camera, shortcuts and window cards">
+
+Each feature has its page in Settings, next to upstream's, and everything is
+reachable from scripts (`caelestia shell <target> <function>`) and from AI
+agents through an MCP server.
+
+</td>
+</tr>
+</table>
+
+Around the shell, from the Hyprland config and app configs:
+
+- **Super+Shift+Enter**: a floating terminal right at your pointer, kept on screen.
+- **kitty with a CRT shader**, phase-locked to the wall clock so every window
+  flickers in sync (`kitty-crt`).
+- fish with starship, eza and handy git abbreviations; foot and ghostty
+  (with an amber CRT shader) as alternatives.
+- A download sorter and AppImage launcher entries, as user services.
+
+The full tour, with every shortcut: [the shell's README](shell/README.md).
 
 ## Install
 
@@ -41,7 +156,12 @@ sudo pacman -Syu caelestia-plus
 caelestia-plus-setup
 ```
 
-Log out, choose Hyprland (uwsm), and you're in. The repo also carries the
+Log out, choose Hyprland (uwsm), and you're in. This is a fresh install,
+seconds after setup (in a VM, so no video wallpaper):
+
+![A fresh Arch install with caelestia-plus, seconds after setup (in a VM)](docs/fresh-install.png)
+
+ The repo also carries the
 AUR packages the shell needs (Quickshell, the Caelestia CLI, ...), built
 together so they always match.
 
