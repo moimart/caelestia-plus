@@ -79,6 +79,9 @@ like Launchpad on a Mac, over the desktop dimmed and blurred:
 
 - **Type to filter**: the grid narrows to what you write, best match first;
   Enter launches it.
+
+  <img src="docs/screenshots/launchpad-search.jpg" alt="Launchpad narrowed to the KiCad apps by typing kicad" width="70%">
+
 - **A to Z**, in pages: the wheel, a drag, Page Up/Down or the dots turn them.
 - **Arrows** move the selection, across pages too; Escape clears the search,
   then closes.

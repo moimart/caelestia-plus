@@ -102,7 +102,16 @@ pointer:
 
 ### Launchpad
 
-![Launchpad: every app in a grid over the blurred desktop](shell/docs/screenshots/launchpad.jpg)
+<table>
+<tr>
+<td width="50%"><img src="shell/docs/screenshots/launchpad.jpg" alt="Launchpad: every app A to Z in a grid over the blurred desktop, a dot per page"></td>
+<td width="50%"><img src="shell/docs/screenshots/launchpad-search.jpg" alt="Launchpad narrowed to the KiCad apps by typing kicad"></td>
+</tr>
+<tr>
+<td align="center">Every app, A to Z, in pages</td>
+<td align="center">Type, and it narrows to what you write</td>
+</tr>
+</table>
 
 **Shift+Super+Space**, like Launchpad on a Mac: every app in a grid of pages in
 the middle of the screen, over the desktop dimmed and blurred. Start typing
