@@ -39,7 +39,7 @@ local hostDir
 if hostName and hostName ~= "" then
   for _, dir in ipairs({
     home .. "/.config/caelestia-plus/hosts/" .. hostName .. "/hypr",
-    root .. "/../hosts/" .. hostName .. "/hypr",
+    (root:match("^(.+)/[^/]+$") or root) .. "/hosts/" .. hostName .. "/hypr",
   }) do
     if exists(dir) then
       hostDir = dir
@@ -49,6 +49,16 @@ if hostName and hostName ~= "" then
 end
 
 package.loaded.paths = { home = home, root = root, user = user, host = hostDir, hostName = hostName }
+
+-- The profile's other configs (caelestia/shell.json, caelestia/monitors/...)
+-- reach apps through $XDG_CONFIG_DIRS: the shell layers them under yours
+if hostDir then
+  local profile = hostDir:gsub("/hypr$", "")
+  local dirs = os.getenv("XDG_CONFIG_DIRS") or "/etc/xdg"
+  if not (":" .. dirs .. ":"):find(":" .. profile .. ":", 1, true) then
+    hl.env("XDG_CONFIG_DIRS", profile .. ":" .. dirs)
+  end
+end
 
 local searchPath = { root .. "/lua/?.lua", root .. "/scheme/?.lua", package.path }
 if hostDir then

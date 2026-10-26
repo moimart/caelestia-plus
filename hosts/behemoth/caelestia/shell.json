@@ -1,5 +1,5 @@
 {
     "paths": {
-        "face": "~/.config/caelestia/assets/face.mp4"
+        "face": "/usr/share/caelestia-plus/hosts/behemoth/caelestia/assets/face.mp4"
     }
 }

@@ -52,8 +52,33 @@ How each kind of config layers:
 | Config | Package | Yours |
 | --- | --- | --- |
 | Hyprland | Lua modules on `package.path` | `~/.config/hypr/hyprland.lua` loads the packaged config, then adds or rebinds (or `~/.config/caelestia/hypr-user.lua`) |
-| Shell | base `shell.json` (needs the shell to merge a system file under the user's) | `~/.config/caelestia/shell.json` holds only your changes |
-| Apps (kitty, fish, ...) | configs under `/usr/share` | each app's own include mechanism (`include` in kitty, `source` in fish), else a copied starting point |
+| Shell | `/etc/xdg/caelestia/shell.json`; the host profile's `caelestia/` through `$XDG_CONFIG_DIRS` | `~/.config/caelestia/shell.json` holds only your changes |
+| kitty, foot, ghostty | configs under `/usr/share/caelestia-plus/dots` | your config `include`s the packaged one |
+| fish | `/usr/share/fish/vendor_conf.d/caelestia-plus.fish` | your `config.fish` runs after it |
+| fastfetch | `/etc/xdg/fastfetch/config.jsonc` | your own file replaces it |
+| Scripts (`kitty-crt`, `launch-or-focus`, ...) | `/usr/lib/caelestia-plus/bin` on `PATH` | `~/.local/share/bin` comes first |
+| btop, micro, the CLI's `cli.json` | a starting point | copied once by setup, then yours |
+| Browsers, editors, Spicetify, Thunar | optional | setup asks, like the upstream installer |
+
+The shell's layering (in `shell/plugin/src/Caelestia/Settings/settingsfile.cpp`):
+a file under `~/.config` reads the same path under each `$XDG_CONFIG_DIRS`
+entry first, lowest priority first, and puts yours on top; objects merge key
+by key, anything else replaces. Only what differs from those base files is
+written back. Without base files nothing changes.
+
+### Where things install
+
+```
+/usr/share/caelestia-plus/
+  hypr/                     the Hyprland config (hypr/)
+  hosts/<name>/             host profiles (hosts/)
+  caelestia/assets/         the shell's art (config/caelestia/assets)
+  dots/                     app configs (dots/)
+/usr/lib/caelestia-plus/bin scripts (dots/bin)
+/etc/xdg/caelestia/shell.json  the shell's defaults (config/caelestia/shell.json)
+~/.config/hypr/hyprland.lua    yours: loads the packaged config, then your changes
+                               (setup/templates/hypr/hyprland.lua)
+```
 
 ### Private things
 
@@ -114,9 +139,13 @@ keyring package).
    `~/.local/bin/hal-command`, and the app choices in `hypr/lua/variables.lua`
    (Chrome, nautilus). Fine as defaults, but `hal-command` should move to a
    personal layer before going public.
-3. **Layering.** Hyprland: packaged modules plus a stub `hyprland.lua` and
-   `user.lua`. Shell: merge `/usr/share/caelestia-plus/shell.json` under the
-   user's file. Apps: per-app includes.
+3. **Layering.** Done for Hyprland and the shell: the user's `hyprland.lua`
+   template, the shell's base files (in caelestia-shell first, so behemoth
+   gets it through its usual package; tested with a throwaway program, 9
+   cases), and `hyprland.lua` adding the host profile to `$XDG_CONFIG_DIRS`.
+   Still to check: the shell in the dev shell on behemoth's real config.
+   The app configs' layering (table above) is set up with the packages, in
+   step 4.
 4. **Packages.** The split PKGBUILD and `caelestia-plus-setup`.
 5. **CI and the pacman repo.** Build, sign, publish; the weekly AUR rebuild.
 6. **Switch behemoth over** from symlinks to packages, then test a fresh Arch
