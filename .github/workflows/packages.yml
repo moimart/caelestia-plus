@@ -23,7 +23,7 @@ concurrency:
 env:
   REPO_NAME: caelestia-plus
   PACKAGES_REPO: git@github.com:moimart/caelestia-plus-packages.git
-  AUR_PACKAGES: libcava quickshell-git caelestia-cli app2unit
+  AUR_PACKAGES: libcava ttf-rubik-vf quickshell-git caelestia-cli app2unit
 
 jobs:
   build:

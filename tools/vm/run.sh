@@ -66,7 +66,7 @@ qemu-system-x86_64 -enable-kvm -cpu host -smp 8 -m 8G \
     -drive file="$work/disk.qcow2",if=virtio,id=disk0 \
     -netdev user,id=net0,hostfwd=tcp:127.0.0.1:$ssh_port-:22 -device virtio-net,netdev=net0 \
     -smbios "type=1,serial=ds=nocloud;s=http://10.0.2.2:$port/" \
-    -vga virtio -display vnc=127.0.0.1:7 \
+    -vga std -display vnc=127.0.0.1:7 \
     -qmp unix:"$work/qmp.sock",server=on,wait=off \
     -S -daemonize -pidfile "$work/qemu.pid"
 
