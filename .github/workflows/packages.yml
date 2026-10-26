@@ -109,10 +109,11 @@ jobs:
         env:
           DEPLOY_KEY: ${{ secrets.PACKAGES_DEPLOY_KEY }}
         run: |
-          mkdir -p ~/.ssh
-          echo "$DEPLOY_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
-          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
-          export GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes"
+          # Full paths: ssh's ~ is root's home, not the job's $HOME
+          ssh_dir=$(mktemp -d)
+          printf '%s\n' "$DEPLOY_KEY" > "$ssh_dir/deploy" && chmod 600 "$ssh_dir/deploy"
+          ssh-keyscan github.com > "$ssh_dir/known_hosts" 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i $ssh_dir/deploy -o IdentitiesOnly=yes -o UserKnownHostsFile=$ssh_dir/known_hosts"
           cd "$SITE"
           git init -q -b gh-pages
           git add -A
