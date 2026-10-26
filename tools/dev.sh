@@ -31,20 +31,36 @@ quiet() {
 die() { echo "dev: $*" >&2; exit 1; }
 note() { echo "dev: $*"; }
 
-# Sessions started outside Hyprland (tmux, ssh, services) lack its socket
+# Sessions started outside Hyprland (tmux, ssh, services, or from before a
+# reboot) lack its socket, and qs needs the Wayland display to find the shell
 hypr_env() {
-    hyprctl version > /dev/null 2>&1 && return
     local runtime=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
-    HYPRLAND_INSTANCE_SIGNATURE=$(ls -t "$runtime/hypr" 2> /dev/null | head -1)
-    export HYPRLAND_INSTANCE_SIGNATURE
-    hyprctl version > /dev/null 2>&1 || die "can't reach Hyprland"
+    if ! hyprctl version > /dev/null 2>&1; then
+        HYPRLAND_INSTANCE_SIGNATURE=$(ls -t "$runtime/hypr" 2> /dev/null | head -1)
+        export HYPRLAND_INSTANCE_SIGNATURE
+        hyprctl version > /dev/null 2>&1 || die "can't reach Hyprland"
+    fi
+    if [ ! -S "$runtime/${WAYLAND_DISPLAY:-none}" ]; then
+        WAYLAND_DISPLAY=$(hyprctl -j instances | python3 -c 'import json, os, sys
+sig = os.environ["HYPRLAND_INSTANCE_SIGNATURE"]
+print(next(i["wl_socket"] for i in json.load(sys.stdin) if i["instance"] == sig))')
+        export WAYLAND_DISPLAY
+    fi
 }
 
-# Killing the shell while locked crashes the lock screen: never do it
+# Killing the shell while locked crashes the lock screen: never do it. Each
+# running shell is asked by its pid (its config path may not match the link
+# any more), and one that doesn't answer is assumed locked.
 ensure_unlocked() {
-    if [ "$(qs -c caelestia ipc call lock isLocked 2> /dev/null)" = true ]; then
-        die "the session is locked; not touching the shell. Unlock first."
-    fi
+    local pid locked
+    for pid in $(shell_pids); do
+        locked=$(qs ipc --pid "$pid" call lock isLocked 2> /dev/null || true)
+        case "$locked" in
+            false) ;;
+            true) die "the session is locked; not touching the shell. Unlock first." ;;
+            *) die "can't ask the shell (pid $pid) whether the session is locked; not touching it" ;;
+        esac
+    done
 }
 
 shell_pids() {
@@ -223,10 +239,13 @@ check() {
                 ;;
         esac
     done
-    if printf '%s\n' "${files[@]}" | grep -q '^shell/.*\.qml$'; then
+    # (grep on a here-string: piping printf into grep -q fails under pipefail)
+    local list
+    list=$(printf '%s\n' "${files[@]}")
+    if grep -q '^shell/.*\.qml$' <<< "$list"; then
         (cd shell && quiet python3 scripts/trs-check.py) || fail=1
     fi
-    if printf '%s\n' "${files[@]}" | grep -q '^shell/extras/camerad/.*\.rs$'; then
+    if grep -q '^shell/extras/camerad/.*\.rs$' <<< "$list"; then
         (cd shell/extras/camerad && cargo fmt --check) || fail=1
     fi
 
@@ -291,7 +310,7 @@ case "${1:-} ${2:-}" in
     "shell on") shell_on ;;
     "shell off") shell_off ;;
     "shell restart") shell_restart || die "the shell didn't load (errors above)" ;;
-    "shell log") exec qs -c caelestia log -f ;;
+    "shell log") hypr_env && exec qs -c caelestia log -f ;;
     "shell status" | "shell ") shell_source ;;
     "plugin "*) plugin ;;
     "hypr on") hypr_on ;;
