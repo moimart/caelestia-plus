@@ -5,6 +5,13 @@ A complete Hyprland desktop for Arch, built on <a href="https://github.com/caele
 the shell, the Hyprland config and the app configs, installed as packages.
 </p>
 
+> **A personal fork.** This is moimart's own desktop: Caelestia reshaped to one
+> person's taste, with the features, defaults and look they wanted. It isn't
+> a replacement for Caelestia or an attempt to compete with it, and it
+> follows upstream rather than leading it. If you want Caelestia as its
+> authors intend it, use [caelestia-dots](https://github.com/caelestia-dots).
+> If this particular taste suits you, you're welcome to it.
+
 ![A fresh Arch install with caelestia-plus, seconds after setup (in a VM)](docs/fresh-install.png)
 
 ![A browser and Steam paired into a window card, flipping over in 3D](shell/docs/screenshots/cards.webp)
