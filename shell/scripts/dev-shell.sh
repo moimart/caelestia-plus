@@ -1,5 +1,7 @@
 #!/bin/sh
 # Swap the running shell between the installed package and this checkout.
+# In caelestia-plus, prefer tools/dev.sh shell on|off: it keeps your
+# shortcuts working (see docs/DEVELOPMENT.md).
 #   scripts/dev-shell.sh dev    # run this checkout with plugins from ./build
 #   scripts/dev-shell.sh system # back to the installed shell
 # Build first with: cmake -B build -G Ninja && cmake --build build

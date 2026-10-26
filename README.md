@@ -256,11 +256,12 @@ git repo: `caelestia-plus-setup --overlay <git URL>` clones it.
 | [`hosts/`](hosts) | How host profiles and the personal layer work |
 | [`setup/`](setup) | `caelestia-plus-setup` and the files it creates |
 | [`pkg/`](pkg) | The PKGBUILD for all the packages |
-| [`tools/`](tools) | Testing: a fresh install in a VM, comparing Hyprland configs |
+| [`tools/`](tools) | Development ([`dev.sh`](tools/dev.sh), see [DEVELOPMENT.md](docs/DEVELOPMENT.md)), a fresh install in a VM, comparing Hyprland configs |
 
 CI builds, signs and publishes the packages to
 [caelestia-plus-packages](https://github.com/moimart/caelestia-plus-packages)
-on every push. [PLAN.md](PLAN.md) has the design and how it came together.
+on every push. To work on it: [DEVELOPMENT.md](docs/DEVELOPMENT.md).
+[PLAN.md](PLAN.md) has the design and how it came together.
 
 ## Credits
 
