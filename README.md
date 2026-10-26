@@ -208,8 +208,9 @@ examples: [docs/mcp](docs/mcp).
 Around the shell, from the Hyprland config and app configs:
 
 - **Super+Shift+Enter**: a floating terminal right at your pointer, kept on screen.
-- **Super+both Shifts+Enter**: the same terminal runs the command on your clipboard
-  (shown first), and closes when it ends.
+- **Super+both Shifts+Enter**: the same terminal shows the command on your
+  clipboard, runs it when you press Enter (any other key cancels), and closes
+  when it ends.
 - **kitty with a CRT shader**, phase-locked to the wall clock so every window
   flickers in sync (`kitty-crt`).
 - fish with starship, eza and handy git abbreviations; foot and ghostty
