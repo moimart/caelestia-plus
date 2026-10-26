@@ -11,6 +11,36 @@ local rescue   = hypr .. "/scripts/rescue-windows.fish"
 hl.bind("CTRL + left",  hl.dsp.focus({ workspace = "-1" }))
 hl.bind("CTRL + right", hl.dsp.focus({ workspace = "+1" }))
 
+-- SUPER + `  → rotary cycle through populated workspaces on this monitor.
+-- SUPER + ~  → same cycle in reverse (SHIFT+backtick = tilde).
+-- Skips special workspaces, empty workspaces, and workspaces on other
+-- monitors. Wraps around at the ends.
+local function cycle_populated(reverse)
+  local cur = hl.get_active_workspace()
+  if not cur or not cur.monitor then return end
+  local candidates = {}
+  for _, ws in ipairs(hl.get_workspaces() or {}) do
+    if ws.id > 0 and not ws.special
+       and ws.windows > 0 and ws.monitor
+       and ws.monitor.id == cur.monitor.id then
+      candidates[#candidates + 1] = ws
+    end
+  end
+  table.sort(candidates, function(a, b) return a.id < b.id end)
+  if #candidates < 2 then return end
+  local step = reverse and -1 or 1
+  local target = candidates[1]
+  for i, ws in ipairs(candidates) do
+    if ws.id == cur.id then
+      target = candidates[((i - 1 + step) % #candidates) + 1]
+      break
+    end
+  end
+  hl.dispatch(hl.dsp.focus({ workspace = tostring(target.id) }))
+end
+hl.bind("SUPER + grave",         function() cycle_populated(false) end)
+hl.bind("SUPER + SHIFT + grave", function() cycle_populated(true)  end)
+
 -- =====================================================================
 -- Caelestia shell global IPC binds
 -- =====================================================================
@@ -23,6 +53,12 @@ hl.bind("CTRL + right", hl.dsp.focus({ workspace = "+1" }))
 -- caelestia-dots/caelestia#405 for the upstream 0.55 migration.
 hl.bind("SUPER + Space",
         hl.dsp.exec_cmd("qs -c caelestia ipc call drawers toggle launcher"))
+
+-- Dashboard toggle. dashboard.showOnHover was set to false in
+-- ~/.config/caelestia/shell.json, so the top-edge hover no longer
+-- summons it — this bind is the way to bring it up.
+hl.bind("SUPER + E",
+        hl.dsp.exec_cmd("qs -c caelestia ipc call drawers toggle dashboard"))
 -- The original `bindin = Super, catchall, ...` line was dropped: `catchall`
 -- is a submap-only keysym in the new API. The mouse/wheel interrupts below
 -- cover the common cases the user wired up.
