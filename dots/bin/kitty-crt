@@ -1,0 +1,38 @@
+#!/bin/bash
+# Launch kitty with the CRT shader phase-locked to the wall clock.
+#
+# kitty's shaders only get `d.timestamp`, which counts from when that kitty
+# process started, so windows in separate processes animate out of phase. The
+# shader therefore adds a TIME_OFFSET constant, which a .pipeline file can
+# override. Here we set it to (wall clock mod CYCLE) at launch, so
+# timestamp + offset is the same wall-clock phase in every process.
+#
+# CYCLE must be a common multiple of BAND_PERIOD (6s) and BURST_EVERY (5s) in
+# caelestia-crt.slang, so the animation does not jump when the offset wraps.
+
+set -euo pipefail
+
+CYCLE=30
+SHADER=caelestia-crt
+
+runtime="${XDG_RUNTIME_DIR:-/tmp}/caelestia-crt"
+mkdir -p "$runtime"
+
+# Seconds since the epoch, with millisecond precision, modulo CYCLE
+offset=$(date +%s.%3N | awk -v c="$CYCLE" '{printf "%.3f", $1 - int($1 / c) * c}')
+
+pipeline="$runtime/$SHADER.$$.pipeline"
+cat > "$pipeline" <<EOF
+var float TIME_OFFSET = $offset
+
+startgroup
+    animation_step 16
+    shaders /home/moimart/.config/kitty/shaders/$SHADER
+endgroup
+EOF
+
+# kitty only reads the pipeline while starting up. exec'ing means no trap can
+# fire here, so clean up from a detached child instead.
+( sleep 15; rm -f "$pipeline" ) >/dev/null 2>&1 &
+
+exec kitty -o custom_shaders="$pipeline" "$@"

@@ -1,0 +1,5 @@
+{
+    "theme": {
+        "postHook": "pgrep -x nautilus >/dev/null && nautilus -q"
+    }
+}
