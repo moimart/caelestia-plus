@@ -82,7 +82,7 @@ hl.bind("SUPER + ALT + L", hl.dsp.exec_cmd("caelestia shell -d"),  { locked = tr
 hl.bind("SUPER + ALT + L", hl.dsp.global("caelestia:lock"),         { locked = true })
 
 -- Re-broadcast caelestia colour sequences to every open terminal
-hl.bind("SUPER + ALT + T", hl.dsp.exec_cmd(home .. "/.local/share/bin/refresh-term-colors"))
+hl.bind("SUPER + ALT + T", hl.dsp.exec_cmd("refresh-term-colors"))
 
 -- Brightness
 hl.bind("XF86MonBrightnessUp",   hl.dsp.global("caelestia:brightnessUp"),   { locked = true })
