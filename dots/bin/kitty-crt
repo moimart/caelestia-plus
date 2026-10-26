@@ -21,13 +21,17 @@ mkdir -p "$runtime"
 # Seconds since the epoch, with millisecond precision, modulo CYCLE
 offset=$(date +%s.%3N | awk -v c="$CYCLE" '{printf "%.3f", $1 - int($1 / c) * c}')
 
+# Your shaders if you have them, else the packaged ones
+shaders=${XDG_CONFIG_HOME:-$HOME/.config}/kitty/shaders
+[ -d "$shaders" ] || [ ! -d /usr/share/caelestia-plus/dots/kitty/shaders ] || shaders=/usr/share/caelestia-plus/dots/kitty/shaders
+
 pipeline="$runtime/$SHADER.$$.pipeline"
 cat > "$pipeline" <<EOF
 var float TIME_OFFSET = $offset
 
 startgroup
     animation_step 16
-    shaders ${XDG_CONFIG_HOME:-$HOME/.config}/kitty/shaders/$SHADER
+    shaders $shaders/$SHADER
 endgroup
 EOF
 

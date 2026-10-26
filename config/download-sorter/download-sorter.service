@@ -2,7 +2,7 @@
 Description=Move finished downloads by extension rules
 
 [Service]
-ExecStart=/usr/bin/python3 %h/code/dotfiles/download-sorter/download-sorter.py
+ExecStart=/usr/bin/python3 /usr/lib/caelestia-plus/download-sorter/download-sorter.py
 Restart=on-failure
 RestartSec=5
 

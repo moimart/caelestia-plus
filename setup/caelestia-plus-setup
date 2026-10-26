@@ -1,0 +1,202 @@
+#!/bin/bash
+# caelestia-plus-setup: make this user's desktop caelestia-plus.
+#
+#   caelestia-plus-setup [--host NAME] [--dry-run]
+#
+# Creates the small files in ~/.config that load the packaged defaults, picks
+# a host profile, and enables the user services. It never overwrites
+# anything: a config you already have is left alone (and mentioned), so it's
+# safe to run again, e.g. after an update adds something new.
+
+set -euo pipefail
+
+# Where the package installed things (overridable to test a staged install)
+share=${CAELESTIA_PLUS_SHARE:-/usr/share/caelestia-plus}
+lib=${CAELESTIA_PLUS_LIB:-/usr/lib/caelestia-plus}
+config=${XDG_CONFIG_HOME:-$HOME/.config}
+host=
+dry=0
+
+usage() {
+    sed -n '2,10s/^# \{0,1\}//p' "$0"
+    exit "${1:-0}"
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --host) host=${2:?--host needs a name}; shift 2 ;;
+        --host=*) host=${1#--host=}; shift ;;
+        --dry-run|-n) dry=1; shift ;;
+        -h|--help) usage ;;
+        *) echo "unknown option: $1" >&2; usage 2 ;;
+    esac
+done
+
+done_=()
+kept=()
+
+run() {
+    if [ $dry = 1 ]; then
+        echo "would: $*"
+    else
+        "$@"
+    fi
+}
+
+# write <path> <content>: only if nothing is there yet
+write() {
+    if [ -e "$1" ] || [ -L "$1" ]; then
+        kept+=("$1")
+        return 1
+    fi
+    run mkdir -p "$(dirname "$1")"
+    if [ $dry = 1 ]; then
+        echo "would: write $1"
+    else
+        printf '%s\n' "$2" > "$1"
+    fi
+    done_+=("$1")
+}
+
+# seed <packaged file> <path>: a copy to start from, only if nothing is there
+seed() {
+    [ -e "$1" ] || return 0
+    if [ -e "$2" ] || [ -L "$2" ]; then
+        kept+=("$2")
+        return 0
+    fi
+    run mkdir -p "$(dirname "$2")"
+    run cp "$1" "$2"
+    done_+=("$2")
+}
+
+# link <packaged dir> <path>: a link to packaged files, only if nothing is there
+link() {
+    [ -e "$1" ] || return 0
+    if [ -e "$2" ] || [ -L "$2" ]; then
+        return 0
+    fi
+    run mkdir -p "$(dirname "$2")"
+    run ln -s "$1" "$2"
+    done_+=("$2")
+}
+
+# A config dir that's a symlink (into a git checkout) is someone's own setup
+own_setup() {
+    [ -L "$config/$1" ]
+}
+
+# ---- Host profile ----
+hostfile=$config/caelestia-plus/host
+if [ -z "$host" ] && [ -f "$hostfile" ]; then
+    host=$(head -n1 "$hostfile")
+fi
+if [ -z "$host" ]; then
+    name=$(cat /etc/hostname 2>/dev/null || hostname)
+    if [ -d "$config/caelestia-plus/hosts/$name" ] || [ -d "$share/hosts/$name" ]; then
+        host=$name
+    fi
+fi
+if [ -n "$host" ]; then
+    if [ ! -d "$config/caelestia-plus/hosts/$host" ] && [ ! -d "$share/hosts/$host" ]; then
+        echo "no host profile called $host (in $config/caelestia-plus/hosts or $share/hosts)" >&2
+        exit 1
+    fi
+    if [ "$(head -n1 "$hostfile" 2>/dev/null)" != "$host" ]; then
+        run mkdir -p "$(dirname "$hostfile")"
+        if [ $dry = 1 ]; then echo "would: write $hostfile ($host)"; else echo "$host" > "$hostfile"; fi
+        done_+=("$hostfile ($host)")
+    fi
+fi
+
+# ---- Hyprland ----
+if own_setup hypr; then
+    kept+=("$config/hypr (a link to your own config)")
+else
+    seed "$share/setup/hypr/hyprland.lua" "$config/hypr/hyprland.lua"
+    if [ -f "$config/hypr/hyprland.lua" ] && ! grep -q "$share/hypr/hyprland.lua" "$config/hypr/hyprland.lua"; then
+        echo "note: $config/hypr/hyprland.lua doesn't load the caelestia-plus config;"
+        echo "      add this line at the top: dofile(\"$share/hypr/hyprland.lua\")"
+    fi
+fi
+
+# ---- The shell: its defaults layer in by themselves ----
+# (/etc/xdg/caelestia/shell.json and the host profile's caelestia/)
+if ! own_setup caelestia; then
+    seed "$share/setup/caelestia/cli.json" "$config/caelestia/cli.json"
+    for dir in "$config/caelestia-plus/hosts/$host" "$share/hosts/$host"; do
+        [ -n "$host" ] && [ -f "$dir/caelestia/lock-ha.json" ] || continue
+        seed "$dir/caelestia/lock-ha.json" "$config/caelestia/lock-ha.json"
+        break
+    done
+fi
+
+# ---- Terminals: include the packaged config ----
+if ! own_setup kitty; then
+    write "$config/kitty/kitty.conf" "include $share/dots/kitty/kitty.conf
+
+# Your settings below override the defaults above." || true
+    link "$share/dots/kitty/shaders" "$config/kitty/shaders"
+fi
+if ! own_setup foot; then
+    write "$config/foot/foot.ini" "[main]
+include=$share/dots/foot/foot.ini
+
+# Your settings below override the defaults above." || true
+fi
+if ! own_setup ghostty; then
+    write "$config/ghostty/config" "config-file = $share/dots/ghostty/config
+
+# Your settings below override the defaults above." || true
+    link "$share/dots/ghostty/shaders" "$config/ghostty/shaders"
+fi
+
+# ---- Starting points for apps without includes ----
+own_setup btop || seed "$share/dots/btop/btop.conf" "$config/btop/btop.conf"
+own_setup micro || seed "$share/dots/micro/settings.json" "$config/micro/settings.json"
+own_setup uwsm || {
+    seed "$share/dots/uwsm/env" "$config/uwsm/env"
+    seed "$share/dots/uwsm/env-hyprland" "$config/uwsm/env-hyprland"
+}
+seed "$share/dots/starship.toml" "$config/starship.toml"
+
+# ---- bash: the packaged defaults first, yours after ----
+if [ -f "$share/dots/default-bashrc" ]; then
+    if write "$HOME/.bashrc" "source $share/dots/default-bashrc
+
+# Your settings below override the defaults above."; then
+        :
+    elif ! grep -q "$share/dots/default-bashrc" "$HOME/.bashrc"; then
+        echo "note: for the caelestia-plus bash defaults, add to the top of ~/.bashrc:"
+        echo "      source $share/dots/default-bashrc"
+    fi
+fi
+# (fish and fastfetch read the packaged defaults by themselves)
+
+# ---- User services ----
+seed "$lib/download-sorter/config.example.toml" "$config/download-sorter/config.toml"
+for unit in download-sorter appimage-desktop; do
+    if ! systemctl --user is-enabled --quiet "$unit" 2>/dev/null; then
+        run systemctl --user enable --now "$unit" || echo "note: couldn't enable $unit (no user session bus?)"
+        done_+=("$unit.service enabled")
+    fi
+done
+
+# ---- Report ----
+if [ ${#done_[@]} -gt 0 ]; then
+    echo "$([ $dry = 1 ] && echo Would set up || echo Set up):"
+    printf '  %s\n' "${done_[@]}"
+fi
+if [ ${#kept[@]} -gt 0 ]; then
+    echo "Already there, left alone:"
+    printf '  %s\n' "${kept[@]}"
+fi
+echo "Host profile: ${host:-none (defaults: every monitor at its preferred mode)}"
+cat <<EOF
+
+Optional:
+  sudo pacman -S onnxruntime-cpu   camera presence, gestures, light sensor
+  paru -S howdy-git                face unlock (then: sudo howdy add)
+  mkdir -p ~/Pictures/Wallpapers   wallpapers for the launcher's picker
+Log out and choose Hyprland (uwsm) to start the desktop.
+EOF
