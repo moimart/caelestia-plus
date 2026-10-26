@@ -41,7 +41,7 @@ run() {
 links=(
     "$config/hypr" "$config/caelestia" "$config/kitty" "$config/foot" "$config/ghostty"
     "$config/fish" "$config/btop" "$config/fastfetch" "$config/uwsm" "$config/starship.toml"
-    "$data/bin" "$data/fonts/InstrumentSerif"
+    "$data/bin" "$data/fonts/InstrumentSerif" "$data/default-bashrc"
 )
 services=(download-sorter appimage-desktop)
 
@@ -195,6 +195,10 @@ for path in "$config/hypr" "$config/kitty" "$config/foot" "$config/ghostty" "$co
         run rm "$path"
     fi
 done
+# A ~/.bashrc may source ~/.local/share/default-bashrc: point it at the package's
+if [ -L "$data/default-bashrc" ]; then
+    run ln -sfn "/usr/share/caelestia-plus/dots/default-bashrc" "$data/default-bashrc"
+fi
 
 echo "== Services: the packaged units"
 for unit in "${services[@]}"; do
