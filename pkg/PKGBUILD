@@ -104,6 +104,9 @@ package_caelestia-shell-moimart() {
         install -Dm644 "${srcdir}/${model}" "$pkgdir/usr/lib/caelestia/camera-models/${model}"
     done
     install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+    # The shell's font, for everything else too (Hyprland's group tabs use it)
+    install -Dm644 assets/google-sans-flex/*.ttf -t "$pkgdir"/usr/share/fonts/caelestia-shell/
+    install -Dm644 assets/google-sans-flex/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/GoogleSansFlex-OFL.txt
 
     # The MCP server, for AI agents (docs/mcp in the repo)
     install -Dm755 mcp/caelestia_mcp.py "$pkgdir"/usr/lib/caelestia/caelestia_mcp.py

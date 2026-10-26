@@ -181,6 +181,13 @@ hypr_errors() {
 }
 
 hypr_on() {
+    # Syntax first: a file that doesn't parse would leave Hyprland half-configured
+    local f bad=0
+    while IFS= read -r f; do
+        luac5.5 -p "$f" || bad=1
+    done < <(find "$repo/hypr" -name '*.lua' -not -path '*/tools/*')
+    [ "$bad" = 0 ] || die "the checkout's Hyprland config doesn't parse (above); not switching"
+
     hypr_set "$repo/hypr/hyprland.lua"
     local errors
     errors=$(hypr_errors)
@@ -190,6 +197,9 @@ hypr_on() {
         die "the checkout's config has errors (above); back to the installed one"
     fi
     note "Hyprland runs the checkout's config: save, then 'hyprctl reload'. Done: tools/dev.sh hypr off"
+    # hyprctl configerrors doesn't list values Hyprland rejects from Lua (a
+    # float where it wants an integer, say): those only show as its banner
+    note "values Hyprland rejects only show as its 'Your config has errors' banner: look at the screen"
 }
 
 hypr_source() {
