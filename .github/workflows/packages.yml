@@ -69,6 +69,13 @@ jobs:
           cp ./*.pkg.tar.zst ~/out/
           EOF
 
+      # The unsigned packages, for testing an install (e.g. in a VM)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: /home/builder/out/*.pkg.tar.zst
+          retention-days: 7
+
       - name: Sign and make the repo
         env:
           SIGNING_KEY: ${{ secrets.PACKAGE_SIGNING_KEY }}
