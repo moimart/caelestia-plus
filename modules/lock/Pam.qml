@@ -37,6 +37,8 @@ Scope {
             return;
 
         // Trigger howdy on enter while empty buffer
+        if ((event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && buffer.length === 0)
+            howdy.freshen();
         if (howdy.canAttempt && !howdy.active && (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) && buffer.length === 0)
             return howdy.start(); // Gate on active so double enter still allows empty password
 
@@ -148,7 +150,10 @@ Scope {
     }
 
     Connections {
+        // Waking up is a fresh approach: failed tries from before (overnight) don't count
         function onResumed(): void {
+            if (!howdy.active)
+                howdy.reset();
             if (howdy.canAttempt && !howdy.active && GlobalConfig.lock.triggerHowdyOnWake)
                 howdy.start();
         }
@@ -202,9 +207,11 @@ Scope {
 
         property bool available
         property int tries
+        property real lastTry
         property int errorTries
         property int state
-        readonly property bool canAttempt: available && enabled && root.lock.secure && tries < maxTries
+        // A limit of 0 means no limit
+        readonly property bool canAttempt: available && enabled && root.lock.secure && (maxTries <= 0 || tries < maxTries)
 
         readonly property alias active: pam.active
         readonly property alias message: pam.message
@@ -221,6 +228,12 @@ Scope {
 
         function abort(): void {
             pam.abort();
+        }
+
+        // The limit is on tries in a row: ones from over 5 minutes ago don't count
+        function freshen(): void {
+            if (!active && tries > 0 && Date.now() - lastTry > 300000)
+                reset();
         }
 
         function reset(): void {
@@ -252,7 +265,8 @@ Scope {
                     }
                 } else if (res === PamResult.MaxTries || res === PamResult.Failed) {
                     ctx.tries++;
-                    if (ctx.tries < ctx.maxTries) {
+                    ctx.lastTry = Date.now();
+                    if (ctx.maxTries <= 0 || ctx.tries < ctx.maxTries) {
                         ctx.state = Pam.Failed;
                         if (ctx.retryOnFail)
                             start();

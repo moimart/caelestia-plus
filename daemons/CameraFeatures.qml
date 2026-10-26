@@ -69,7 +69,10 @@ Scope {
                 return;
             root.lastWake = Date.now();
             Hypr.dispatch(Hypr.usingLua ? `hl.dsp.dpms({ action = "enable" })` : "dpms on");
+            // Someone just sat down: a fresh set of tries, whatever failed before
             const howdy = root.lock.pam.howdy;
+            if (!howdy.active)
+                howdy.reset();
             if (howdy.canAttempt && !howdy.active)
                 howdy.start();
         });

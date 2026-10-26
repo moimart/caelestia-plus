@@ -165,7 +165,11 @@ package, which replaces the AUR `caelestia-shell`.
     again at 6, saved to `~/Pictures/Unlock attempts` and shown in a
     notification once you unlock.
   - **Face unlock:** with howdy, through the lock screen's existing support.
-    This camera has no infrared, so a photo could fool it.
+    This camera has no infrared, so a photo could fool it. The limit on tries
+    (`lock.maxHowdyTries`, in Nexus → Camera; 0 for no limit) counts tries in
+    a row only: tries over 5 minutes old don't count, and waking from sleep or
+    presence seeing you sit down starts afresh, so failed attempts overnight
+    don't leave you with only the password in the morning.
   - **Models:** YuNet (faces) and MediaPipe palm and hand (gestures), from
     opencv_zoo, on ONNX Runtime (`onnxruntime-cpu`, loaded only when a model is
     first needed). The PKGBUILD fetches them, with pinned checksums, into

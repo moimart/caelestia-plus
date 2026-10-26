@@ -363,6 +363,15 @@ PageBase {
             onToggled: GlobalConfig.lock.enableHowdy = checked
         }
 
+        StepperRow {
+            label: Tr.tr("Face unlock tries in a row")
+            subtext: GlobalConfig.lock.maxHowdyTries > 0 ? Tr.tr("Then the password; waking up or sitting back down starts afresh") : Tr.tr("No limit")
+            value: GlobalConfig.lock.maxHowdyTries
+            from: 0
+            to: 20
+            onMoved: v => GlobalConfig.lock.maxHowdyTries = v
+        }
+
         ToggleRow {
             text: Tr.tr("Photo after wrong passwords")
             subtext: Tr.tr("Shown to you once you unlock")
