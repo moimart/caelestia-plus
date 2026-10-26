@@ -1,5 +1,12 @@
 local V = require("variables")
 
+-- SSH agent via gcr-ssh-agent (gcr-4 package) — gnome-keyring provides
+-- the secret store, gcr-ssh-agent is the SSH-agent wrapper on top of
+-- it. Also exported in ~/.config/environment.d/ssh_auth_sock.conf for
+-- processes started outside Hyprland. Enable the socket once:
+--   systemctl --user enable --now gcr-ssh-agent.socket
+hl.env("SSH_AUTH_SOCK", (os.getenv("XDG_RUNTIME_DIR") or "/run/user/1000") .. "/gcr/ssh")
+
 -- Display scaling (GDK_SCALE and the like) belongs to a monitor, so it's set
 -- by the host profile's host.lua
 
