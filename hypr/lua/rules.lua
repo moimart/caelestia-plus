@@ -18,6 +18,14 @@ hl.window_rule({
   opaque = true,
 })
 
+-- Claude app (Chrome PWA): at the default opacity a square backing shows
+-- outside the rounded corners, so keep it opaque.
+hl.window_rule({
+  name   = "claude-pwa-opaque",
+  match  = { class = "chrome-claude\\.ai__-Default" },
+  opaque = true,
+})
+
 -- Center floating Wayland windows (XWayland popups left alone)
 hl.window_rule({
   name  = "center-floats",
@@ -33,11 +41,18 @@ local floats = {
   "com\\.github\\.GradienceTeam\\.Gradience",
   "feh", "imv",
   "system-config-printer",
-  "org\\.quickshell",
 }
 for _, cls in ipairs(floats) do
   hl.window_rule({ match = { class = cls }, float = true })
 end
+
+-- Caelestia's file picker floats; its settings window (Nexus) tiles like a
+-- normal app, so org.quickshell isn't in the float list above.
+hl.window_rule({
+  name  = "caelestia-file-dialog-float",
+  match = { class = "org\\.quickshell", title = "^Select " },
+  float = true,
+})
 
 -- ----- Float, resize and center -----
 hl.window_rule({

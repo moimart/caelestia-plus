@@ -40,7 +40,7 @@ M.singleWindowGapsOut = 20
 
 -- Window styling
 M.windowOpacity                = 0.975
-M.windowRounding               = 10
+M.windowRounding               = 27
 M.windowBorderSize             = 3
 M.activeWindowBorderColour     = C.rgba("primary",          "e6")
 M.inactiveWindowBorderColour   = C.rgba("onSurfaceVariant", "11")

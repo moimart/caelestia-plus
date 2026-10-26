@@ -7,8 +7,11 @@ hl.on("hyprland.start", function()
   hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP")
   hl.exec_cmd("systemctl --user start hyprland-session.target")
 
-  -- Keyring and auth
-  hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
+  -- Keyring and auth. gnome-keyring-daemon is already started by its
+  -- systemd user unit (pam_gnome_keyring auto_start in sddm's PAM
+  -- session), so the old `--start` exec here was a no-op; dropped.
+  -- SSH agent is provided by gcr-ssh-agent.socket (gcr-4) — see
+  -- lua/env.lua for SSH_AUTH_SOCK propagation.
   hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
   -- (was `sleep 1 && hyprpm reload`. Plugins are now loaded synchronously
   --  in lua/plugins.lua, so async reload at start is no longer needed.)
