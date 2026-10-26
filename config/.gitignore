@@ -3,6 +3,7 @@
 /caelestia/*
 !/caelestia/shell.json
 !/caelestia/cli.json
+!/caelestia/lock-ha.example.json
 !/caelestia/assets/
 
 __pycache__/
