@@ -1,0 +1,10 @@
+[Unit]
+Description=Keep launcher entries in sync with ~/Applications AppImages
+
+[Service]
+ExecStart=/usr/bin/python3 %h/code/dotfiles/download-sorter/appimage-desktop.py %h/Applications
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,37 @@
+# download-sorter config: ~/.config/download-sorter/config.toml
+# Re-read automatically when saved.
+
+# Folder to watch (top level only).
+watch = "~/Downloads"
+
+# Seconds a file must stay unchanged (size and mtime) before it's moved.
+settle = 3
+
+# Also sort files already in the folder at startup / when `watch` changes.
+sweep = true
+
+# Never touch these (in-progress downloads, hidden files). Case-insensitive.
+ignore = ["*.part", "*.crdownload", "*.download", "*.tmp", "*.partial", ".*"]
+
+# Rules are tried top to bottom; the first match wins. Unmatched files stay.
+# `match` is a glob or list of globs (case-insensitive), `dest` the folder
+# (created if missing), `executable = true` adds +x after moving.
+
+[[rule]]
+match = "*.appimage"
+dest = "~/Applications"
+executable = true
+
+# More examples:
+#
+# [[rule]]
+# match = ["*.pdf", "*.epub"]
+# dest = "~/Documents/Inbox"
+#
+# [[rule]]
+# match = ["*.jpg", "*.jpeg", "*.png", "*.webp", "*.heic"]
+# dest = "~/Pictures/Downloads"
+#
+# [[rule]]
+# match = ["*.zip", "*.tar.gz", "*.tar.xz", "*.7z"]
+# dest = "~/Downloads/Archives"
