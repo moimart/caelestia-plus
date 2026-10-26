@@ -1,16 +1,62 @@
--- Hyprland config (Lua, since 0.55)
--- Converted from the previous .conf-based caelestia config tree.
+-- caelestia-plus: the Hyprland config (Lua, Hyprland 0.55+).
 -- See: https://wiki.hypr.land/Configuring/
+--
+-- This is the default config: complete on its own. Two layers can extend it:
+--   * a host profile, for what belongs to one machine (monitors, scaling...):
+--     hosts/<name>/hypr/. Its modules replace the default ones of the same
+--     name (monitors.lua), and its host.lua runs after the defaults. The name
+--     comes from $CAELESTIA_PLUS_HOST, ~/.config/caelestia-plus/host, else
+--     the hostname.
+--   * your own changes, after everything else: ~/.config/hypr/hyprland.lua
+--     when this file is installed as a package (it loads this one first), or
+--     ~/.config/caelestia/hypr-user.lua.
 
-local hypr = os.getenv("HOME") .. "/.config/hypr"
-package.path = table.concat({
-  hypr .. "/lua/?.lua",
-  hypr .. "/scheme/?.lua",
-  package.path,
-}, ";")
+local home = os.getenv("HOME")
 
--- Source the user's persistent overrides if present (~/.config/caelestia/hypr-vars.lua)
-local cConf = os.getenv("HOME") .. "/.config/caelestia"
+local function exists(path)
+  local f = io.open(path, "r")
+  if f then f:close() end
+  return f ~= nil
+end
+
+local function read_line(path)
+  local f = io.open(path, "r")
+  if not f then return nil end
+  local line = f:read("l")
+  f:close()
+  return line and line:match("^%s*(.-)%s*$")
+end
+
+-- Where this config lives (the repo, or /usr/share/caelestia-plus/hypr), and
+-- where your own files are: the colour scheme the shell writes, overrides
+local source = debug.getinfo(1, "S").source
+local root = source:match("^@(.+)/[^/]+$") or (home .. "/.config/hypr")
+local user = home .. "/.config/hypr"
+
+-- The host profile: a private overlay first, then the ones shipped here
+local hostName = os.getenv("CAELESTIA_PLUS_HOST") or read_line(home .. "/.config/caelestia-plus/host") or read_line("/etc/hostname")
+local hostDir
+if hostName and hostName ~= "" then
+  for _, dir in ipairs({
+    home .. "/.config/caelestia-plus/hosts/" .. hostName .. "/hypr",
+    root .. "/../hosts/" .. hostName .. "/hypr",
+  }) do
+    if exists(dir) then
+      hostDir = dir
+      break
+    end
+  end
+end
+
+package.loaded.paths = { home = home, root = root, user = user, host = hostDir, hostName = hostName }
+
+local searchPath = { root .. "/lua/?.lua", root .. "/scheme/?.lua", package.path }
+if hostDir then
+  table.insert(searchPath, 1, hostDir .. "/?.lua")
+end
+package.path = table.concat(searchPath, ";")
+
+local cConf = home .. "/.config/caelestia"
 os.execute("mkdir -p '" .. cConf .. "'")
 
 -- Each require() runs in its own Lua scope so an error in one file
@@ -38,21 +84,16 @@ require("gestures")
 require("execs")
 require("keybinds")
 require("scheme_watcher")
--- require("tv_grid")   -- 3-per-row auto-flow for vertical scrolling
-                       --  workspaces. Re-enable together with the ws 3
-                       --  direction=down rule in workspaces.lua.
 
--- Optional: turn HDMI-A-1 into a "cast target" workspace instead of a
--- DP-1 mirror. Comment this line to fall back to the mirror behaviour.
-require("tv_sink")
+-- The host profile's additions
+if hostDir and exists(hostDir .. "/host.lua") then
+  require("host")
+end
 
--- Optional per-host user overrides: load ~/.config/caelestia/hypr-user.lua
--- only if it actually exists (avoids the noisy "module not found" log line
--- Hyprland emits for failing requires).
-local user_lua = cConf .. "/hypr-user.lua"
-local f = io.open(user_lua, "r")
-if f then
-  f:close()
+-- Your own overrides: load ~/.config/caelestia/hypr-user.lua only if it
+-- actually exists (avoids the noisy "module not found" log line Hyprland
+-- emits for failing requires).
+if exists(cConf .. "/hypr-user.lua") then
   package.path = cConf .. "/?.lua;" .. package.path
   require("hypr-user")
 end

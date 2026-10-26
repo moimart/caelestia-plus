@@ -27,7 +27,7 @@ var float TIME_OFFSET = $offset
 
 startgroup
     animation_step 16
-    shaders /home/moimart/.config/kitty/shaders/$SHADER
+    shaders ${XDG_CONFIG_HOME:-$HOME/.config}/kitty/shaders/$SHADER
 endgroup
 EOF
 

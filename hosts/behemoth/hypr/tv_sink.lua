@@ -8,8 +8,8 @@
 --
 -- ============================================================
 -- TO REVERT (get the mirror back):
---   1. Comment out `require("tv_sink")` in hyprland.lua.
---   2. That's it — lua/monitors.lua still holds the mirror
+--   1. Comment out `require("tv_sink")` in hosts/behemoth/hypr/host.lua.
+--   2. That's it — this profile's monitors.lua still holds the mirror
 --      config, which becomes the last-writer-wins result again.
 -- ============================================================
 

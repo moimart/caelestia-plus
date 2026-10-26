@@ -12,8 +12,7 @@
 -- Track caelestia-dots/caelestia#405 to remove this once upstream calls
 -- `hyprctl reload` itself.
 
-local hypr        = os.getenv("HOME") .. "/.config/hypr"
-local scheme_path = hypr .. "/scheme/current.conf"
+local scheme_path = require("paths").user .. "/scheme/current.conf"
 
 local function read_all(path)
   local f = io.open(path, "r")

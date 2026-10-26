@@ -1,9 +1,9 @@
 local V = require("variables")
 
-local home   = os.getenv("HOME")
-local hypr   = home .. "/.config/hypr"
-local wsaction = hypr .. "/scripts/wsaction.fish"
-local rescue   = hypr .. "/scripts/rescue-windows.fish"
+local P      = require("paths")
+local home   = P.home
+local wsaction = P.root .. "/scripts/wsaction.fish"
+local rescue   = P.root .. "/scripts/rescue-windows.fish"
 
 -- =====================================================================
 -- Workspace switching

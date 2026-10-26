@@ -9,15 +9,17 @@
 
 local M = {}
 
-local hypr = os.getenv("HOME") .. "/.config/hypr"
+local P = require("paths")
+local hypr = P.user
 
--- Make sure scheme/current.conf exists, falling back to default.conf.
+-- Make sure scheme/current.conf exists (the shell writes it), falling back to
+-- the default.conf that comes with the config.
 local function ensure_current()
   local f = io.open(hypr .. "/scheme/current.conf", "r")
   if f then f:close(); return end
   os.execute(string.format(
-    "cp -L --no-preserve=mode '%s/scheme/default.conf' '%s/scheme/current.conf' 2>/dev/null",
-    hypr, hypr))
+    "mkdir -p '%s/scheme' && cp -L --no-preserve=mode '%s/scheme/default.conf' '%s/scheme/current.conf' 2>/dev/null",
+    hypr, P.root, hypr))
 end
 
 local function read_scheme(path)

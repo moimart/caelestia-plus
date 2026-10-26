@@ -51,7 +51,7 @@ How each kind of config layers:
 
 | Config | Package | Yours |
 | --- | --- | --- |
-| Hyprland | Lua modules on `package.path` | `~/.config/hypr/hyprland.lua` requires them, then `user.lua` adds or rebinds |
+| Hyprland | Lua modules on `package.path` | `~/.config/hypr/hyprland.lua` loads the packaged config, then adds or rebinds (or `~/.config/caelestia/hypr-user.lua`) |
 | Shell | base `shell.json` (needs the shell to merge a system file under the user's) | `~/.config/caelestia/shell.json` holds only your changes |
 | Apps (kitty, fish, ...) | configs under `/usr/share` | each app's own include mechanism (`include` in kitty, `source` in fish), else a copied starting point |
 
@@ -101,10 +101,19 @@ keyring package).
 ## Steps
 
 1. **Monorepo.** Done: the four repos as subtrees, pushed (private).
-2. **Split generic from host.** Host profile `hosts/behemoth/`: the forced
-   7680x2160@120 monitor rule, `tv_sink`/`tv_grid` (HDMI-A-1), `GDK_SCALE=2`,
-   the per-monitor shell overrides, the HA lock cards. Generic defaults:
-   `monitor = preferred, auto, auto`, wallpapers in `~/Pictures/Wallpapers`.
+2. **Split generic from host.** Done: `hosts/behemoth/` (see
+   `hosts/README.md`) has the monitor rules, `tv_sink`/`tv_grid`,
+   `GDK_SCALE=2`, the per-monitor shell settings, the HA lock cards and the
+   face video. The default monitor rule is preferred/auto, wallpapers are in
+   `~/Pictures/Wallpapers`, and `kitty-crt` no longer assumes a home folder.
+   `hypr/tools/record.lua` showed the behemoth profile makes the same 299
+   Hyprland calls as the old config. The shell side of the profile
+   (`caelestia/shell.json`) only takes effect with step 3.
+
+   Still personal, in the defaults: the `SUPER + A` bind to
+   `~/.local/bin/hal-command`, and the app choices in `hypr/lua/variables.lua`
+   (Chrome, nautilus). Fine as defaults, but `hal-command` should move to a
+   personal layer before going public.
 3. **Layering.** Hyprland: packaged modules plus a stub `hyprland.lua` and
    `user.lua`. Shell: merge `/usr/share/caelestia-plus/shell.json` under the
    user's file. Apps: per-app includes.

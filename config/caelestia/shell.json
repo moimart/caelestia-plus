@@ -141,8 +141,7 @@
         "tray": {
             "background": true,
             "compact": false,
-            "iconSubs": [
-            ],
+            "iconSubs": [],
             "recolour": true
         },
         "workspaces": {
@@ -158,8 +157,7 @@
             "showWindows": true,
             "showWindowsOnSpecialWorkspaces": true,
             "shown": 5,
-            "specialWorkspaceIcons": [
-            ]
+            "specialWorkspaceIcons": []
         }
     },
     "border": {
@@ -446,8 +444,7 @@
         "dragThreshold": 50,
         "enableDangerousActions": false,
         "enabled": true,
-        "hiddenApps": [
-        ],
+        "hiddenApps": [],
         "maxShown": 7,
         "maxWallpapers": 9,
         "showOnHover": false,
@@ -481,10 +478,9 @@
         "hideDelay": 2000
     },
     "paths": {
-        "face": "~/.config/caelestia/assets/face.mp4",
         "mediaGif": "~/.config/caelestia/assets/daruma-media.webp",
         "sessionGif": "~/.config/caelestia/assets/daruma.webp",
-        "wallpaperDir": "/home/moimart/Pictures/Wallpapers"
+        "wallpaperDir": "~/Pictures/Wallpapers"
     },
     "services": {
         "audioIncrement": 0.1,
@@ -550,10 +546,8 @@
             "enabled": false,
             "provider": [
                 {
-                    "connectCmd": [
-                    ],
-                    "disconnectCmd": [
-                    ],
+                    "connectCmd": [],
+                    "disconnectCmd": [],
                     "displayName": "",
                     "id": "vpn-mvjy6z8h-455sv",
                     "interface": "",
