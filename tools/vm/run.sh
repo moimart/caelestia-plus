@@ -114,4 +114,35 @@ EOF
 echo "== caelestia-plus-setup (as tester)"
 ssh_vm caelestia-plus-setup
 
+echo "== Starting the desktop (autologin on tty1, Hyprland through uwsm)"
+ssh_vm sudo bash -euo pipefail <<'EOF'
+pacman -S --noconfirm --needed grim >/dev/null
+mkdir -p /etc/systemd/system/getty@tty1.service.d
+cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<'CONF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin tester --noclear %I $TERM
+CONF
+cat >> /home/tester/.bash_profile <<'PROFILE'
+if [ "$(tty)" = /dev/tty1 ] && uwsm check may-start; then
+    exec uwsm start -- hyprland.desktop > ~/session.log 2>&1
+fi
+PROFILE
+chown tester: /home/tester/.bash_profile
+systemctl daemon-reload
+systemctl restart getty@tty1
+EOF
+for _ in $(seq 1 60); do
+    ssh_vm 'ls /run/user/1000/hypr/*/.socket.sock' >/dev/null 2>&1 && break
+    sleep 2
+done
+sleep 20 # let the shell come up
+ssh_vm 'export XDG_RUNTIME_DIR=/run/user/1000 HYPRLAND_INSTANCE_SIGNATURE=$(ls -t /run/user/1000/hypr | head -1)
+    export WAYLAND_DISPLAY=$(cd /run/user/1000 && ls wayland-* | grep -v lock | head -1)
+    hyprctl version | head -1; hyprctl monitors | head -3; hyprctl configerrors
+    pgrep -a qs || echo "shell not running"
+    grim /tmp/screen.png && echo screenshot taken'
+scp -q -i "$work/ssh_key" -P "$ssh_port" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+    tester@127.0.0.1:/tmp/screen.png "$work/screen.png" && echo "Screenshot: $work/screen.png"
+
 echo "VM up. SSH: ssh -i $work/ssh_key -p $ssh_port tester@127.0.0.1 ; screen: VNC 127.0.0.1:5907"
