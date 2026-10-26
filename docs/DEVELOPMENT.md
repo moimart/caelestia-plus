@@ -59,8 +59,11 @@ the checkout.
 tools/dev.sh hypr on           # then save and run `hyprctl reload`
 ```
 
-If the checkout's config has errors, it switches back to the installed one
-and shows them.
+It checks every file's syntax first, and if Hyprland reports errors it
+switches back to the installed config and shows them. Values Hyprland rejects
+(a float where it wants an integer, say: `28 / 2` is `14.0` in Lua, use
+`28 // 2`) it doesn't report to scripts at all, only as its "Your config has
+errors" banner on screen, so look after a reload.
 
 **When you're done**, go back to the package:
 
