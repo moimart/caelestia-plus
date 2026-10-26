@@ -1,0 +1,29 @@
+{
+    "url": "http://homeassistant.local:8123",
+    "tokenFile": "~/.config/caelestia/ha-token",
+    "interval": 10,
+    "hide": [],
+    "left": [
+        { "type": "camera", "entity": "camera.front_door", "name": "Front door" }
+    ],
+    "right": [
+        {
+            "type": "energy",
+            "title": "Energy",
+            "solar": "sensor.solar_power",
+            "home": "sensor.home_power",
+            "grid": "sensor.grid_power",
+            "battery_soc": "sensor.battery_level",
+            "battery_power": "sensor.battery_power",
+            "autarky": "sensor.autarky"
+        },
+        {
+            "type": "entities",
+            "title": "Home",
+            "entities": [
+                "sensor.living_room_temperature",
+                { "entity": "lock.front_door", "name": "Front door", "icon": "lock" }
+            ]
+        }
+    ]
+}
