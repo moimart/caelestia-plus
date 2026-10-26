@@ -146,7 +146,13 @@ keyring package).
    Still to check: the shell in the dev shell on behemoth's real config.
    The app configs' layering (table above) is set up with the packages, in
    step 4.
-4. **Packages.** The split PKGBUILD and `caelestia-plus-setup`.
+4. **Packages.** Done: `pkg/PKGBUILD` builds the four packages (version from
+   the shell's tags, e.g. 2.5.0.r315), and `setup/caelestia-plus-setup`
+   creates the user's files. Tested from the built packages unpacked in a
+   staging folder: the packaged Hyprland config, loaded through the user's
+   template, makes the same calls as the repo's; setup in a fresh home made
+   every file, and a second run left them alone. Not yet tested on a real
+   install: that's the VM in step 6.
 5. **CI and the pacman repo.** Build, sign, publish; the weekly AUR rebuild.
 6. **Switch behemoth over** from symlinks to packages, then test a fresh Arch
    install in a VM.
