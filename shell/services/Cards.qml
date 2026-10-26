@@ -228,6 +228,11 @@ hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_ani
             root.install();
         }
 
+        // At login the shell can start before it knows Hyprland runs Lua
+        function onUsingLuaChanged(): void {
+            root.install();
+        }
+
         target: Hypr
     }
 

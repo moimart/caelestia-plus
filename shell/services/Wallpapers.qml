@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Caelestia.Config
+import Caelestia.I18n
 import Caelestia.Models
 import qs.services
 import qs.utils
@@ -70,7 +71,7 @@ Searcher {
 
     function getCategoryFor(w: FileSystemEntry): string {
         if (isVideo(w.path))
-            return qsTr("Videos");
+            return Tr.tr("Videos");
         let category = w.parentDir.slice(Paths.wallsdir.length + 1);
         if (category.includes("/"))
             category = category.slice(0, category.indexOf("/"));
