@@ -89,7 +89,10 @@ typing in, in Chrome, Discord, a terminal or anywhere else.
 
 ## Window cards
 
-Pair two windows into one card and flip it over, in 3D, to show the other.
+![A browser and Steam paired into one card, flipping over in 3D](docs/screenshots/cards.webp)
+
+Pair two windows into one card and flip it over, in 3D, to show the other
+([video](docs/screenshots/cards.mp4)).
 **Super+Alt+Tab** makes the focused window a card's front and lets you pick the
 back; **Super+Tab** flips; **Super+Shift+Tab** splits it back into two windows.
 

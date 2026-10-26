@@ -7,6 +7,8 @@ the shell, the Hyprland config and the app configs, installed as packages.
 
 ![A fresh Arch install with caelestia-plus, seconds after setup (in a VM)](docs/fresh-install.png)
 
+![A browser and Steam paired into a window card, flipping over in 3D](shell/docs/screenshots/cards.webp)
+
 The shell is [moimart's fork of Caelestia's](shell/README.md), with video
 wallpapers, desktop widgets, window cards, an emoji picker, a camera that
 knows when you're there and more. Around it: a Hyprland config in Lua, and
