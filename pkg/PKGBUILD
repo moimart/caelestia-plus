@@ -104,6 +104,11 @@ package_caelestia-shell-moimart() {
         install -Dm644 "${srcdir}/${model}" "$pkgdir/usr/lib/caelestia/camera-models/${model}"
     done
     install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+
+    # The MCP server, for AI agents (docs/mcp in the repo)
+    install -Dm755 mcp/caelestia_mcp.py "$pkgdir"/usr/lib/caelestia/caelestia_mcp.py
+    install -d "$pkgdir"/usr/bin
+    ln -s /usr/lib/caelestia/caelestia_mcp.py "$pkgdir"/usr/bin/caelestia-mcp
 }
 
 package_caelestia-plus-hypr() {

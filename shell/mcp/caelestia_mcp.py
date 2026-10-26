@@ -376,7 +376,11 @@ def panel(args):
     return {name: ipc("drawers", "isOpen", name)}
 
 
-HYPRBINDS = Path(__file__).resolve().parent.parent / "assets" / "hyprbinds.py"
+# Next to this file in a checkout; the installed shell's copy when packaged
+HYPRBINDS = next(
+    (p for p in (Path(__file__).resolve().parent.parent / "assets" / "hyprbinds.py",
+                 Path("/etc/xdg/quickshell/caelestia/assets/hyprbinds.py")) if p.exists()),
+    Path("/etc/xdg/quickshell/caelestia/assets/hyprbinds.py"))
 
 
 @tool("keybinds", "The Hyprland and shell keyboard shortcuts, read from the Hyprland config (what each does, its keys, category). "

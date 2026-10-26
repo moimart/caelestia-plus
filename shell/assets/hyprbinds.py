@@ -32,6 +32,13 @@ from pathlib import Path
 HOME = str(Path.home())
 CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or f"{HOME}/.config")
 
+
+def _first_line(path: Path) -> str:
+    try:
+        return path.read_text().splitlines()[0].strip()
+    except (OSError, IndexError):
+        return ""
+
 MOD_BITS = {
     "SHIFT": 1, "CAPS": 2, "CTRL": 4, "CONTROL": 4, "ALT": 8, "MOD1": 8, "MOD2": 16,
     "MOD3": 32, "SUPER": 64, "WIN": 64, "LOGO": 64, "MOD4": 64, "META": 64, "MOD5": 128,
@@ -381,6 +388,20 @@ class LuaConfig:
         self.entry = entry
         self.root = entry.parent
         self.search = [self.root / "lua", self.root / "scheme", self.root, CONFIG_HOME / "caelestia"]
+        # caelestia-plus layers (hosts/README.md in caelestia-plus): the host
+        # profile's modules replace the defaults, so it's searched first
+        self.personal = None
+        self.host = None
+        plus = CONFIG_HOME / "caelestia-plus"
+        host = os.environ.get("CAELESTIA_PLUS_HOST") or _first_line(plus / "host") or _first_line(Path("/etc/hostname"))
+        if host:
+            for d in (plus / "hosts" / host / "hypr", Path("/usr/share/caelestia-plus/hosts") / host / "hypr"):
+                if d.is_dir():
+                    self.search.insert(0, d)
+                    self.host = d / "host.lua" if (d / "host.lua").is_file() else None
+                    break
+        if (plus / "personal/hypr/personal.lua").is_file():
+            self.personal = plus / "personal/hypr/personal.lua"
         self.modules = {}
         self.binds = []
         self.comments = {}  # file -> comments
@@ -389,7 +410,22 @@ class LuaConfig:
 
     def run(self):
         self.exec_file(self.entry)
+        # The packaged config loads these behind checks made at runtime
+        for layer in (self.personal, self.host):
+            if layer and layer not in self.files:
+                self.exec_file(layer)
         return self.binds
+
+    # dofile("<path>"): a config that loads another (the caelestia-plus
+    # stub loads the packaged one); its folders join the module search
+    def dofile(self, name):
+        path = Path(os.path.expanduser(name))
+        if not path.is_file() or path in self.files:
+            return Unknown(f"dofile({name!r})")
+        for d in (path.parent / "scheme", path.parent / "lua"):
+            if d not in self.search:
+                self.search.insert(1 if self.search and "hosts" in self.search[0].parts else 0, d)
+        return self.exec_file(path)
 
     # --- modules
     def resolve(self, name):
@@ -705,6 +741,8 @@ class LuaConfig:
         name = ".".join(path)
         if name == "require" and args and isinstance(args[0], str):
             return self.require(args[0])
+        if name == "dofile" and args and isinstance(args[0], str):
+            return self.dofile(args[0])
         if name == "os.getenv" and args:
             return Text(os.environ.get(as_text(args[0]), ""))
         if name == "tostring" and args:

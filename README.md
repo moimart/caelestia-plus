@@ -162,6 +162,21 @@ agents through an MCP server.
 </tr>
 </table>
 
+### Talk to your desktop: the MCP server
+
+An MCP server lets AI agents like Claude Code see and drive the desktop:
+screenshots, wallpapers and colours, any setting, media, the shortcuts, window
+cards, widgets, emoji and the camera (deliberately without a way to take
+photos). 29 tools, set up with one line:
+
+```sh
+claude mcp add --scope user caelestia -- caelestia-mcp
+```
+
+Then ask things like "put a video wallpaper on my left monitor", "pair Chrome
+and Steam into a card" or "is anything using my camera?". Every tool, with
+examples: [docs/mcp](docs/mcp).
+
 Around the shell, from the Hyprland config and app configs:
 
 - **Super+Shift+Enter**: a floating terminal right at your pointer, kept on screen.

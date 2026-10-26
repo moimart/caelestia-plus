@@ -6,8 +6,12 @@ wrapping the shell's IPC, the `caelestia` CLI, `shell.json`, `grim` and
 tmux and service-started sessions.
 
 ```sh
-claude mcp add --scope user caelestia -- python3 ~/code/caelestia-shell/mcp/caelestia_mcp.py
+claude mcp add --scope user caelestia -- caelestia-mcp
 ```
+
+(`caelestia-mcp` comes with the `caelestia-shell-moimart` package; from a
+checkout, use `python3 shell/mcp/caelestia_mcp.py`.) The full documentation,
+with every tool and examples, is in [docs/mcp](../../docs/mcp).
 
 Tools:
 
