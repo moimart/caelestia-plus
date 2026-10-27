@@ -213,6 +213,8 @@ Around the shell, from the Hyprland config and app configs:
 - **Super+both Shifts+Enter**: the same terminal shows the command on your
   clipboard, runs it when you press Enter (any other key cancels), and closes
   when it ends.
+- **Browser sign-in popups float at the pointer**, at the size the page asked for,
+  instead of opening as full tiled windows.
 - **kitty with a CRT shader**, phase-locked to the wall clock so every window
   flickers in sync (`kitty-crt`).
 - fish with starship, eza and handy git abbreviations; foot and ghostty

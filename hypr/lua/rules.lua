@@ -102,6 +102,42 @@ for _, t in ipairs(dialog_titles) do
   hl.window_rule({ match = { title = t }, float = true })
 end
 
+-- ----- Browser popups (sign-in windows and the like) -----
+-- To Hyprland, a Chrome popup (window.open with a size, as sign-in pages
+-- do) is just another Chrome window: same class, no parent, no size hint.
+-- What tells them apart is the title a window first appears with: a popup
+-- whose page is still loading is "Untitled" (or "about:blank"), one that
+-- loaded at once often says "Sign in"; a new normal window is "New Tab" or a
+-- restored page. Those float, at the size the page asked for, at the pointer.
+local browserClasses = "google-chrome|google-chrome-beta|chromium|brave-browser|microsoft-edge|vivaldi-stable"
+local popupTitles = {
+  "(Untitled|about:blank)( - .*)?",
+  ".*([Ss]ign[ -]?[Ii]n|[Ll]og[ -]?[Ii]n|[Ss]ign[ -]?[Uu]p|[Aa]uthori[sz]e|[Aa]uthenticat|[Vv]erif(y|ication)|[Cc]hoose an account|2-[Ss]tep|[Tt]wo-[Ff]actor|[Cc]aptcha|reCAPTCHA|OAuth|SSO).*",
+}
+for _, t in ipairs(popupTitles) do
+  hl.window_rule({
+    match = { class = browserClasses, initial_title = t },
+    float = true,
+    tag   = "+browser-popup",
+  })
+end
+
+-- ...and centred on the pointer, kept within its monitor
+if _G.__browserPopupSub then pcall(function() _G.__browserPopupSub:remove() end) end
+_G.__browserPopupSub = hl.on("window.open", function(w)
+  if not w or not w.floating then return end
+  local tags = type(w.tags) == "table" and table.concat(w.tags, " ") or tostring(w.tags or "")
+  if not tags:find("browser-popup", 1, true) then return end
+  local m, c = hl.get_monitor_at_cursor(), hl.get_cursor_pos()
+  if not m or not c then return end
+  local ww, wh = w.size.x or w.size[1], w.size.y or w.size[2]
+  local gap, r = 10, m.reserved
+  local right, bottom = m.x + m.width / m.scale, m.y + m.height / m.scale
+  local x = math.max(m.x + r.left + gap, math.min(right - r.right - ww - gap, c.x - ww / 2))
+  local y = math.max(m.y + r.top + gap, math.min(bottom - r.bottom - wh - gap, c.y - wh / 2))
+  hl.dispatch(hl.dsp.window.move({ x = math.floor(x), y = math.floor(y), window = "address:" .. w.address }))
+end)
+
 -- ----- Picture-in-picture -----
 -- Initial move so the PiP doesn't shoot in from the center
 hl.window_rule({
