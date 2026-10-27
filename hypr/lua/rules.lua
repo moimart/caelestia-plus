@@ -105,32 +105,45 @@ end
 -- ----- Browser popups (sign-in windows and the like) -----
 -- To Hyprland, a Chrome popup (window.open with a size, as sign-in pages
 -- do) is just another Chrome window: same class, no parent, no size hint.
--- What tells them apart is the title a window first appears with: a popup
--- whose page is still loading is "Untitled" (or "about:blank"), one that
--- loaded at once often says "Sign in"; a new normal window is "New Tab" or a
--- restored page. Those float, at the size the page asked for, at the pointer.
+-- Two things tell them apart. The title a window first appears with: one
+-- that loaded at once often says "Sign in". And the size it asks for: a popup
+-- still loading is "Untitled" (or "about:blank") like a normal window from a
+-- launcher, but asks for a small size, and a normal window for its usual big
+-- one. (The class is "google-chrome" for google-chrome-stable too.)
 local browserClasses = "google-chrome|google-chrome-beta|chromium|brave-browser|microsoft-edge|vivaldi-stable"
-local popupTitles = {
-  "(Untitled|about:blank)( - .*)?",
-  ".*([Ss]ign[ -]?[Ii]n|[Ll]og[ -]?[Ii]n|[Ss]ign[ -]?[Uu]p|[Aa]uthori[sz]e|[Aa]uthenticat|[Vv]erif(y|ication)|[Cc]hoose an account|2-[Ss]tep|[Tt]wo-[Ff]actor|[Cc]aptcha|reCAPTCHA|OAuth|SSO).*",
-}
-for _, t in ipairs(popupTitles) do
-  hl.window_rule({
-    match = { class = browserClasses, initial_title = t },
-    float = true,
-    tag   = "+browser-popup",
-  })
-end
+-- Sure: a sign-in title
+hl.window_rule({
+  match = { class = browserClasses, initial_title = ".*([Ss]ign[ -]?[Ii]n|[Ll]og[ -]?[Ii]n|[Ss]ign[ -]?[Uu]p|[Aa]uthori[sz]e|[Aa]uthenticat|[Vv]erif(y|ication)|[Cc]hoose an account|2-[Ss]tep|[Tt]wo-[Ff]actor|[Cc]aptcha|reCAPTCHA|OAuth|SSO).*" },
+  float = true,
+  tag   = "+browser-popup",
+})
+-- Maybe: still loading. Floated so the window shows the size it asks for;
+-- big ones go back to tiling below
+hl.window_rule({
+  match = { class = browserClasses, initial_title = "(Untitled|about:blank)( - .*)?" },
+  float = true,
+  tag   = "+browser-maybe-popup",
+})
 
--- ...and centred on the pointer, kept within its monitor
+-- Popups centred on the pointer, kept within its monitor; a "maybe" window
+-- asking for more than 900 x 900 is a normal window, and tiles
+local popupMax = 900
 if _G.__browserPopupSub then pcall(function() _G.__browserPopupSub:remove() end) end
 _G.__browserPopupSub = hl.on("window.open", function(w)
   if not w or not w.floating then return end
   local tags = type(w.tags) == "table" and table.concat(w.tags, " ") or tostring(w.tags or "")
-  if not tags:find("browser-popup", 1, true) then return end
-  local x, y = require("pointer").spot(w.size.x or w.size[1], w.size.y or w.size[2])
+  local maybe = tags:find("browser-maybe-popup", 1, true)
+  if not maybe and not tags:find("browser-popup", 1, true) then return end
+  local addr = "address:" .. w.address
+  local ww, wh = w.size.x or w.size[1], w.size.y or w.size[2]
+  if maybe and (ww > popupMax or wh > popupMax) then
+    hl.dispatch(hl.dsp.window.tag({ tag = "-browser-maybe-popup", window = addr }))
+    hl.dispatch(hl.dsp.window.float({ action = "disable", window = addr }))
+    return
+  end
+  local x, y = require("pointer").spot(ww, wh)
   if not x then return end
-  hl.dispatch(hl.dsp.window.move({ x = x, y = y, window = "address:" .. w.address }))
+  hl.dispatch(hl.dsp.window.move({ x = x, y = y, window = addr }))
 end)
 
 -- ----- Picture-in-picture -----
