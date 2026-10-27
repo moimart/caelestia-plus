@@ -1,6 +1,7 @@
 local V = require("variables")
 
 local P      = require("paths")
+local Pointer = require("pointer")
 local home   = P.home
 local wsaction = P.root .. "/scripts/wsaction.fish"
 local rescue   = P.root .. "/scripts/rescue-windows.fish"
@@ -305,20 +306,12 @@ hl.bind("SUPER + Return",     hl.dsp.exec_cmd("app2unit -- " .. V.terminal))
 -- A floating terminal at the pointer, kept on screen, running `args` if given
 local function terminal_at_pointer(args)
   local cmd = "app2unit -- " .. V.terminal .. (args and (" " .. args) or "")
-  local m, c = hl.get_monitor_at_cursor(), hl.get_cursor_pos()
-  if not m or not c then
+  local w, h = 960, 600
+  local x, y = Pointer.spot(w, h)
+  if not x then
     return hl.exec_cmd(cmd)
   end
-  local w, h, gap = 960, 600, 10
-  local r = m.reserved
-  local right, bottom = m.x + m.width / m.scale, m.y + m.height / m.scale
-  local x = math.max(m.x + r.left + gap, math.min(right - r.right - w - gap, c.x - w / 2))
-  local y = math.max(m.y + r.top + gap, math.min(bottom - r.bottom - h - gap, c.y - h / 2))
-  hl.exec_cmd(cmd, {
-    float = true,
-    size  = w .. " " .. h,
-    move  = math.floor(x) .. " " .. math.floor(y),
-  })
+  hl.exec_cmd(cmd, { float = true, size = w .. " " .. h, move = x .. " " .. y })
 end
 
 -- Which Shift keys are held. A bind only sees "SHIFT", not which one, so
@@ -351,7 +344,17 @@ hl.bind("SHIFT + SUPER + Return", function()
 end)
 hl.bind("SHIFT + SUPER + B",  hl.dsp.exec_cmd("app2unit -- " .. V.browser))
 hl.bind("SUPER + C",          hl.dsp.exec_cmd("app2unit -- " .. V.editor))
-hl.bind("SHIFT + SUPER + F",  hl.dsp.exec_cmd("app2unit -- " .. V.fileExplorer))
+-- SUPER + SHIFT + F → the file manager; with both Shifts held, a floating
+-- one at the pointer (Nautilus opens it from its running process, hence
+-- float_next rather than exec rules)
+hl.bind("SHIFT + SUPER + F", function()
+  if both_shifts() then
+    Pointer.float_next("org.gnome.Nautilus", 1100, 700)
+    hl.exec_cmd("app2unit -- " .. V.fileExplorer .. " --new-window")
+  else
+    hl.exec_cmd("app2unit -- " .. V.fileExplorer)
+  end
+end)
 hl.bind("SUPER + ALT + E",    hl.dsp.exec_cmd("app2unit -- nemo"))
 hl.bind("CTRL + ALT + Escape", hl.dsp.exec_cmd("app2unit -- qps"))
 hl.bind("CTRL + ALT + V",     hl.dsp.exec_cmd("app2unit -- pavucontrol"))
