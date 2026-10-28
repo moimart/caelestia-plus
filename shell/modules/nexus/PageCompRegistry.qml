@@ -162,6 +162,11 @@ QtObject {
                 Component {
                     BarClock {}
                 }
+
+                // 11: the right bar
+                Component {
+                    RightBarPanel {}
+                }
             }
         },
         Component {

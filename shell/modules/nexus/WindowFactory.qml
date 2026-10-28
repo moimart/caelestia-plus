@@ -27,6 +27,8 @@ Singleton {
 
             // Page to open on, as an index into PageRegistry.pages
             property int initialPage: -1
+            // A sub-page of it to open too (its index in the page's StackPage)
+            property int initialSubPage: -1
 
             color: Colours.tPalette.m3surface
             surfaceFormat.opaque: false
@@ -57,6 +59,8 @@ Singleton {
                 Component.onCompleted: {
                     if (win.initialPage >= 0)
                         nState.currentPageIdx = win.initialPage;
+                    if (win.initialSubPage >= 0)
+                        Qt.callLater(() => nState.openSubPage(win.initialSubPage));
                 }
             }
 

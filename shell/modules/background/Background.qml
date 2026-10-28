@@ -81,6 +81,8 @@ Variants {
 
             anchors.margins: Tokens.padding.extraLargeIncreased
             anchors.leftMargin: Tokens.padding.extraLargeIncreased + Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness)
+            // Clear of the right bar too, when it's on
+            anchors.rightMargin: Tokens.padding.extraLargeIncreased + (Config.rightBar.enabled ? Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness) : 0)
 
             state: Config.background.desktopClock.position
             states: [
