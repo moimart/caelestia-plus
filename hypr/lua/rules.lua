@@ -124,6 +124,15 @@ hl.window_rule({
   float = true,
   tag   = "+browser-maybe-popup",
 })
+-- Maybe: an extension's window (Bitwarden saving a passkey, say). Its class is
+-- "chrome-<extension id>-<profile>" (Chromium too), the id being 32 letters
+-- a-p; its first title is "_crx_<id>" or, if its page loaded at once, the
+-- page's. Installed web apps can look the same, so the size decides here too
+hl.window_rule({
+  match = { class = "(chrome|chromium|brave|msedge|vivaldi)-[a-p]{32}-.*" },
+  float = true,
+  tag   = "+browser-maybe-popup",
+})
 
 -- Popups centred on the pointer, kept within its monitor; a "maybe" window
 -- asking for more than 900 x 900 is a normal window, and tiles
