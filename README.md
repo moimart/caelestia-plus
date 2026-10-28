@@ -114,19 +114,42 @@ What you change is saved on top of your config, per display, keeping its
 
 ### The right bar
 
-Settings → Panels → Right bar adds a second bar on the right edge, as thick as
-the left one: each display's brightness (where it can be set) and the volume
-(and the microphone, if you like) always there, so the pop-up volume panel
-stays away, and
-buttons for actions: screenshots, recording an area or the screen (the button
-shows the time while it records), the colour picker, Launchpad, emoji and more.
-Your own actions are a folder with an `action.json` that runs a command, a
-shell line or any of the shell's IPC functions ([PLUGINS.md](shell/PLUGINS.md)).
+<table>
+<tr>
+<td width="45%" valign="top"><img src="shell/docs/screenshots/rightbar.jpg" alt="The right bar: action buttons at the top, brightness, volume and microphone sliders at the bottom"></td>
+<td width="55%" valign="top"><img src="shell/docs/screenshots/rightbar-settings.jpg" alt="Settings: the right bar's switches and its actions, in order"></td>
+</tr>
+</table>
 
-**Right to left** (Settings → Panels) mirrors the whole layout: the bar and
-its popouts on the right, the right bar on the left, and the sidebar,
+Settings → Panels → Right bar adds a second bar on the right edge, as thick as
+the left one:
+
+- **Brightness and volume, always there**: each display's own brightness
+  (where it can be set), the volume, and the microphone if you like. The pop-up
+  volume panel stays away while the bar shows them.
+- **Action buttons**, in the order you choose: screenshots, recording an area
+  or the screen (the button shows the time while it records), the colour
+  picker, Launchpad, emoji and more.
+- **Your own actions**: a folder with an `action.json` that runs a command, a
+  shell line or any of the shell's IPC functions ([PLUGINS.md](shell/PLUGINS.md)).
+
+### Right to left
+
+![Right to left: the bar on the right edge, the right bar on the left](shell/docs/screenshots/rtl.jpg)
+
+Settings → Panels → Right to left mirrors the whole layout: the bar and its
+popouts on the right, the right bar on the left, and the sidebar,
 notifications, session menu and volume popup coming in from the left. What's
 inside each keeps its order.
+
+### The window in the bar
+
+<img src="shell/docs/screenshots/window-preview.jpg" alt="The bar's window title with the page's favicon, and the window preview" width="40%">
+
+The bar's window title shows the window's own icon in colour, and for a browser
+the favicon of the page you're on (read from the browser's own history, on
+this machine only). Hover it, or **double-tap Super**, for a live preview of the
+window; the pointer jumps onto it.
 
 ### Launchpad
 
@@ -223,8 +246,11 @@ examples: [docs/mcp](docs/mcp).
 
 Around the shell, from the Hyprland config and app configs:
 
-- **Double-tap Super**: the focused window's preview from the bar, with the
-  pointer on it (move away and it closes).
+- **Window groups as tabs** in the shell's style: pills in its font, the
+  focused one in the accent colour.
+
+  <img src="shell/docs/screenshots/group-tabs.jpg" alt="Two windows grouped: their tabs as pills" width="70%">
+
 - **Super+Shift+Enter**: a floating terminal right at your pointer, kept on screen.
 - **Super+both Shifts+Enter**: the same terminal shows the command on your
   clipboard, runs it when you press Enter (any other key cancels), and closes
