@@ -256,8 +256,9 @@ Around the shell, from the Hyprland config and app configs:
   clipboard, runs it when you press Enter (any other key cancels), and closes
   when it ends.
 - **Super+both Shifts+F**: a floating file manager (Nautilus) at your pointer.
-- **Browser sign-in popups float at the pointer**, at the size the page asked for,
-  instead of opening as full tiled windows.
+- **Browser sign-in popups and extension windows float at the pointer** (a
+  password manager saving a passkey, say), at the size they asked for, instead
+  of opening as full tiled windows.
 - **kitty with a CRT shader**, phase-locked to the wall clock so every window
   flickers in sync (`kitty-crt`).
 - fish with starship, eza and handy git abbreviations; foot and ghostty
