@@ -112,6 +112,15 @@ on every screen, and undoes itself after 15 seconds if you can't answer.
 What you change is saved on top of your config, per display, keeping its
 10-bit or HDR colour; Reset hands a display back to your config.
 
+### The right bar
+
+Settings → Panels → Right bar adds a second bar on the right edge, as thick as
+the left one: the volume (and the microphone, if you like) always there, and
+buttons for actions: screenshots, recording an area or the screen (the button
+shows the time while it records), the colour picker, Launchpad, emoji and more.
+Your own actions are a folder with an `action.json` that runs a command, a
+shell line or any of the shell's IPC functions ([PLUGINS.md](shell/PLUGINS.md)).
+
 ### Launchpad
 
 <table>

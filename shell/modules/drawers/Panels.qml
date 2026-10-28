@@ -20,6 +20,8 @@ Item {
     required property ScreenState screenState
     required property Bar.BarWrapper bar
     required property real borderThickness
+    // The right side: the border, or the right bar when it's on
+    required property real rightThickness
 
     readonly property alias osd: osd
     readonly property alias osdWrapper: osdWrapper
@@ -37,6 +39,7 @@ Item {
     anchors.fill: parent
     anchors.margins: borderThickness
     anchors.leftMargin: bar.implicitWidth
+    anchors.rightMargin: rightThickness
 
     Item {
         id: osdWrapper

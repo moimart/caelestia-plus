@@ -1,6 +1,7 @@
 # Writing plugins
 
-This fork's plugin system covers one kind of plugin so far: **desktop widgets**.
+This fork's plugins come in two kinds: **desktop widgets** and **actions**
+(buttons on the right bar; see [Action plugins](#action-plugins) at the end).
 A widget is a piece of QML that lives on the desktop, above the wallpaper and
 below your windows. You place and resize widgets with **Super+Ctrl+W**, which
 binds the shell's `caelestia:widgets` global shortcut, or from Nexus →
@@ -163,3 +164,34 @@ IPC target `widgets`. `caelestia shell widgets <function> ...` runs
 - `modules/widgets/WidgetsEditor.qml`, `EditView.qml` and `EditFrame.qml`
   form the editor: an overlay on each monitor that shows the widgets above
   your windows while you place them.
+
+## Action plugins
+
+An action is a button on the right bar (Settings → Panels → Right bar), like
+the built-in screenshot and screen recording ones. An action plugin is a folder
+in `~/.config/caelestia/plugins/actions/` with an `action.json`, and nothing
+else needed:
+
+```json
+{
+    "id": "downloads",
+    "name": "Downloads",
+    "icon": "download",
+    "description": "Open the Downloads folder",
+    "shell": "xdg-open \"$(xdg-user-dir DOWNLOAD)\""
+}
+```
+
+- `id`: unique; the ones of built-in actions are taken.
+- `name` and `description`: what Settings shows.
+- `icon`: a [Material Symbols](https://fonts.google.com/icons) name.
+- What it runs, one of:
+  - `command`: a list, run in the plugin's folder (`["./run.sh", "--fast"]`);
+  - `shell`: a line for `sh -c`, also in the plugin's folder;
+  - `ipc`: the shell's own IPC, `["target", "function", args...]`, e.g.
+    `["picker", "openFreeze"]` (`qs -c caelestia ipc show` lists them all).
+
+Once the folder is there, the action shows in Settings → Panels → Right bar
+(opening that page looks again), with a switch to put it on the bar.
+[`examples/actions/downloads`](examples/actions/downloads) is the one above.
+

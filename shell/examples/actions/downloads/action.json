@@ -1,0 +1,7 @@
+{
+    "id": "downloads",
+    "name": "Downloads",
+    "icon": "download",
+    "description": "Open the Downloads folder",
+    "shell": "xdg-open \"$(xdg-user-dir DOWNLOAD 2>/dev/null || echo \"$HOME/Downloads\")\""
+}

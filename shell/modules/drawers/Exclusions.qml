@@ -11,6 +11,8 @@ Scope {
 
     required property ShellScreen screen
     required property Bar.BarWrapper bar
+    // The right bar's space (its width when on, else the border's)
+    property int rightExclusiveZone: -1
 
     ExclusionZone {
         anchors.left: true
@@ -23,6 +25,7 @@ Scope {
 
     ExclusionZone {
         anchors.right: true
+        exclusiveZone: root.rightExclusiveZone >= 0 ? root.rightExclusiveZone : contentItem.Config.border.thickness
     }
 
     ExclusionZone {

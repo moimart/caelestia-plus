@@ -18,6 +18,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Desktop widgets and plugins](#desktop-widgets-and-plugins)
 - [Keyboard shortcuts panel](#keyboard-shortcuts-panel)
 - [Displays](#displays)
+- [The right bar](#the-right-bar)
 - [Launchpad](#launchpad)
 - [Emoji picker](#emoji-picker)
 - [Window cards](#window-cards)
@@ -98,6 +99,25 @@ Settings → Displays, like macOS's:
   colour), and moving one saves where they all are, so nothing shifts on its
   own. "Reset" hands a display back to your config. Also over IPC (`caelestia shell displays list`) and the MCP
   server (`displays`).
+
+## The right bar
+
+Settings → Panels → Right bar: a second bar on the right edge, as thick as the
+left one, drawn by the same frame (windows keep clear of it; the sidebar,
+volume popup and session menu attach at its inner edge, and hovering that edge
+opens them as the screen edge did).
+
+- **Volume**, always there: the output, and the microphone if you turn it on.
+  Drag or scroll.
+- **Action buttons**, in the order you choose: Screenshot (edit it) or Copy a
+  screenshot, Record an area / the screen / with sound (the button turns into
+  stop, with the time), Colour picker, Launchpad, Emoji, Keyboard shortcuts,
+  Camera, Lock.
+- **Your own actions**: a folder in `~/.config/caelestia/plugins/actions/`
+  with an `action.json` that runs a command, a shell line or an IPC function;
+  see [PLUGINS.md](PLUGINS.md#action-plugins) and
+  [`examples/actions/downloads`](examples/actions/downloads). From scripts:
+  `caelestia shell barActions list` and `caelestia shell barActions run <id>`.
 
 ## Launchpad
 

@@ -14,10 +14,12 @@ Region {
 
     readonly property real borderThickness: win.contentItem.Config.border.thickness
     readonly property real clampedThickness: win.contentItem.Config.border.clampedThickness
+    // The right side: the border, or the right bar when it's on
+    readonly property real rightThickness: Math.max(clampedThickness, win.rightBarWidth)
 
     x: bar.clampedWidth + win.dragMaskPadding
     y: clampedThickness + win.dragMaskPadding
-    width: win.width - bar.clampedWidth - clampedThickness - win.dragMaskPadding * 2
+    width: win.width - bar.clampedWidth - rightThickness - win.dragMaskPadding * 2
     height: win.height - clampedThickness * 2 - win.dragMaskPadding * 2
     intersection: Intersection.Xor
 
@@ -38,7 +40,7 @@ Region {
 
         panel: root.panels.sessionWrapper
         x: root.win.width - width
-        width: panel.width * (1 - root.panels.session.offsetScale) + root.borderThickness + sidebarRegion.width
+        width: panel.width * (1 - root.panels.session.offsetScale) + sidebarRegion.width
     }
 
     R {
@@ -46,13 +48,13 @@ Region {
 
         panel: root.panels.sidebar
         x: root.win.width - width
-        width: panel.width * (1 - root.panels.sidebar.offsetScale) + root.borderThickness
+        width: panel.width * (1 - root.panels.sidebar.offsetScale) + Math.max(root.borderThickness, root.win.rightBarWidth)
     }
 
     R {
         panel: root.panels.osdWrapper
         x: root.win.width - width
-        width: panel.width * (1 - root.panels.osd.offsetScale) + root.borderThickness + sessionRegion.width
+        width: panel.width * (1 - root.panels.osd.offsetScale) + sessionRegion.width
     }
 
     R {

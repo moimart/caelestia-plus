@@ -12,11 +12,15 @@ import qs.components
 import qs.components.containers
 import qs.services
 import qs.modules.bar
+import qs.modules.rightbar
 
 StyledWindow {
     id: root
 
     readonly property alias bar: bar
+    readonly property alias rightBar: rightBar
+    // The right bar's width on screen (0 when it's off or a window is fullscreen)
+    readonly property real rightBarWidth: rightBar.implicitWidth
     readonly property alias interactionWrapper: interactions
 
     readonly property ScreenState screenState: ShellState.forScreen(screen)
@@ -169,7 +173,7 @@ StyledWindow {
             group: blobGroup
             radius: root.borderRounding
             borderLeft: bar.implicitWidth - anchors.margins - root.sdfBorderOffset
-            borderRight: root.borderThickness - anchors.margins - root.sdfBorderOffset
+            borderRight: Math.max(root.borderThickness, root.rightBarWidth) - anchors.margins - root.sdfBorderOffset
             borderTop: root.borderThickness - anchors.margins - root.sdfBorderOffset
             borderBottom: root.borderThickness - anchors.margins - root.sdfBorderOffset
         }
@@ -257,6 +261,7 @@ StyledWindow {
         panels: panels
         bar: bar
         borderThickness: root.borderLayoutThickness
+        rightBarWidth: root.rightBarWidth
         fullscreen: root.hasFullscreen
 
         Panels {
@@ -266,6 +271,7 @@ StyledWindow {
             screenState: root.screenState
             bar: bar
             borderThickness: root.borderThickness
+            rightThickness: Math.max(root.borderThickness, root.rightBarWidth)
 
             utilities.horizontalStretch: (sidebarBg.rawDeformMatrix.m11 - 1) / 2 + 1
             utilities.deformMatrix: utilsBg.rawDeformMatrix
@@ -306,6 +312,17 @@ StyledWindow {
             screenState: root.screenState
             popouts: panels.popouts
 
+            fullscreen: root.hasFullscreen
+        }
+
+        RightBar {
+            id: rightBar
+
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+
+            screen: root.screen
             fullscreen: root.hasFullscreen
         }
     }

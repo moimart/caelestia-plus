@@ -18,6 +18,7 @@
 #include "nexusconfig.hpp"
 #include "notifsconfig.hpp"
 #include "osdconfig.hpp"
+#include "rightbarconfig.hpp"
 #include "serviceconfig.hpp"
 #include "sessionconfig.hpp"
 #include "sidebarconfig.hpp"
@@ -47,6 +48,7 @@ class ConfigRoot : public settings::RootNode {
     CONFIG_SUBOBJECT(NexusConfig, nexus)
     CONFIG_SUBOBJECT(NotifsConfig, notifs)
     CONFIG_SUBOBJECT(OsdConfig, osd)
+    CONFIG_SUBOBJECT(RightBarConfig, rightBar)
     CONFIG_SUBOBJECT(ServiceConfig, services)
     CONFIG_SUBOBJECT(SessionConfig, session)
     CONFIG_SUBOBJECT(SidebarConfig, sidebar)

@@ -161,6 +161,15 @@ Scope {
             });
         }
 
+        // A page's sub-page, by its index there (e.g. "Panels" 11: the right bar)
+        function subPage(name: string, index: int): void {
+            const n = name.toLowerCase();
+            WindowFactory.create(null, {
+                initialPage: Math.max(0, PageRegistry.pages.findIndex(p => p.label.toLowerCase().includes(n))),
+                initialSubPage: index
+            });
+        }
+
         target: "nexus"
     }
 
