@@ -60,6 +60,13 @@ PageBase {
         }
 
         ToggleRow {
+            text: Tr.tr("Brightness")
+            subtext: Tr.tr("Each display's own, where it can be set (DDC monitors, laptop screens)")
+            checked: GlobalConfig.rightBar.brightness
+            onToggled: GlobalConfig.rightBar.brightness = checked
+        }
+
+        ToggleRow {
             text: Tr.tr("Volume")
             subtext: Tr.tr("The output volume, always on the bar")
             checked: GlobalConfig.rightBar.volume

@@ -107,8 +107,11 @@ left one, drawn by the same frame (windows keep clear of it; the sidebar,
 volume popup and session menu attach at its inner edge, and hovering that edge
 opens them as the screen edge did).
 
-- **Volume**, always there: the output, and the microphone if you turn it on.
-  Drag or scroll.
+- **Brightness and volume**, always there: that display's own brightness
+  (DDC monitors, laptop screens; each display's bar controls its own), the
+  output volume, and the microphone if you turn it on. Drag or scroll. The
+  pop-up volume panel stays away while the bar shows the volume (it comes back
+  over a fullscreen window, where the bar hides).
 - **Action buttons**, in the order you choose: Screenshot (edit it) or Copy a
   screenshot, Record an area / the screen / with sound (the button turns into
   stop, with the time), Colour picker, Launchpad, Emoji, Keyboard shortcuts,

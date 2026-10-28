@@ -115,7 +115,9 @@ What you change is saved on top of your config, per display, keeping its
 ### The right bar
 
 Settings → Panels → Right bar adds a second bar on the right edge, as thick as
-the left one: the volume (and the microphone, if you like) always there, and
+the left one: each display's brightness (where it can be set) and the volume
+(and the microphone, if you like) always there, so the pop-up volume panel
+stays away, and
 buttons for actions: screenshots, recording an area or the screen (the button
 shows the time while it records), the colour picker, Launchpad, emoji and more.
 Your own actions are a folder with an `action.json` that runs a command, a
