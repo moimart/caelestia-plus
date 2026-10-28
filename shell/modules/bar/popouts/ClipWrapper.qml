@@ -14,7 +14,10 @@ Item {
     readonly property alias content: content
     // Right to left: next to the bar on the right, sliding in from it
     property bool rtl
-    property real offsetScale: x > 0 || content.hasCurrent ? 0 : 1
+    // Shown while detached or showing something. (Upstream asked "x > 0" for
+    // detached, which is always true right to left, next to the bar on the
+    // right, so the empty popout never went away.)
+    property real offsetScale: content.isDetached || content.hasCurrent ? 0 : 1
 
     visible: width > 0 && height > 0
     clip: true
