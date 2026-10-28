@@ -12,10 +12,12 @@ Item {
     required property ShellScreen screen
     required property ScreenState screenState
     required property bool sidebarOrSessionVisible
+    // The right bar is on screen with its volume slider: this would only repeat it
+    property bool rightBarHasVolume
 
     property bool hovered
     readonly property Brightness.Monitor monitor: Brightness.getMonitorForScreen(root.screen)
-    readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && !(screenState.utilities && Config.utilities.enabled)
+    readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && !rightBarHasVolume && !(screenState.utilities && Config.utilities.enabled)
     property real offsetScale: shouldBeActive ? 0 : 1
     property real sidebarOffset: sidebarOrSessionVisible ? 12 : 0
 

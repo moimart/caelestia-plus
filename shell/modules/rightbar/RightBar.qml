@@ -25,6 +25,9 @@ Item {
     readonly property int thickness: on && !fullscreen ? contentWidth : 0
     readonly property int exclusiveZone: on ? contentWidth : Config.border.thickness
     readonly property var actions: Config.rightBar.actions.map(id => BarActions.find(id)).filter(a => a)
+    // This display's brightness, where it can be set (each display's bar has its own)
+    readonly property var brightness: Brightness.getMonitorForScreen(screen)
+    readonly property bool showBrightness: Config.rightBar.brightness && !!brightness?.controllable
 
     implicitWidth: thickness
     clip: true
@@ -88,12 +91,12 @@ Item {
         }
     }
 
-    // The volume, always there
+    // Brightness and volume, always there
     StyledRect {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Tokens.padding.large
-        visible: Config.rightBar.volume || Config.rightBar.microphone
+        visible: root.showBrightness || Config.rightBar.volume || Config.rightBar.microphone
 
         implicitWidth: Tokens.sizes.bar.innerWidth
         implicitHeight: sliders.implicitHeight + Tokens.padding.small * 2
@@ -105,6 +108,28 @@ Item {
 
             anchors.centerIn: parent
             spacing: Tokens.spacing.small
+
+            CustomMouseArea {
+                function onWheel(event: WheelEvent) {
+                    const step = GlobalConfig.services.brightnessIncrement;
+                    if (event.angleDelta.y > 0)
+                        root.brightness.setBrightness(root.brightness.brightness + step);
+                    else if (event.angleDelta.y < 0)
+                        root.brightness.setBrightness(root.brightness.brightness - step);
+                }
+
+                visible: root.showBrightness
+                implicitWidth: Tokens.sizes.osd.sliderWidth
+                implicitHeight: Tokens.sizes.osd.sliderHeight
+
+                FilledSlider {
+                    anchors.fill: parent
+
+                    icon: `brightness_${Math.round(value * 6) + 1}`
+                    value: root.brightness?.brightness ?? 0
+                    onMoved: root.brightness?.setBrightness(value)
+                }
+            }
 
             CustomMouseArea {
                 function onWheel(event: WheelEvent) {

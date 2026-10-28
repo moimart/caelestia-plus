@@ -56,6 +56,9 @@ Item {
             id: osd
 
             screen: root.screen
+            // Hidden while the right bar shows the volume (not while a window
+            // is fullscreen: the bar hides then, and this is all there is)
+            rightBarHasVolume: Config.rightBar.enabled && Config.rightBar.volume && root.rightThickness > root.borderThickness
             screenState: root.screenState
             sidebarOrSessionVisible: sidebar.visible || session.visible
 

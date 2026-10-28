@@ -20,6 +20,8 @@ Singleton {
     }
     readonly property list<Monitor> monitors: variants.instances
     property bool appleDisplayPresent: false
+    // A laptop panel's backlight (brightnessctl), for its built-in display
+    property bool hasBacklight: false
 
     function getMonitorForScreen(screen: ShellScreen): var {
         return monitors.find(m => m.modelData === screen);
@@ -162,6 +164,14 @@ Singleton {
         target: "brightness"
     }
 
+    Process {
+        running: true
+        command: ["sh", "-c", "ls /sys/class/backlight 2>/dev/null | head -1"]
+        stdout: StdioCollector {
+            onStreamFinished: root.hasBacklight = text.trim().length > 0
+        }
+    }
+
     component Monitor: QtObject {
         id: monitor
 
@@ -170,6 +180,9 @@ Singleton {
         readonly property bool isDdc: ddcInfo !== null
         readonly property string busNum: ddcInfo?.busNum ?? ""
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
+        // Whether its brightness can be set at all: DDC, an Apple display, or a
+        // laptop's built-in panel (eDP) with a backlight
+        readonly property bool controllable: isDdc || isAppleDisplay || (root.hasBacklight && modelData.name.startsWith("eDP"))
         property real brightness
         property real queuedBrightness: NaN
 
@@ -180,8 +193,11 @@ Singleton {
                         const val = parseInt(text.trim());
                         monitor.brightness = val / 101;
                     } else {
-                        const [, , , cur, max] = text.split(" ");
-                        monitor.brightness = parseInt(cur) / parseInt(max);
+                        const [, , , cur, max] = text.split(" ").map(n => parseInt(n));
+                        // Some monitors report a maximum below the value they're at
+                        // (a Samsung Odyssey: "VCP 10 C 100 50"); the shell sets
+                        // brightness out of 100, so that's the scale then
+                        monitor.brightness = Math.max(0, Math.min(1, cur / (cur > max ? 100 : max)));
                     }
                 }
             }
