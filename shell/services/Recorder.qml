@@ -28,6 +28,14 @@ Singleton {
         checkProc.running = true;
     }
 
+    // `caelestia record`, with its output (and the recorder's, which it starts
+    // and leaves running) going nowhere. Left on a pipe, gpu-screen-recorder
+    // dies of SIGPIPE about a second in, once the shell stops reading it: it
+    // logs a line every second.
+    function cli(args: list<string>): list<string> {
+        return ["sh", "-c", "exec caelestia record \"$@\" > /dev/null 2>&1", "sh", ...args];
+    }
+
     function togglePause(): void {
         needsPause = true;
         checkProc.running = true;
@@ -52,14 +60,14 @@ Singleton {
             const running = code === 0;
 
             if (running && root.needsStop) {
-                commandProc.exec(["caelestia", "record"]);
+                commandProc.exec(root.cli([]));
                 props.running = false;
                 props.paused = false;
             } else if (running && root.needsPause) {
-                commandProc.exec(["caelestia", "record", "-p"]);
+                commandProc.exec(root.cli(["-p"]));
                 props.paused = !props.paused;
             } else if (!running && root.needsStart) {
-                commandProc.exec(["caelestia", "record", ...root.startArgs]);
+                commandProc.exec(root.cli(root.startArgs));
                 props.running = true;
                 props.paused = false;
                 props.elapsed = 0;
