@@ -26,6 +26,8 @@ Item {
     Loader {
         id: content
 
+        // The wider margin is on the inner side, the right one when right to left
+        LayoutMirroring.enabled: Config.general.rightToLeft
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.left: parent.left

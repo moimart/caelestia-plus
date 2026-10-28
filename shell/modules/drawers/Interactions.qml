@@ -20,11 +20,28 @@ CustomMouseArea {
     // at its inner edge, and hovering the bar itself opens none of them
     required property real rightBarWidth
     required property bool fullscreen
+    // Right to left: the layout is mirrored. Everything here works in logical
+    // coordinates (the bar on the left, the drawers on the right): x is
+    // flipped as it comes in, and so are the panels' positions.
+    required property bool rtl
+    // Where the panels start, on screen (the bar's or the right bar's width)
+    required property real panelsLeft
 
     property point dragStart
     property bool dashboardShortcutActive
     property bool osdShortcutActive
     property bool utilitiesShortcutActive
+
+    // Logical x of a screen x
+    function lx(x: real): real {
+        return rtl ? width - x : x;
+    }
+
+    // A panel's logical left edge (panel.x is on screen, mirrored when rtl)
+    function panelLeft(panel: Item): real {
+        const screenLeft = panelsLeft + panel.x;
+        return rtl ? width - screenLeft - panel.width : screenLeft;
+    }
 
     function withinPanelHeight(panel: Item, x: real, y: real): bool {
         const panelY = root.borderThickness + panel.y;
@@ -32,12 +49,12 @@ CustomMouseArea {
     }
 
     function withinPanelWidth(panel: Item, x: real, y: real): bool {
-        const panelX = bar.implicitWidth + panel.x;
+        const panelX = panelLeft(panel);
         return x >= panelX - Config.border.rounding && x <= panelX + panel.width + Config.border.rounding;
     }
 
     function inLeftPanel(panel: Item, x: real, y: real): bool {
-        return x < bar.implicitWidth + panel.x + panel.width && withinPanelHeight(panel, x, y);
+        return x < panelLeft(panel) + panel.width && withinPanelHeight(panel, x, y);
     }
 
     // On the right bar, past its inner edge strip: hovering there opens nothing
@@ -54,7 +71,7 @@ CustomMouseArea {
     }
 
     function inRightPanel(panel: Item, x: real, y: real): bool {
-        return pastRightEdge(x, bar.implicitWidth + panel.x) && withinPanelHeight(panel, x, y);
+        return pastRightEdge(x, panelLeft(panel)) && withinPanelHeight(panel, x, y);
     }
 
     function inTopPanel(panel: Item, x: real, y: real): bool {
@@ -70,7 +87,7 @@ CustomMouseArea {
     function onWheel(event: WheelEvent): void {
         if (fullscreen)
             return;
-        if (event.x < bar.implicitWidth) {
+        if (lx(event.x) < bar.implicitWidth) {
             bar.handleWheel(event.y, event.angleDelta);
         }
     }
@@ -79,7 +96,7 @@ CustomMouseArea {
     acceptedButtons: fullscreen ? Qt.NoButton : Qt.AllButtons
     hoverEnabled: true
 
-    onPressed: event => dragStart = Qt.point(event.x, event.y)
+    onPressed: event => dragStart = Qt.point(lx(event.x), event.y)
     onContainsMouseChanged: {
         if (!containsMouse) {
             // Only hide if not activated by shortcut
@@ -111,7 +128,7 @@ CustomMouseArea {
         if (popouts.isDetached)
             return;
 
-        const x = event.x;
+        const x = lx(event.x);
         const y = event.y;
         const dragX = x - dragStart.x;
         const dragY = y - dragStart.y;
@@ -147,12 +164,12 @@ CustomMouseArea {
                 root.panels.osd.hovered = true;
             }
 
-            const showSidebar = pressed && pastRightEdge(dragStart.x, bar.implicitWidth + panels.sidebar.x);
+            const showSidebar = pressed && pastRightEdge(dragStart.x, panelLeft(panels.sidebar));
 
             // Show sidebar on hover (top-right corner, bounded by notification panel height)
             if (Config.sidebar.showOnHover) {
                 const sidebarTriggerY = Math.max(Config.sidebar.minHoverThreshold, panels.notifications.y + panels.notifications.height + borderThickness);
-                const showSidebarHover = pastRightEdge(x, bar.implicitWidth + panels.sidebar.x) && y <= sidebarTriggerY;
+                const showSidebarHover = pastRightEdge(x, panelLeft(panels.sidebar)) && y <= sidebarTriggerY;
                 if (showSidebarHover && !screenState.sidebar)
                     screenState.sidebar = true;
             }
@@ -197,7 +214,7 @@ CustomMouseArea {
             // Show/hide sidebar on hover
             if (Config.sidebar.showOnHover && !pressed) {
                 const sidebarTriggerY = Math.max(Config.sidebar.minHoverThreshold, panels.notifications.y + panels.notifications.height + borderThickness);
-                const showSidebarHover = pastRightEdge(x, bar.implicitWidth + panels.sidebar.x) && y <= sidebarTriggerY;
+                const showSidebarHover = pastRightEdge(x, panelLeft(panels.sidebar)) && y <= sidebarTriggerY;
                 if (showSidebarHover && !screenState.sidebar) {
                     screenState.sidebar = true;
                 } else {

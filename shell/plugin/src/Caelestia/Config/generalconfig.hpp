@@ -105,6 +105,10 @@ class GeneralConfig : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(QString, logo, {})
     CONFIG_GLOBAL_PROPERTY(QString, language, {})
     CONFIG_PROPERTY(bool, showOverFullscreen, false)
+    // Mirror the layout: the bar and its popouts on the right, the sidebar,
+    // notifications, session menu and volume popup on the left (contents keep
+    // their order)
+    CONFIG_PROPERTY(bool, rightToLeft, false)
     CONFIG_PROPERTY(qreal, mediaGifSpeedAdjustment, 300)
     CONFIG_PROPERTY(qreal, sessionGifSpeed, 0.7)
     CONFIG_GLOBAL_SUBOBJECT(GeneralApps, apps)

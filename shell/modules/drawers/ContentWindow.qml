@@ -21,6 +21,15 @@ StyledWindow {
     readonly property alias rightBar: rightBar
     // The right bar's width on screen (0 when it's off or a window is fullscreen)
     readonly property real rightBarWidth: rightBar.implicitWidth
+    // Right to left: the layout mirrored, the bar on the right (and the right
+    // bar on the left), the drawers on the left
+    readonly property bool rtl: contentItem.Config.general.rightToLeft
+    // The frame's thickness on the bar's side and on the other one
+    readonly property real otherSide: Math.max(borderThickness, rightBarWidth)
+    // On screen: the left and right sides, and where the panels start
+    readonly property real leftSide: rtl ? otherSide : bar.implicitWidth
+    readonly property real rightSide: rtl ? bar.implicitWidth : otherSide
+    readonly property real panelsLeft: leftSide
     readonly property alias interactionWrapper: interactions
 
     readonly property ScreenState screenState: ShellState.forScreen(screen)
@@ -92,13 +101,13 @@ StyledWindow {
     Region {
         id: emptyRegion
 
-        x: panels.notifications.x + bar.implicitWidth
+        x: panels.notifications.x + root.panelsLeft
         y: panels.notifications.y + root.borderThickness
         width: panels.notifications.width
         height: panels.notifications.height
 
         Region {
-            x: root.width - width
+            x: root.rtl ? 0 : root.width - width
             y: panels.osdWrapper.y + root.borderThickness
             width: panels.osdWrapper.width * (1 - panels.osd.offsetScale) + root.borderThickness
             height: panels.osd.height
@@ -172,8 +181,8 @@ StyledWindow {
             anchors.margins: -50 // Make border thicker to smooth out bulge from closed drawers
             group: blobGroup
             radius: root.borderRounding
-            borderLeft: bar.implicitWidth - anchors.margins - root.sdfBorderOffset
-            borderRight: Math.max(root.borderThickness, root.rightBarWidth) - anchors.margins - root.sdfBorderOffset
+            borderLeft: root.leftSide - anchors.margins - root.sdfBorderOffset
+            borderRight: root.rightSide - anchors.margins - root.sdfBorderOffset
             borderTop: root.borderThickness - anchors.margins - root.sdfBorderOffset
             borderBottom: root.borderThickness - anchors.margins - root.sdfBorderOffset
         }
@@ -197,7 +206,7 @@ StyledWindow {
 
             panel: panels.sessionWrapper
             deformAmount: 0.2
-            x: panels.sessionWrapper.x + panels.session.x + bar.implicitWidth
+            x: panels.sessionWrapper.x + panels.session.x + root.panelsLeft
             implicitWidth: panels.session.width
         }
 
@@ -208,7 +217,8 @@ StyledWindow {
             deformAmount: 0.03
             implicitHeight: panel.height * (1 / rawDeformMatrix.m22) + 2
             exclude: panels.sidebar.offsetScale > 0.08 ? [] : [utilsBg]
-            bottomLeftRadius: Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius
+            bottomLeftRadius: root.rtl ? radius : Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius
+            bottomRightRadius: root.rtl ? Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius : radius
         }
 
         PanelBg {
@@ -216,7 +226,7 @@ StyledWindow {
 
             panel: panels.osdWrapper
             deformAmount: 0.25
-            x: panels.osdWrapper.x + panels.osd.x + bar.implicitWidth
+            x: panels.osdWrapper.x + panels.osd.x + root.panelsLeft
             implicitWidth: panels.osd.width
         }
 
@@ -232,7 +242,8 @@ StyledWindow {
             panel: panels.utilities
             deformAmount: panels.sidebar.visible ? 0.1 : 0.15
             exclude: panels.sidebar.offsetScale > 0.08 ? [] : [sidebarBg]
-            topLeftRadius: Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius
+            topLeftRadius: root.rtl ? radius : Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius
+            topRightRadius: root.rtl ? Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius : radius
         }
 
         PanelBg {
@@ -243,7 +254,7 @@ StyledWindow {
 
             panel: panels.popoutsWrapper
             deformAmount: panels.popouts.isDetached ? 0.05 : panels.popouts.hasCurrent ? 0.15 : 0.1
-            x: panels.popoutsWrapper.x + panels.popouts.x + bar.implicitWidth - panels.popouts.width * extraWidth
+            x: panels.popoutsWrapper.x + panels.popouts.x + root.panelsLeft - (root.rtl ? 0 : panels.popouts.width * extraWidth)
             implicitWidth: panels.popouts.width * (1 + extraWidth)
 
             Behavior on extraWidth {
@@ -263,6 +274,8 @@ StyledWindow {
         borderThickness: root.borderLayoutThickness
         rightBarWidth: root.rightBarWidth
         fullscreen: root.hasFullscreen
+        rtl: root.rtl
+        panelsLeft: root.panelsLeft
 
         Panels {
             id: panels
@@ -271,7 +284,10 @@ StyledWindow {
             screenState: root.screenState
             bar: bar
             borderThickness: root.borderThickness
-            rightThickness: Math.max(root.borderThickness, root.rightBarWidth)
+            leftThickness: root.leftSide
+            rightThickness: root.rightSide
+            rightBarShown: root.rightBarWidth > 0
+            rtl: root.rtl
 
             utilities.horizontalStretch: (sidebarBg.rawDeformMatrix.m11 - 1) / 2 + 1
             utilities.deformMatrix: utilsBg.rawDeformMatrix
@@ -305,8 +321,11 @@ StyledWindow {
         BarWrapper {
             id: bar
 
+            // The left edge, or the right one when right to left
+            LayoutMirroring.enabled: root.rtl
             anchors.top: parent.top
             anchors.bottom: parent.bottom
+            anchors.left: parent.left
 
             screen: root.screen
             screenState: root.screenState
@@ -318,6 +337,8 @@ StyledWindow {
         RightBar {
             id: rightBar
 
+            // The right edge, or the left one when right to left
+            LayoutMirroring.enabled: root.rtl
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.right: parent.right
@@ -356,7 +377,7 @@ StyledWindow {
         property real deformAmount: 0.15
 
         group: blobGroup
-        x: panel.x + bar.implicitWidth
+        x: panel.x + root.panelsLeft
         y: panel.y + root.borderThickness
         implicitWidth: panel.width
         implicitHeight: panel.height

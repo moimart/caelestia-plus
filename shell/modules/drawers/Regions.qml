@@ -17,7 +17,8 @@ Region {
     // The right side: the border, or the right bar when it's on
     readonly property real rightThickness: Math.max(clampedThickness, win.rightBarWidth)
 
-    x: bar.clampedWidth + win.dragMaskPadding
+    // The bar's side is the right one when right to left
+    x: (win.rtl ? rightThickness : bar.clampedWidth) + win.dragMaskPadding
     y: clampedThickness + win.dragMaskPadding
     width: win.width - bar.clampedWidth - rightThickness - win.dragMaskPadding * 2
     height: win.height - clampedThickness * 2 - win.dragMaskPadding * 2
@@ -39,7 +40,7 @@ Region {
         id: sessionRegion
 
         panel: root.panels.sessionWrapper
-        x: root.win.width - width
+        x: root.win.rtl ? 0 : root.win.width - width
         width: panel.width * (1 - root.panels.session.offsetScale) + sidebarRegion.width
     }
 
@@ -47,13 +48,13 @@ Region {
         id: sidebarRegion
 
         panel: root.panels.sidebar
-        x: root.win.width - width
+        x: root.win.rtl ? 0 : root.win.width - width
         width: panel.width * (1 - root.panels.sidebar.offsetScale) + Math.max(root.borderThickness, root.win.rightBarWidth)
     }
 
     R {
         panel: root.panels.osdWrapper
-        x: root.win.width - width
+        x: root.win.rtl ? 0 : root.win.width - width
         width: panel.width * (1 - root.panels.osd.offsetScale) + sessionRegion.width
     }
 
@@ -77,7 +78,7 @@ Region {
     component R: Region {
         required property Item panel
 
-        x: panel.x + root.bar.implicitWidth
+        x: panel.x + root.win.panelsLeft
         y: panel.y + root.borderThickness
         width: panel.width
         height: panel.height

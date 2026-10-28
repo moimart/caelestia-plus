@@ -20,8 +20,13 @@ Item {
     required property ScreenState screenState
     required property Bar.BarWrapper bar
     required property real borderThickness
-    // The right side: the border, or the right bar when it's on
+    // The frame's left and right sides on screen (the bar's, the right bar's
+    // or the border, swapped when right to left)
+    required property real leftThickness
     required property real rightThickness
+    required property bool rightBarShown
+    // Right to left: each drawer's placement is mirrored (not its contents)
+    required property bool rtl
 
     readonly property alias osd: osd
     readonly property alias osdWrapper: osdWrapper
@@ -38,11 +43,12 @@ Item {
 
     anchors.fill: parent
     anchors.margins: borderThickness
-    anchors.leftMargin: bar.implicitWidth
+    anchors.leftMargin: leftThickness
     anchors.rightMargin: rightThickness
 
     Item {
         id: osdWrapper
+        LayoutMirroring.enabled: root.rtl
 
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
@@ -54,11 +60,12 @@ Item {
 
         Osd.Wrapper {
             id: osd
+            LayoutMirroring.enabled: root.rtl
 
             screen: root.screen
             // Hidden while the right bar shows the volume (not while a window
             // is fullscreen: the bar hides then, and this is all there is)
-            rightBarHasVolume: Config.rightBar.enabled && Config.rightBar.volume && root.rightThickness > root.borderThickness
+            rightBarHasVolume: Config.rightBar.enabled && Config.rightBar.volume && root.rightBarShown
             screenState: root.screenState
             sidebarOrSessionVisible: sidebar.visible || session.visible
 
@@ -69,6 +76,7 @@ Item {
 
     Notifications.Wrapper {
         id: notifications
+        LayoutMirroring.enabled: root.rtl
 
         screenState: root.screenState
         sidebarPanel: sidebar
@@ -82,6 +90,7 @@ Item {
 
     Item {
         id: sessionWrapper
+        LayoutMirroring.enabled: root.rtl
 
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
@@ -93,6 +102,7 @@ Item {
 
         Session.Wrapper {
             id: session
+            LayoutMirroring.enabled: root.rtl
 
             screenState: root.screenState
             sidebarVisible: sidebar.visible
@@ -126,11 +136,13 @@ Item {
         id: popoutsWrapper
 
         screen: root.screen
+        rtl: root.rtl
         borderThickness: root.borderThickness
     }
 
     Utilities.Wrapper {
         id: utilities
+        LayoutMirroring.enabled: root.rtl
 
         screenState: root.screenState
         sidebar: sidebar
@@ -142,6 +154,7 @@ Item {
 
     Toasts.Toasts {
         id: toasts
+        LayoutMirroring.enabled: root.rtl
 
         anchors.bottom: sidebar.visible ? parent.bottom : utilities.top
         anchors.right: sidebar.left
@@ -150,6 +163,7 @@ Item {
 
     Sidebar.Wrapper {
         id: sidebar
+        LayoutMirroring.enabled: root.rtl
 
         screenState: root.screenState
 

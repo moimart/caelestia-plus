@@ -78,6 +78,8 @@ Item {
     Loader {
         id: content
 
+        // Against the screen edge: the right one when right to left
+        LayoutMirroring.enabled: Config.general.rightToLeft
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.right: parent.right

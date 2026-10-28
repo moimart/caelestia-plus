@@ -12,6 +12,8 @@ Item {
     required property real borderThickness
 
     readonly property alias content: content
+    // Right to left: next to the bar on the right, sliding in from it
+    property bool rtl
     property real offsetScale: x > 0 || content.hasCurrent ? 0 : 1
 
     visible: width > 0 && height > 0
@@ -20,7 +22,7 @@ Item {
     implicitWidth: content.implicitWidth * (1 - offsetScale)
     implicitHeight: content.implicitHeight
 
-    x: content.isDetached ? (parent.width - content.nonAnimWidth) / 2 : 0
+    x: content.isDetached ? (parent.width - content.nonAnimWidth) / 2 : (rtl ? parent.width - width : 0)
     y: {
         if (content.isDetached)
             return (parent.height - content.nonAnimHeight) / 2;
@@ -58,6 +60,7 @@ Item {
         screen: root.screen
         offsetScale: root.offsetScale
 
+        LayoutMirroring.enabled: root.rtl
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.leftMargin: (-implicitWidth - 5) * root.offsetScale
