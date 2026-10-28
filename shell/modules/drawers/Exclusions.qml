@@ -13,10 +13,13 @@ Scope {
     required property Bar.BarWrapper bar
     // The right bar's space (its width when on, else the border's)
     property int rightExclusiveZone: -1
+    // Right to left: the bar's space on the right, the right bar's on the left
+    property bool rtl
+    readonly property int otherZone: rightExclusiveZone >= 0 ? rightExclusiveZone : -1
 
     ExclusionZone {
         anchors.left: true
-        exclusiveZone: root.bar.exclusiveZone
+        exclusiveZone: root.rtl ? (root.otherZone >= 0 ? root.otherZone : contentItem.Config.border.thickness) : root.bar.exclusiveZone
     }
 
     ExclusionZone {
@@ -25,7 +28,7 @@ Scope {
 
     ExclusionZone {
         anchors.right: true
-        exclusiveZone: root.rightExclusiveZone >= 0 ? root.rightExclusiveZone : contentItem.Config.border.thickness
+        exclusiveZone: root.rtl ? root.bar.exclusiveZone : (root.otherZone >= 0 ? root.otherZone : contentItem.Config.border.thickness)
     }
 
     ExclusionZone {

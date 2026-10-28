@@ -123,6 +123,11 @@ shows the time while it records), the colour picker, Launchpad, emoji and more.
 Your own actions are a folder with an `action.json` that runs a command, a
 shell line or any of the shell's IPC functions ([PLUGINS.md](shell/PLUGINS.md)).
 
+**Right to left** (Settings → Panels) mirrors the whole layout: the bar and
+its popouts on the right, the right bar on the left, and the sidebar,
+notifications, session menu and volume popup coming in from the left. What's
+inside each keeps its order.
+
 ### Launchpad
 
 <table>

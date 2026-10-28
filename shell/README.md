@@ -122,6 +122,12 @@ opens them as the screen edge did).
   [`examples/actions/downloads`](examples/actions/downloads). From scripts:
   `caelestia shell barActions list` and `caelestia shell barActions run <id>`.
 
+**Right to left** (Settings → Panels, `general.rightToLeft`) mirrors the
+layout: the bar and its popouts on the right, the right bar on the left, the
+sidebar, notifications, session menu, volume popup and toasts from the left
+edge, the desktop clock and reserved space following. Contents keep their
+order (it's the panels that swap, not the text direction).
+
 ## Launchpad
 
 ![Launchpad: every app in a grid over the blurred desktop, with the search on top and a dot per page](docs/screenshots/launchpad.jpg)

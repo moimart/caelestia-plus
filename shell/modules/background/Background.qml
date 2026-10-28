@@ -76,13 +76,18 @@ Variants {
         Loader {
             id: clockLoader
 
+            // The bar's and the right bar's room
+            readonly property real barSpace: Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness)
+            readonly property real otherSpace: Config.rightBar.enabled ? barSpace : 0
+
             asynchronous: true
             active: Config.background.desktopClock.enabled
 
             anchors.margins: Tokens.padding.extraLargeIncreased
-            anchors.leftMargin: Tokens.padding.extraLargeIncreased + Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness)
-            // Clear of the right bar too, when it's on
-            anchors.rightMargin: Tokens.padding.extraLargeIncreased + (Config.rightBar.enabled ? Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness) : 0)
+            // Clear of the bar, and of the right bar when it's on (sides swapped
+            // when right to left)
+            anchors.leftMargin: Tokens.padding.extraLargeIncreased + (Config.general.rightToLeft ? otherSpace : barSpace)
+            anchors.rightMargin: Tokens.padding.extraLargeIncreased + (Config.general.rightToLeft ? barSpace : otherSpace)
 
             state: Config.background.desktopClock.position
             states: [

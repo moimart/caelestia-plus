@@ -73,6 +73,8 @@ Item {
     Loader {
         id: content
 
+        // On the inner side (the right one when right to left)
+        LayoutMirroring.enabled: Config.general.rightToLeft
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.margins: Tokens.padding.large

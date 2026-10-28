@@ -58,5 +58,15 @@ PageBase {
             // After the taskbar's sub-pages, so their numbers stay
             onClicked: root.nState.openSubPage(11)
         }
+
+        ToggleRow {
+            Layout.topMargin: Tokens.spacing.large - parent.spacing
+            first: true
+            last: true
+            text: Tr.tr("Right to left")
+            subtext: Tr.tr("The bar and its popouts on the right; the sidebar, notifications and session menu on the left")
+            checked: GlobalConfig.general.rightToLeft
+            onToggled: GlobalConfig.general.rightToLeft = checked
+        }
     }
 }

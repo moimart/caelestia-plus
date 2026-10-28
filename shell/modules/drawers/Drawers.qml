@@ -16,6 +16,7 @@ Variants {
             screen: scope.modelData
             bar: content.bar
             rightExclusiveZone: content.rightBar.exclusiveZone
+            rtl: content.rtl
         }
 
         ContentWindow {
