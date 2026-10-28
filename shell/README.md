@@ -102,6 +102,8 @@ Settings → Displays, like macOS's:
 
 ## The right bar
 
+<img src="docs/screenshots/rightbar.jpg" alt="The right bar: action buttons, brightness, volume and microphone" width="45%"> <img src="docs/screenshots/rightbar-settings.jpg" alt="Its settings page" width="50%">
+
 Settings → Panels → Right bar: a second bar on the right edge, as thick as the
 left one, drawn by the same frame (windows keep clear of it; the sidebar,
 volume popup and session menu attach at its inner edge, and hovering that edge
@@ -121,6 +123,8 @@ opens them as the screen edge did).
   see [PLUGINS.md](PLUGINS.md#action-plugins) and
   [`examples/actions/downloads`](examples/actions/downloads). From scripts:
   `caelestia shell barActions list` and `caelestia shell barActions run <id>`.
+
+![Right to left: the bar on the right, the right bar on the left](docs/screenshots/rtl.jpg)
 
 **Right to left** (Settings → Panels, `general.rightToLeft`) mirrors the
 layout: the bar and its popouts on the right, the right bar on the left, the
