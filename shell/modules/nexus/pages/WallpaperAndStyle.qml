@@ -9,6 +9,7 @@ import qs.components
 import qs.components.controls
 import qs.components.widgets
 import qs.services
+import qs.utils
 import qs.modules.nexus.common
 
 PageBase {
@@ -122,10 +123,33 @@ PageBase {
             Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
 
             text: Tr.tr("Transparency")
-            // TRANSLATORS: %1/%2 = opacity values from 0 to 1 for the base surface and layered surfaces
-            subtext: Tr.tr("Base %1, layers %2").arg(Colours.transparency.base).arg(Colours.transparency.layers)
+            subtext: Tr.tr("See the wallpaper through the bar and panels, blurred")
             checked: Colours.transparency.enabled
             onToggled: GlobalConfig.appearance.transparency.enabled = checked
+        }
+
+        // How transparent, while it's on: the shell's surfaces (bar, panels),
+        // and the cards and sections on them. Not below 30%, to stay readable.
+        SliderRow {
+            Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
+
+            visible: Colours.transparency.enabled
+            icon: "opacity"
+            label: Tr.tr("Opacity")
+            valueLabel: Strings.percentOne(value)
+            value: GlobalConfig.appearance.transparency.base
+            onMoved: v => GlobalConfig.appearance.transparency.base = Math.max(0.3, Math.round(v * 100) / 100)
+        }
+
+        SliderRow {
+            Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
+
+            visible: Colours.transparency.enabled
+            icon: "layers"
+            label: Tr.tr("Layers")
+            valueLabel: Strings.percentOne(value)
+            value: GlobalConfig.appearance.transparency.layers
+            onMoved: v => GlobalConfig.appearance.transparency.layers = Math.round(v * 100) / 100
         }
 
         ToggleRow {
