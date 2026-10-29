@@ -17,7 +17,7 @@ import qs.utils
 //     "shortcuts": [{ "id", "instance", "entity", "name", "icon" }] }
 // (shortcuts are buttons for the right bar: they act like tapping the entity)
 // Tokens stay in their files (chmod 600); only the bridge reads them.
-// Settings → Home Assistant edits all this.
+// Settings → Home Assistant edits the instances, Panels → Right bar the shortcuts.
 Singleton {
     id: root
 

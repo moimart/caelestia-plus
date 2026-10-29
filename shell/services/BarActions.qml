@@ -106,7 +106,7 @@ Singleton {
     // From action plugins, in the same shape
     property list<var> plugins: []
 
-    // Home Assistant shortcuts (Settings → Home Assistant): tap the entity
+    // Home Assistant shortcuts (Settings → Panels → Right bar): tap the entity
     readonly property list<var> haActions: HomeAssistant.shortcuts.map(sc => {
         const entity = HomeAssistant.entity(sc.instance, sc.entity);
         return {

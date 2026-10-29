@@ -112,6 +112,11 @@ Singleton {
         }
     ]
 
+    // The card Settings is editing
+    property string editSide: "left"
+    property int editIndex: -1
+    readonly property var editCard: (editSide === "left" ? left : right)[editIndex] ?? null
+
     function typeInfo(type: string): var {
         return types.find(t => t.type === type) ?? {
             type: type,
@@ -128,6 +133,82 @@ Singleton {
             left: nextLeft,
             right: nextRight
         }, null, 4) + "\n");
+    }
+
+    // Editing, one card at a time (side is "left" or "right"); every change
+    // writes lock.json
+    function column(side: string): var {
+        return (side === "left" ? left : right).slice();
+    }
+
+    function saveColumn(side: string, cards: var): void {
+        if (side === "left")
+            save(cards, right.slice());
+        else
+            save(left.slice(), cards);
+    }
+
+    function add(side: string, type: string): int {
+        const cards = column(side);
+        const card = {
+            type: type
+        };
+        if (typeInfo(type).ha && HomeAssistant.defaultId)
+            card.instance = HomeAssistant.defaultId;
+        if (type === "entities")
+            card.entities = [];
+        // Above whatever fills the column, which stays at the bottom
+        const at = cards.findIndex(c => c.type === "media" || c.type === "notifications");
+        const index = at < 0 ? cards.length : at;
+        cards.splice(index, 0, card);
+        saveColumn(side, cards);
+        return index;
+    }
+
+    function update(side: string, index: int, changes: var): void {
+        const cards = column(side);
+        if (!cards[index])
+            return;
+        const card = Object.assign({}, cards[index], changes);
+        for (const key of Object.keys(card))
+            if (card[key] === undefined || card[key] === "")
+                delete card[key];
+        cards[index] = card;
+        saveColumn(side, cards);
+    }
+
+    function move(side: string, index: int, delta: int): void {
+        const cards = column(side);
+        const to = index + delta;
+        if (to < 0 || to >= cards.length)
+            return;
+        const card = cards[index];
+        cards[index] = cards[to];
+        cards[to] = card;
+        saveColumn(side, cards);
+        if (editSide === side && editIndex === index)
+            editIndex = to;
+    }
+
+    // To the top of the other column
+    function moveAcross(side: string, index: int): void {
+        const from = column(side);
+        const other = side === "left" ? "right" : "left";
+        const to = column(other);
+        to.unshift(from.splice(index, 1)[0]);
+        if (side === "left")
+            save(from, to);
+        else
+            save(to, from);
+        editSide = other;
+        editIndex = 0;
+    }
+
+    function remove(side: string, index: int): void {
+        const cards = column(side);
+        cards.splice(index, 1);
+        saveColumn(side, cards);
+        editIndex = -1;
     }
 
     // Back to the classic layout (lock.json goes)

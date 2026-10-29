@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
@@ -17,6 +18,20 @@ PageBase {
     readonly property list<string> chosen: GlobalConfig.rightBar.actions
     // The chosen actions in their order, then the rest
     readonly property var rows: [...chosen.map(id => BarActions.find(id)).filter(a => a), ...BarActions.all.filter(a => !chosen.includes(a.id))]
+
+    // Which instance new Home Assistant shortcuts come from
+    property string shortcutInstance: HomeAssistant.defaultId
+
+    // A Home Assistant shortcut, put on the bar at once
+    function addShortcut(entityId: string, name: string): void {
+        const id = HomeAssistant.addShortcut(shortcutInstance, entityId, name);
+        setChosen([...chosen.filter(c => c !== id), id]);
+    }
+
+    function removeShortcut(id: string): void {
+        setChosen(chosen.filter(c => c !== id));
+        HomeAssistant.removeShortcut(id);
+    }
 
     function setChosen(ids: var): void {
         GlobalConfig.rightBar.actions = ids;
@@ -155,12 +170,94 @@ PageBase {
                         onClicked: root.move(row.modelData.id, 1)
                     }
 
+                    // Home Assistant shortcuts can go altogether
+                    IconButton {
+                        visible: !!row.modelData.ha
+                        type: IconButton.Text
+                        icon: "delete"
+                        onClicked: root.removeShortcut(row.modelData.id)
+                    }
+
                     StyledSwitch {
                         checked: row.shown
                         onToggled: root.toggle(row.modelData.id, checked)
                     }
                 }
             }
+        }
+
+        // Buttons that act like tapping a Home Assistant entity
+        SectionHeader {
+            visible: HomeAssistant.instances.length > 0
+            text: Tr.tr("Home Assistant shortcuts")
+        }
+
+        InfoRow {
+            visible: HomeAssistant.instances.length > 0
+            first: true
+            icon: "touch_app"
+            label: Tr.tr("Pick an entity or a dashboard card")
+            subtext: Tr.tr("It joins the actions above and acts like tapping it: toggle a light, press a button, run a script")
+        }
+
+        SelectRow {
+            visible: HomeAssistant.instances.length > 1
+            label: Tr.tr("From")
+            menuItems: shortcutInstanceItems.instances
+            active: shortcutInstanceItems.instances.find(i => i.value === root.shortcutInstance) ?? null
+            onSelected: item => root.shortcutInstance = item.value
+
+            Variants {
+                id: shortcutInstanceItems
+
+                model: HomeAssistant.instances
+
+                MenuItem {
+                    required property var modelData
+
+                    text: modelData.name
+                    value: modelData.id
+                }
+            }
+        }
+
+        HaEntityPicker {
+            visible: HomeAssistant.instances.length > 0
+            first: false
+            last: true
+            label: Tr.tr("Add an entity")
+            instance: root.shortcutInstance
+            domains: ["light", "switch", "input_boolean", "fan", "lock", "cover", "button", "input_button", "scene", "script", "automation", "media_player"]
+            onPicked: id => root.addShortcut(id, "")
+        }
+
+        StyledText {
+            visible: HomeAssistant.instances.length > 0
+            Layout.topMargin: Tokens.spacing.medium
+            Layout.leftMargin: Tokens.padding.large
+            text: Tr.tr("Or a card from a dashboard (its entity, as its tap does):")
+            color: Colours.palette.m3outline
+            font: Tokens.font.label.medium
+        }
+
+        HaCardPicker {
+            visible: HomeAssistant.instances.length > 0
+            instance: root.shortcutInstance
+            onPicked: (dashboard, path, card) => {
+                const entity = card?.entity ?? card?.tap_action?.target?.entity_id ?? "";
+                if (entity)
+                    root.addShortcut(entity, card?.name ?? "");
+            }
+        }
+
+        InfoRow {
+            visible: HomeAssistant.instances.length === 0
+            Layout.topMargin: Tokens.spacing.large - parent.spacing
+            first: true
+            last: true
+            icon: "home_iot_device"
+            label: Tr.tr("Home Assistant shortcuts")
+            subtext: Tr.tr("Add your Home Assistant in Settings → Home Assistant first")
         }
 
         InfoRow {

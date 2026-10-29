@@ -50,7 +50,7 @@ QtObject {
         {
             label: Tr.tr("Home Assistant"),
             icon: "home_iot_device",
-            description: Tr.tr("Instances, tokens, the lock screen and desktop cards"),
+            description: Tr.tr("Instances and their tokens"),
             category: "connectivity"
         },
 
@@ -73,6 +73,12 @@ QtObject {
             label: Tr.tr("Panels"),
             icon: "dock_to_bottom",
             description: Tr.tr("Dashboard, taskbar, launcher, sidebar"),
+            category: "shell"
+        },
+        {
+            label: Tr.tr("Lock screen"),
+            icon: "lock",
+            description: Tr.tr("Its cards, Home Assistant ones too, and how it behaves"),
             category: "shell"
         },
         {
