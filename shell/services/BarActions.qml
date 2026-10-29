@@ -106,7 +106,20 @@ Singleton {
     // From action plugins, in the same shape
     property list<var> plugins: []
 
-    readonly property list<var> all: [...builtins, ...plugins]
+    // Home Assistant shortcuts (Settings → Home Assistant): tap the entity
+    readonly property list<var> haActions: HomeAssistant.shortcuts.map(sc => {
+        const entity = HomeAssistant.entity(sc.instance, sc.entity);
+        return {
+            id: sc.id,
+            name: sc.name || entity?.attributes?.friendly_name || sc.entity,
+            icon: sc.icon || HaIcons.iconFor(sc.entity, entity),
+            description: Tr.tr("Home Assistant: %1").arg(sc.entity),
+            ha: sc,
+            run: () => HomeAssistant.activate(sc.instance, sc.entity)
+        };
+    })
+
+    readonly property list<var> all: [...builtins, ...plugins, ...haActions]
 
     function find(id: string): var {
         return all.find(a => a.id === id) ?? null;
@@ -118,7 +131,21 @@ Singleton {
 
     // Whether a button should show as on (a recording is running)
     function isActive(action: var): bool {
+        if (action?.ha)
+            return HaIcons.isOn(HomeAssistant.entity(action.ha.instance, action.ha.entity)?.state ?? "");
         return !!action?.recorder && Recorder.running;
+    }
+
+    // The shortcuts' entities, kept live
+    function watchShortcuts(): void {
+        const byInstance = {};
+        for (const sc of HomeAssistant.shortcuts) {
+            if (!byInstance[sc.instance])
+                byInstance[sc.instance] = [];
+            byInstance[sc.instance].push(sc.entity);
+        }
+        for (const inst of HomeAssistant.instances)
+            HomeAssistant.watch("bar-actions", inst.id, byInstance[inst.id] ?? []);
     }
 
     function ipc(target: string, fn: string, ...args): void {
@@ -153,6 +180,18 @@ Singleton {
         }
 
         target: "barActions"
+    }
+
+    Connections {
+        function onShortcutsChanged(): void {
+            root.watchShortcuts();
+        }
+
+        function onInstancesChanged(): void {
+            root.watchShortcuts();
+        }
+
+        target: HomeAssistant
     }
 
     // Every action plugin folder with an action.json, one "dir<TAB>json" line each

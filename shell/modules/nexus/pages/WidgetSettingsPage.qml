@@ -13,7 +13,8 @@ import qs.modules.nexus.common
 // One placed widget's settings, as a form drawn from its plugin's schema
 // ("settings" in widget.json: [{ key, type, label, ... }]). Types: string,
 // number (min, max, step, default), bool, enum (options: [{ value, label }]),
-// haInstance, haEntity (domains).
+// haInstance, haEntity (domains), haCard (a dashboard card: sets dashboard,
+// cardPath and card).
 PageBase {
     id: root
 
@@ -66,7 +67,8 @@ PageBase {
                         bool: boolField,
                         enum: enumField,
                         haInstance: instanceField,
-                        haEntity: entityField
+                        haEntity: entityField,
+                        haCard: cardField
                     })[modelData.type] ?? stringField
 
                 Component {
@@ -159,6 +161,23 @@ PageBase {
                                 value: modelData.id
                             }
                         }
+                    }
+                }
+
+                Component {
+                    id: cardField
+
+                    HaCardPicker {
+                        first: field.index === 0
+                        last: field.index === root.schema.length - 1
+                        instance: root.settings.instance ?? ""
+                        dashboard: root.settings.dashboard ?? ""
+                        cardPath: root.settings.cardPath ?? ""
+                        onPicked: (dashboard, path, card) => Widgets.setSettings(Widgets.settingsUid, {
+                                dashboard: dashboard,
+                                cardPath: path,
+                                card: card
+                            })
                     }
                 }
 

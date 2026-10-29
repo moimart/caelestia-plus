@@ -1,5 +1,6 @@
 pragma Singleton
 
+import QtQuick
 import Quickshell
 
 // Material Symbols for Home Assistant entities, by domain and state (Home
@@ -75,6 +76,13 @@ Singleton {
     function stateText(entity: var): string {
         if (!entity)
             return "…";
+        // Timestamps as Home Assistant shows them: the local time, the date too
+        // when it isn't today
+        if (entity.attributes?.device_class === "timestamp") {
+            const d = new Date(entity.state);
+            if (!isNaN(d.getTime()))
+                return d.toDateString() === new Date().toDateString() ? Qt.formatTime(d, "hh:mm") : Qt.formatDateTime(d, "d MMM hh:mm");
+        }
         const unit = entity.attributes?.unit_of_measurement;
         if (unit)
             return `${entity.state} ${unit}`;

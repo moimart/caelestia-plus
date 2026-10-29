@@ -1,0 +1,15 @@
+{
+    "id": "ha-card",
+    "name": "Home Assistant card",
+    "description": "A card from one of your Home Assistant dashboards, drawn here",
+    "icon": "dashboard",
+    "author": "moimart",
+    "version": "1.0",
+    "main": "HaDashboardCard.qml",
+    "defaultSize": [300, 180],
+    "minSize": [120, 56],
+    "settings": [
+        { "key": "instance", "type": "haInstance", "label": "Home Assistant" },
+        { "key": "card", "type": "haCard", "label": "Card" }
+    ]
+}

@@ -70,6 +70,15 @@ Singleton {
         save(instances.map(i => i.uid === uid ? Object.assign({}, i, changes) : i));
     }
 
+    // Several of a placed widget's settings at once: { key: value }
+    function setSettings(uid: string, changes: var): void {
+        const inst = instances.find(i => i.uid === uid);
+        if (inst)
+            update(uid, {
+                settings: Object.assign({}, inst.settings, changes)
+            });
+    }
+
     // One of a placed widget's settings
     function setSetting(uid: string, key: string, value: var): void {
         const inst = instances.find(i => i.uid === uid);

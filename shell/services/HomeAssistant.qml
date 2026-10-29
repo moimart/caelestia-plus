@@ -5,6 +5,7 @@ import QtQuick
 import QtQml
 import Quickshell
 import Quickshell.Io
+import Caelestia.Config
 import qs.utils
 
 // Home Assistant instances, one or more, each through its own bridge
@@ -12,7 +13,9 @@ import qs.utils
 // something here shows, service calls, its dashboards and their cards.
 //
 // The instances are in ~/.config/caelestia/home-assistant.json:
-//   { "instances": [{ "id", "name", "url", "tokenFile" }] }
+//   { "instances": [{ "id", "name", "url", "tokenFile" }],
+//     "shortcuts": [{ "id", "instance", "entity", "name", "icon" }] }
+// (shortcuts are buttons for the right bar: they act like tapping the entity)
 // Tokens stay in their files (chmod 600); only the bridge reads them.
 // Settings → Home Assistant edits all this.
 Singleton {
@@ -24,6 +27,8 @@ Singleton {
 
     // [{ id, name, url, tokenFile }]
     property var instances: []
+    // [{ id, instance, entity, name, icon }]: the right bar's buttons for them
+    property var shortcuts: []
     property bool loaded
     // Only when home-assistant.json doesn't exist yet: carry lock-ha.json over
     property bool migrate
@@ -136,9 +141,36 @@ Singleton {
     // Editing instances (Settings)
     function save(next: var): void {
         instances = next;
+        writeConfig();
+    }
+
+    function writeConfig(): void {
         configFile.setText(JSON.stringify({
-            instances: next
+            instances: instances,
+            shortcuts: shortcuts
         }, null, 4) + "\n");
+    }
+
+    // A right bar button for an entity; its id, to put on the bar
+    function addShortcut(instanceId: string, entityId: string, name: string): string {
+        let id = `ha-${entityId.replace(/[^a-z0-9]+/g, "-")}`, n = 2;
+        while (shortcuts.some(s => s.id === id))
+            id = `ha-${entityId.replace(/[^a-z0-9]+/g, "-")}-${n++}`;
+        shortcuts = [...shortcuts,
+            {
+                id: id,
+                instance: instanceId || defaultId,
+                entity: entityId,
+                name: name || ""
+            }
+        ];
+        writeConfig();
+        return id;
+    }
+
+    function removeShortcut(id: string): void {
+        shortcuts = shortcuts.filter(s => s.id !== id);
+        writeConfig();
     }
 
     function addInstance(name: string, url: string, token: string): string {
@@ -214,6 +246,18 @@ Singleton {
             root.activate(instanceId, entityId);
         }
 
+        // A right bar shortcut for an entity, put on the bar; its id
+        function shortcut(instanceId: string, entityId: string, name: string): string {
+            const id = root.addShortcut(instanceId, entityId, name);
+            GlobalConfig.rightBar.actions = [...GlobalConfig.rightBar.actions, id];
+            return id;
+        }
+
+        function removeShortcut(id: string): void {
+            GlobalConfig.rightBar.actions = GlobalConfig.rightBar.actions.filter(a => a !== id);
+            root.removeShortcut(id);
+        }
+
         target: "homeAssistant"
     }
 
@@ -240,7 +284,9 @@ Singleton {
         onFileChanged: reload()
         onLoaded: {
             try {
-                root.instances = JSON.parse(text()).instances ?? [];
+                const data = JSON.parse(text());
+                root.instances = data.instances ?? [];
+                root.shortcuts = data.shortcuts ?? [];
             } catch (e) {
                 console.warn(`HomeAssistant: bad home-assistant.json: ${e}`);
             }
