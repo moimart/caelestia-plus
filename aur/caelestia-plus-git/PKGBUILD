@@ -89,6 +89,7 @@ package_caelestia-shell-moimart() {
         'onnxruntime-cpu: camera presence, gestures (caelestia-camerad)'
         'howdy: face unlock on the lock screen'
         'python-websockets: Home Assistant (lock screen cards, desktop widgets, right bar shortcuts)'
+        'pacman-contrib: checking for system updates (checkupdates), Settings → Updates'
     )
     # Upstream split M3Shapes (Material shapes QML module) out of the shell
     # build; it's built here too so this stays a single package.

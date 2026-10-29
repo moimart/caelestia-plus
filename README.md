@@ -160,6 +160,22 @@ with the same entity names don't clash.
 
 <img src="shell/docs/screenshots/ha-settings.jpg" alt="Settings: Home Assistant instances, and the lock screen's cards per column">
 
+### System updates
+
+Settings → Updates lists what's pending, checked every six hours without a
+password, and **Update now** runs the upgrade with its progress (the step,
+how far along, and the package manager's output if you want it). The password
+goes to the system's polkit dialog, never to the shell; a kernel or core
+library update suggests a restart. If an upgrade needs answers (a conflict, a
+replaced package), **Update in a terminal** runs the same command there.
+
+It uses pacman on Arch and its derivatives, tested on CachyOS. apt (Debian,
+Ubuntu), dnf (Fedora) and zypper (openSUSE) are written as **reference
+implementations**: they follow each tool's documentation but have never been
+run, so expect to fix the odd detail. They're all in
+[`services/SystemUpdates.qml`](shell/services/SystemUpdates.qml), one small
+block each.
+
 ### Right to left
 
 ![Right to left: the bar on the right edge, the right bar on the left](shell/docs/screenshots/rtl.jpg)
