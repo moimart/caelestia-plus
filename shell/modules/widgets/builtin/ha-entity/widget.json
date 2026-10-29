@@ -29,13 +29,14 @@
             "key": "name",
             "type": "string",
             "label": "Name",
-            "placeholder": "Its name in Home Assistant"
+            "placeholder": "From Home Assistant"
         },
         {
             "key": "icon",
             "type": "string",
             "label": "Icon",
-            "placeholder": "A Material Symbols name; empty picks one"
+            "placeholder": "Automatic",
+            "description": "A Material Symbols name"
         }
     ]
 }

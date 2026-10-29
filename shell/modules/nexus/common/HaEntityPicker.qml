@@ -36,6 +36,29 @@ ColumnLayout {
         }).slice(0, 8);
     }
 
+    // What it offers, as people say it ("Lights, switches, fans")
+    readonly property string kinds: {
+        const names = {
+            light: Tr.tr("lights"),
+            switch: Tr.tr("switches"),
+            input_boolean: Tr.tr("toggles"),
+            fan: Tr.tr("fans"),
+            lock: Tr.tr("locks"),
+            cover: Tr.tr("blinds and doors"),
+            button: Tr.tr("buttons"),
+            input_button: Tr.tr("buttons"),
+            scene: Tr.tr("scenes"),
+            script: Tr.tr("scripts"),
+            automation: Tr.tr("automations"),
+            media_player: Tr.tr("media players"),
+            camera: Tr.tr("cameras"),
+            sensor: Tr.tr("sensors"),
+            binary_sensor: Tr.tr("sensors")
+        };
+        const list = [...new Set(domains.map(d => names[d] ?? d.replace(/_/g, " ")))].join(", ");
+        return list ? list[0].toUpperCase() + list.slice(1) : "";
+    }
+
     signal picked(id: string)
 
     function load(): void {
@@ -49,15 +72,16 @@ ColumnLayout {
 
     InfoRow {
         first: root.first
-        icon: root.value ? HaIcons.iconFor(root.value, HomeAssistant.entity(root.instance, root.value)) : "help"
+        icon: root.value ? HaIcons.iconFor(root.value, HomeAssistant.entity(root.instance, root.value)) : "search"
         label: root.label
-        subtext: root.value ? root.value : Tr.tr("None yet: search below")
+        subtext: root.value ? root.value : Tr.tr("Search below")
         value: root.current?.name ?? ""
     }
 
     TextFieldRow {
         label: Tr.tr("Search")
-        placeholderText: root.domains.length > 0 ? root.domains.join(", ") : Tr.tr("Name or id")
+        subtext: root.kinds
+        placeholderText: Tr.tr("Name or id")
         value: root.query
         onValueEdited: value => root.query = value
     }
@@ -76,7 +100,13 @@ ColumnLayout {
                 attributes: {}
             })
             text: modelData.name
-            subtext: `${modelData.id} · ${modelData.state}`
+            // Buttons and the like have the time they were last pressed as their state
+            subtext: `${modelData.id} · ${HaIcons.stateText({
+                state: modelData.state,
+                attributes: /^\d{4}-\d\d-\d\dT/.test(modelData.state) ? {
+                    device_class: "timestamp"
+                } : {}
+            })}`
             trailingIcon: modelData.id === root.value ? "check" : ""
             onClicked: root.picked(modelData.id)
         }
