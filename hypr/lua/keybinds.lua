@@ -318,15 +318,18 @@ end
 -- both are tracked here (without taking the keys from apps). A press only
 -- counts for 10 s, so a release that never arrived (the screen locked
 -- meanwhile, say) can't leave a Shift stuck down.
+-- By key code (50 left, 62 right: the physical keys, whatever the layout):
+-- since Hyprland 0.57 a Shift_L/Shift_R bind no longer fires while the other
+-- Shift is already down.
 local shiftDown = {}
-for _, key in ipairs({ "Shift_L", "Shift_R" }) do
+for _, key in ipairs({ "code:50", "code:62" }) do
   hl.bind(key, function() shiftDown[key] = os.time() end,
           { ignore_mods = true, non_consuming = true, locked = true })
   hl.bind(key, function() shiftDown[key] = nil end,
           { ignore_mods = true, non_consuming = true, locked = true, release = true })
 end
 local function both_shifts()
-  for _, key in ipairs({ "Shift_L", "Shift_R" }) do
+  for _, key in ipairs({ "code:50", "code:62" }) do
     if not shiftDown[key] or os.time() - shiftDown[key] > 10 then return false end
   end
   return true

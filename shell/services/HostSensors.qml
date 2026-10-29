@@ -38,6 +38,11 @@ Singleton {
 
     property string loop
     property var pending: []
+    // Whether the key exists; without it there's no point knocking (sshd
+    // turns away an address after too many failed logins)
+    property bool hasKey
+    property bool authFailed
+    property int failures
 
     function save(next: var): void {
         config = next;
@@ -48,8 +53,10 @@ Singleton {
         proc.running = false;
         readings = [];
         connected = false;
-        error = "";
-        if (enabled && loop)
+        authFailed = false;
+        failures = 0;
+        error = enabled && !hasKey ? Tr.tr("No key yet: set up access") : "";
+        if (enabled && loop && hasKey)
             retry.restart();
     }
 
@@ -75,6 +82,23 @@ Singleton {
         onLoadFailed: root.config = {}
     }
 
+    // The key's public half: set up access makes it, and that's the cue to
+    // try again
+    FileView {
+        path: root.enabled ? `${root.key}.pub` : ""
+        printErrors: false
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: {
+            root.hasKey = true;
+            Qt.callLater(root.restart);
+        }
+        onLoadFailed: {
+            root.hasKey = false;
+            Qt.callLater(root.restart);
+        }
+    }
+
     FileView {
         path: `${Quickshell.shellDir}/assets/host-sensors-loop.sh`
         printErrors: false
@@ -97,6 +121,7 @@ Singleton {
                     root.pending = [];
                     root.connected = true;
                     root.error = "";
+                    root.failures = 0;
                     return;
                 }
                 const [chip, label, milli] = line.split("|");
@@ -120,13 +145,16 @@ Singleton {
             root.connected = false;
             root.readings = [];
             const last = errors.filter(e => !e.startsWith("Warning:")).slice(-1)[0] ?? "";
-            if (last.includes("Permission denied"))
+            root.failures++;
+            // A refused key stays refused: no retrying until it's set up again
+            root.authFailed = last.includes("Permission denied");
+            if (root.authFailed)
                 root.error = Tr.tr("The host doesn't take the key yet: set up access");
             else if (/timed out|No route|Connection refused|Could not resolve/.test(last))
                 root.error = Tr.tr("Can't reach %1").arg(root.target);
             else
                 root.error = last || Tr.tr("ssh stopped (%1)").arg(code);
-            if (root.enabled)
+            if (root.enabled && !root.authFailed)
                 retry.restart();
         }
     }
@@ -135,7 +163,8 @@ Singleton {
     Timer {
         id: retry
 
-        interval: proc.errors.length > 0 ? 30000 : 1000
+        // 15 s after the first failure, doubling up to 10 min
+        interval: root.failures === 0 ? 1000 : Math.min(600000, 15000 * Math.pow(2, root.failures - 1))
         onTriggered: if (root.enabled && root.loop && !proc.running)
             proc.running = true
     }
