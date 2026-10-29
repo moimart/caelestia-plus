@@ -43,6 +43,9 @@ PageBase {
         }
     ]
 
+    // The host side of vsock, sent from here in one go
+    readonly property string vsockSetup: `ssh root@HOST sh -s VMID < ${Quickshell.shellDir}/assets/host-sensors-vsock-setup.sh`
+
     title: Tr.tr("Services")
 
     ColumnLayout {
@@ -102,14 +105,61 @@ PageBase {
                 if (Cpu.temperature > 0)
                     return Tr.tr("A host is only used where there are none, as in a virtual machine");
                 if (HostSensors.connected && HostSensors.cpu)
-                    return `${HostSensors.target} · ${HostSensors.cpu.chip} ${HostSensors.cpu.label}`;
-                return Tr.tr("In a virtual machine, the host's can show instead: it's read over ssh with a key that can only read temperatures");
+                    return `${HostSensors.source === "vsock" ? Tr.tr("From the VM's host, over vsock") : HostSensors.target} · ${HostSensors.cpu.chip} ${HostSensors.cpu.label}`;
+                return Tr.tr("In a virtual machine, the host's can show instead");
             }
         }
 
+        SelectRow {
+            label: Tr.tr("Read it from")
+            menuItems: [sourceOff, sourceVsock, sourceSsh]
+            active: [sourceOff, sourceVsock, sourceSsh].find(i => i.value === HostSensors.source) ?? sourceOff
+            onSelected: item => {
+                const next = Object.assign({}, HostSensors.config);
+                if (item.value)
+                    next.source = item.value;
+                else
+                    next.source = "";
+                HostSensors.save(next);
+            }
+
+            MenuItem {
+                id: sourceOff
+
+                text: Tr.tr("Nowhere")
+                value: ""
+            }
+
+            MenuItem {
+                id: sourceVsock
+
+                text: Tr.tr("The VM's host (vsock)")
+                value: "vsock"
+            }
+
+            MenuItem {
+                id: sourceSsh
+
+                text: Tr.tr("A machine over ssh")
+                value: "ssh"
+            }
+        }
+
+        // vsock: the host needs setting up once
+        RowButton {
+            Layout.fillWidth: true
+            visible: HostSensors.source === "vsock"
+            last: true
+            icon: "content_copy"
+            text: Tr.tr("Copy the host's setup command")
+            subtext: Tr.tr("Run it here with your host and the VM's id, then stop and start the VM from the host: %1").arg(root.vsockSetup)
+            onClicked: Quickshell.execDetached(["wl-copy", root.vsockSetup])
+        }
+
         TextFieldRow {
+            visible: HostSensors.source === "ssh"
             label: Tr.tr("Host")
-            subtext: Tr.tr("user@host, as for ssh. Empty turns it off")
+            subtext: Tr.tr("user@host, as for ssh")
             placeholderText: "root@192.168.1.2"
             value: HostSensors.target
             onEditingFinished: value => {
@@ -124,11 +174,12 @@ PageBase {
 
         RowButton {
             Layout.fillWidth: true
+            visible: HostSensors.source === "ssh"
             last: true
             disabled: !HostSensors.target
             icon: "key"
             text: Tr.tr("Set up access")
-            subtext: Tr.tr("In a terminal: makes a key and adds it on the host, asking for its password once")
+            subtext: Tr.tr("In a terminal: makes a key the host only lets print temperatures, asking for its password once")
             onClicked: Quickshell.execDetached([...GlobalConfig.general.apps.terminal, "sh", "-c", `"$0" "$1" "$2"; echo; printf '%s' "${Tr.tr("Press Enter to close").replace(/"/g, "")}"; read _`, `${Quickshell.shellDir}/assets/host-sensors-setup.sh`, HostSensors.target, HostSensors.key])
         }
 

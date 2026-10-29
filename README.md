@@ -180,10 +180,18 @@ block each.
 
 A VM has no temperature sensors, so the CPU temperature (the dashboard, the
 lock screen) read 0. Settings → Services → Host temperature shows the host's
-instead: give it `user@host` and press **Set up access** once. That makes a
-key of its own and installs it on the host so that all it can do is print the
-readings from `/sys/class/hwmon` every few seconds: no shell, no forwarding,
-nothing to install there. Machines with their own sensors keep using them.
+instead, read from either:
+
+- **The VM's host, over vsock**: QEMU's direct channel between a host and
+  its VMs, with no network and no keys, and nothing anyone on the LAN can
+  reach. Run [`host-sensors-vsock-setup.sh`](shell/assets/host-sensors-vsock-setup.sh)
+  on the host once (`ssh root@host sh -s <vmid> < host-sensors-vsock-setup.sh`
+  on Proxmox; it adds the VM's vsock device too), then stop and start the VM.
+  The host serves the readings from a sandboxed, unprivileged service.
+- **Any machine over ssh**: **Set up access** makes a key that the other
+  machine only lets print its readings: no shell, no forwarding.
+
+Machines with their own sensors keep using them.
 
 ### Right to left
 

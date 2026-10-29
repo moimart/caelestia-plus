@@ -10,19 +10,30 @@ import qs.utils
 // Temperatures from another machine, for when the shell runs where there are
 // none: a virtual machine shows its host's CPU temperature instead of 0.
 //
-// ~/.config/caelestia/host-sensors.json: { "ssh": "user@host", "key": path }
-// (key defaults to ~/.ssh/caelestia-host-sensors). One ssh connection stays
-// open and the host prints /sys/class/hwmon every few seconds
-// (assets/host-sensors-loop.sh); assets/host-sensors-setup.sh installs a key
-// there that can do nothing else. Settings → Services sets it up.
+// ~/.config/caelestia/host-sensors.json, with "source":
+// - "vsock" (and "port", default 7770): the VM's own channel to its host, no
+//   network and no keys. The host serves the readings
+//   (assets/host-sensors-vsock-setup.sh, run there once) and
+//   assets/host-sensors-vsock.py reads them.
+// - "ssh" (with "ssh": "user@host" and "key", default
+//   ~/.ssh/caelestia-host-sensors): any machine, over ssh with a key that can
+//   only print the readings (assets/host-sensors-setup.sh).
+// Either way one connection stays open and the host prints /sys/class/hwmon
+// every few seconds (assets/host-sensors-loop.sh). Settings → Services.
 Singleton {
     id: root
 
     readonly property string path: `${Paths.config}/host-sensors.json`
     property var config: ({})
+    // "vsock", "ssh" or "" (off); older files only had "ssh"
+    readonly property string source: config.source ?? (config.ssh ? "ssh" : "")
+    readonly property int port: config.port ?? 7770
     readonly property string target: config.ssh ?? ""
     readonly property string key: Paths.absolutePath(config.key ?? "~/.ssh/caelestia-host-sensors")
-    readonly property bool enabled: target !== ""
+    readonly property bool enabled: source === "vsock" || (source === "ssh" && target !== "")
+    // Over ssh, only with the key: without it there's no point knocking (sshd
+    // turns away an address after too many failed logins)
+    readonly property bool ready: enabled && (source === "vsock" || hasKey)
 
     property bool connected
     property string error
@@ -38,8 +49,6 @@ Singleton {
 
     property string loop
     property var pending: []
-    // Whether the key exists; without it there's no point knocking (sshd
-    // turns away an address after too many failed logins)
     property bool hasKey
     property bool authFailed
     property int failures
@@ -55,12 +64,14 @@ Singleton {
         connected = false;
         authFailed = false;
         failures = 0;
-        error = enabled && !hasKey ? Tr.tr("No key yet: set up access") : "";
-        if (enabled && loop && hasKey)
+        error = enabled && !ready ? Tr.tr("No key yet: set up access") : "";
+        if (ready && loop)
             retry.restart();
     }
 
     // Once the bindings that depend on them have caught up too
+    onSourceChanged: Qt.callLater(restart)
+    onPortChanged: Qt.callLater(restart)
     onTargetChanged: Qt.callLater(restart)
     onKeyChanged: Qt.callLater(restart)
     onLoopChanged: Qt.callLater(restart)
@@ -85,7 +96,7 @@ Singleton {
     // The key's public half: set up access makes it, and that's the cue to
     // try again
     FileView {
-        path: root.enabled ? `${root.key}.pub` : ""
+        path: root.source === "ssh" ? `${root.key}.pub` : ""
         printErrors: false
         watchChanges: true
         onFileChanged: reload()
@@ -110,9 +121,9 @@ Singleton {
 
         property var errors: []
 
-        // With the key's forced command on the host, what's asked here is
-        // ignored and the same loop runs anyway
-        command: ["ssh", "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=2", "-o", "StrictHostKeyChecking=accept-new", "-o", "IdentitiesOnly=yes", "-i", root.key, root.target, root.loop]
+        // Over ssh, with the key's forced command on the host what's asked
+        // here is ignored and the same loop runs anyway
+        command: root.source === "vsock" ? ["python3", `${Quickshell.shellDir}/assets/host-sensors-vsock.py`, String(root.port)] : ["ssh", "-T", "-o", "BatchMode=yes", "-o", "ConnectTimeout=8", "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=2", "-o", "StrictHostKeyChecking=accept-new", "-o", "IdentitiesOnly=yes", "-i", root.key, root.target, root.loop]
 
         stdout: SplitParser {
             onRead: line => {
@@ -147,9 +158,14 @@ Singleton {
             const last = errors.filter(e => !e.startsWith("Warning:")).slice(-1)[0] ?? "";
             root.failures++;
             // A refused key stays refused: no retrying until it's set up again
-            root.authFailed = last.includes("Permission denied");
+            root.authFailed = root.source === "ssh" && last.includes("Permission denied");
             if (root.authFailed)
                 root.error = Tr.tr("The host doesn't take the key yet: set up access");
+            else
+            // vsock: no device in this VM yet (it takes a stop and start), or
+            // nothing listening on the host
+            if (root.source === "vsock")
+                root.error = Tr.tr("No answer from the host: set it up, then stop and start the VM");
             else if (/timed out|No route|Connection refused|Could not resolve/.test(last))
                 root.error = Tr.tr("Can't reach %1").arg(root.target);
             else
@@ -165,7 +181,7 @@ Singleton {
 
         // 15 s after the first failure, doubling up to 10 min
         interval: root.failures === 0 ? 1000 : Math.min(600000, 15000 * Math.pow(2, root.failures - 1))
-        onTriggered: if (root.enabled && root.loop && !proc.running)
+        onTriggered: if (root.ready && root.loop && !proc.running)
             proc.running = true
     }
 
@@ -173,7 +189,8 @@ Singleton {
     IpcHandler {
         function status(): string {
             return JSON.stringify({
-                target: root.target,
+                source: root.source,
+                target: root.source === "vsock" ? `vsock:2:${root.port}` : root.target,
                 connected: root.connected,
                 error: root.error,
                 cpu: root.cpu,
