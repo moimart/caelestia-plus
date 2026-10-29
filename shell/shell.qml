@@ -31,6 +31,7 @@ ShellRoot {
         Notifs;
         Players;
         Brightness;
+        HomeAssistant;
         Weather.reload();
 
         if (GlobalConfig.utilities.vpn.enabled)

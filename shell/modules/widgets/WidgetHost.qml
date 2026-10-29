@@ -1,7 +1,11 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import qs.components.ha
 import qs.services
+
+// qs.components.ha isn't used here: it's imported so Quickshell registers the
+// module, for widget plugins (loaded by path) to import (the Home Assistant ones)
 
 // Runs one placed widget: loads its plugin's QML and hands it what it can use.
 // A plugin's root item may declare any of these properties to receive them:

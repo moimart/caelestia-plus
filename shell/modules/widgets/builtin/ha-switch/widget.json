@@ -1,0 +1,50 @@
+{
+    "id": "ha-switch",
+    "name": "Home Assistant switch",
+    "description": "A light, switch or fan from Home Assistant: tap to toggle",
+    "icon": "toggle_on",
+    "author": "moimart",
+    "version": "1.0",
+    "main": "HaSwitch.qml",
+    "defaultSize": [
+        220,
+        72
+    ],
+    "minSize": [
+        140,
+        56
+    ],
+    "settings": [
+        {
+            "key": "instance",
+            "type": "haInstance",
+            "label": "Home Assistant"
+        },
+        {
+            "key": "entity",
+            "type": "haEntity",
+            "label": "Entity",
+            "domains": [
+                "light",
+                "switch",
+                "input_boolean",
+                "fan",
+                "lock",
+                "cover",
+                "media_player"
+            ]
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "label": "Name",
+            "placeholder": "Its name in Home Assistant"
+        },
+        {
+            "key": "icon",
+            "type": "string",
+            "label": "Icon",
+            "placeholder": "A Material Symbols name; empty picks one"
+        }
+    ]
+}

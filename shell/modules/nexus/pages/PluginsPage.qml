@@ -152,6 +152,32 @@ PageBase {
             }
         }
 
+        // Every placed widget, to open its settings
+        SectionHeader {
+            visible: Widgets.instances.length > 0
+            text: Tr.tr("Placed widgets")
+        }
+
+        Repeater {
+            model: Widgets.instances
+
+            NavRow {
+                required property var modelData
+                required property int index
+                readonly property var plugin: Widgets.pluginFor(modelData.type)
+
+                first: index === 0
+                last: index === Widgets.instances.length - 1
+                icon: plugin?.icon ?? "widgets"
+                text: modelData.settings?.name || plugin?.name || modelData.type
+                subtext: [plugin?.name, modelData.settings?.entity, modelData.screen].filter(s => s && s !== text).join(" · ")
+                onClicked: {
+                    Widgets.settingsUid = modelData.uid;
+                    root.nState.openSubPage(1);
+                }
+            }
+        }
+
         SectionHeader {
             text: Tr.tr("Your plugins")
         }

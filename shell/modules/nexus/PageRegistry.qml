@@ -47,6 +47,12 @@ QtObject {
             description: Tr.tr("App volumes, sound devices"),
             category: "connectivity"
         },
+        {
+            label: Tr.tr("Home Assistant"),
+            icon: "home_iot_device",
+            description: Tr.tr("Instances, tokens, the lock screen and desktop cards"),
+            category: "connectivity"
+        },
 
         // System
         {

@@ -1,0 +1,41 @@
+{
+    "id": "ha-entity",
+    "name": "Home Assistant entity",
+    "description": "Any Home Assistant entity's state, like a temperature",
+    "icon": "sensors",
+    "author": "moimart",
+    "version": "1.0",
+    "main": "HaEntity.qml",
+    "defaultSize": [
+        220,
+        72
+    ],
+    "minSize": [
+        140,
+        56
+    ],
+    "settings": [
+        {
+            "key": "instance",
+            "type": "haInstance",
+            "label": "Home Assistant"
+        },
+        {
+            "key": "entity",
+            "type": "haEntity",
+            "label": "Entity"
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "label": "Name",
+            "placeholder": "Its name in Home Assistant"
+        },
+        {
+            "key": "icon",
+            "type": "string",
+            "label": "Icon",
+            "placeholder": "A Material Symbols name; empty picks one"
+        }
+    ]
+}

@@ -141,6 +141,18 @@ shell_on() {
     fi
 }
 
+# The checkout didn't load: never leave the desktop without a shell
+shell_fallback() {
+    if [ -L "$link" ]; then
+        note "the checkout doesn't load (errors above); back to the installed shell"
+        rm "$link"
+        rmdir "$(dirname "$link")" 2> /dev/null || true
+        shell_restart || die "the installed shell didn't load either: run 'caelestia shell -d'"
+        exit 1
+    fi
+    die "the shell didn't load (errors above): run 'caelestia shell -d'"
+}
+
 shell_off() {
     if [ ! -L "$link" ]; then
         note "already running the installed shell"
@@ -161,7 +173,7 @@ plugin() {
         -DGIT_REVISION="$(git rev-parse HEAD)" -DDISTRIBUTOR="caelestia-plus (dev)" > /dev/null
     cmake --build build
     if [ -L "$link" ]; then
-        shell_restart || die "the shell didn't load with the new plugin: tools/dev.sh shell off"
+        shell_restart || shell_fallback
     else
         note "built; tools/dev.sh shell on runs the checkout with it"
     fi
@@ -325,7 +337,7 @@ status() {
 case "${1:-} ${2:-}" in
     "shell on") shell_on ;;
     "shell off") shell_off ;;
-    "shell restart") shell_restart || die "the shell didn't load (errors above)" ;;
+    "shell restart") shell_restart || shell_fallback ;;
     "shell log") hypr_env && exec qs -c caelestia log -f ;;
     "shell status" | "shell ") shell_source ;;
     "plugin "*) plugin ;;
