@@ -55,7 +55,7 @@ Item {
             id: buttons
 
             anchors.centerIn: parent
-            spacing: Tokens.spacing.small
+            spacing: 0
 
             Repeater {
                 model: root.actions
@@ -71,6 +71,8 @@ Item {
                     IconButton {
                         anchors.horizontalCenter: parent.horizontalCenter
                         type: action.active ? IconButton.Filled : IconButton.Text
+                        // The same size either way, so lighting one up doesn't move the rest
+                        padding: Tokens.padding.small
                         // A recording shows stop; a Home Assistant entity that's on stays itself
                         icon: action.active && action.modelData.recorder ? "stop_circle" : action.modelData.icon
                         onClicked: action.modelData.run()
