@@ -25,6 +25,8 @@ Singleton {
     property var plugins: []
     // [{ uid, type, screen, x, y, width, height, settings }] in screen-local logical px
     property var instances: []
+    // The placed widget Settings → Plugins is editing (its uid)
+    property string settingsUid
     property bool loaded
     // Placing and resizing widgets (modules/widgets shows the editor)
     property bool editing
@@ -66,6 +68,21 @@ Singleton {
 
     function update(uid: string, changes: var): void {
         save(instances.map(i => i.uid === uid ? Object.assign({}, i, changes) : i));
+    }
+
+    // One of a placed widget's settings
+    function setSetting(uid: string, key: string, value: var): void {
+        const inst = instances.find(i => i.uid === uid);
+        if (!inst)
+            return;
+        const settings = Object.assign({}, inst.settings);
+        if (value === undefined || value === "")
+            delete settings[key];
+        else
+            settings[key] = value;
+        update(uid, {
+            settings: settings
+        });
     }
 
     function save(next: var): void {
@@ -132,7 +149,9 @@ Singleton {
                             defaultSize: m.defaultSize ?? [240, 160],
                             minSize: m.minSize ?? [64, 64],
                             keepAspect: m.keepAspect ?? false,
-                            needsCursor: m.needsCursor ?? false
+                            needsCursor: m.needsCursor ?? false,
+                            // [{ key, type, label, ... }]: the form Settings → Plugins shows
+                            schema: Array.isArray(m.settings) ? m.settings : []
                         });
                     } catch (e) {
                         console.warn(`Widgets: bad manifest in ${dir}: ${e}`);

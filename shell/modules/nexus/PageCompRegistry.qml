@@ -109,6 +109,14 @@ QtObject {
                 }
             }
         },
+        Component {
+            // Home Assistant
+            StackPage {
+                Component {
+                    HomeAssistantPage {}
+                }
+            }
+        },
 
         // System
         Component {
@@ -119,6 +127,10 @@ QtObject {
             StackPage {
                 Component {
                     PluginsPage {}
+                }
+                // 1: a placed widget's settings (Widgets.settingsUid)
+                Component {
+                    WidgetSettingsPage {}
                 }
             }
         },

@@ -1,0 +1,48 @@
+{
+    "id": "ha-button",
+    "name": "Home Assistant button",
+    "description": "A button, scene, script or automation from Home Assistant: tap to run it",
+    "icon": "radio_button_checked",
+    "author": "moimart",
+    "version": "1.0",
+    "main": "HaButton.qml",
+    "defaultSize": [
+        220,
+        72
+    ],
+    "minSize": [
+        140,
+        56
+    ],
+    "settings": [
+        {
+            "key": "instance",
+            "type": "haInstance",
+            "label": "Home Assistant"
+        },
+        {
+            "key": "entity",
+            "type": "haEntity",
+            "label": "Entity",
+            "domains": [
+                "button",
+                "input_button",
+                "scene",
+                "script",
+                "automation"
+            ]
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "label": "Name",
+            "placeholder": "Its name in Home Assistant"
+        },
+        {
+            "key": "icon",
+            "type": "string",
+            "label": "Icon",
+            "placeholder": "A Material Symbols name; empty picks one"
+        }
+    ]
+}

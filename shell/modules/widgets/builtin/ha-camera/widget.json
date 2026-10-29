@@ -1,0 +1,46 @@
+{
+    "id": "ha-camera",
+    "name": "Home Assistant camera",
+    "description": "A Home Assistant camera's picture, refreshed every few seconds",
+    "icon": "videocam",
+    "author": "moimart",
+    "version": "1.0",
+    "main": "HaCamera.qml",
+    "defaultSize": [
+        360,
+        210
+    ],
+    "minSize": [
+        160,
+        90
+    ],
+    "settings": [
+        {
+            "key": "instance",
+            "type": "haInstance",
+            "label": "Home Assistant"
+        },
+        {
+            "key": "entity",
+            "type": "haEntity",
+            "label": "Camera",
+            "domains": [
+                "camera"
+            ]
+        },
+        {
+            "key": "name",
+            "type": "string",
+            "label": "Label",
+            "placeholder": "None"
+        },
+        {
+            "key": "interval",
+            "type": "number",
+            "label": "Refresh every (seconds)",
+            "min": 1,
+            "max": 60,
+            "default": 5
+        }
+    ]
+}

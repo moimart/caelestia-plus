@@ -92,6 +92,12 @@ Scope {
             }
         }
 
+        // Opens a placed widget's settings (Settings → Plugins)
+        function settings(uid: string): void {
+            Widgets.settingsUid = uid;
+            Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "nexus", "subPage", "Plugins", "1"]);
+        }
+
         function rescan(): void {
             Widgets.rescan();
         }
