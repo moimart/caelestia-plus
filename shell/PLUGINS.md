@@ -111,14 +111,45 @@ Guidelines:
 ## Settings
 
 Each placed widget carries a `settings` object that your QML reads, as in
-`root.settings.format` above. There's no settings UI per widget yet. Set them
-with any of:
+`root.settings.format` above. Describe them in `widget.json` and Settings →
+Plugins → (the placed widget) draws a form for them:
+
+```json
+"settings": [
+    { "key": "format", "type": "string", "label": "Format", "placeholder": "hh:mm" },
+    { "key": "size", "type": "number", "label": "Size", "min": 8, "max": 64, "step": 2, "default": 24 },
+    { "key": "seconds", "type": "bool", "label": "Show seconds" },
+    { "key": "style", "type": "enum", "label": "Style",
+      "options": [{ "value": "orbit", "label": "Orbit" }, { "value": "dots", "label": "Dots" }] },
+    { "key": "instance", "type": "haInstance", "label": "Home Assistant" },
+    { "key": "entity", "type": "haEntity", "label": "Light", "domains": ["light"] },
+    { "key": "card", "type": "haCard", "label": "Dashboard card" }
+]
+```
+
+`haInstance` picks one of your Home Assistant instances (Settings → Home
+Assistant), `haEntity` searches its entities (only the `domains` given, if
+any), and `haCard` picks a card from one of its dashboards: it sets
+`dashboard`, `cardPath` and `card` (the card's config).
+
+Without the form, set them with any of:
 - the IPC call: `caelestia shell widgets configure <uid> '{"format": "hh:mm:ss"}'`;
 - the `widgets` MCP tool;
 - editing `widgets.json` while the shell is stopped.
 
-`caelestia shell widgets list` shows each widget's `uid`. For example, the
-Eyes widget takes `{"style": "orbit" | "almond" | "dots"}`.
+`caelestia shell widgets list` shows each widget's `uid`.
+
+### Home Assistant in a widget
+
+The built-in Home Assistant widgets (switch, button, entity, camera, dashboard
+card) are ordinary plugins in `modules/widgets/builtin/ha-*`. Yours can use the
+same pieces: `import qs.components.ha` gives `HaTile` (an entity: icon, name,
+state; tapping it acts like tapping it in Home Assistant unless `readOnly`),
+`HaCameraView` and `HaCard` (a dashboard card's config, drawn natively).
+`import qs.services` gives the `HomeAssistant` singleton: `entity(instance,
+id)` for live state (after `watch(consumer, instance, ids)`; `unwatch` when you
+go), `activate(instance, id)` and `call(instance, domain, service, data)`. An
+empty `instance` means the first one.
 
 ## Trying a plugin out
 

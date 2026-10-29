@@ -42,8 +42,10 @@ desktop, above the wallpaper:
 - **Daruma**: the winking daruma, its painted eye following the pointer. It
   winks now and then, and shuts both eyes when the pointer is still.
 - **The editor** (**Super+Ctrl+W**): drag widgets to move them, drag a corner
-  to resize, add more from the palette. Each widget's settings are in
+  to resize, add more from the palette. Each widget's settings are a form in
   Settings → Plugins.
+- **Home Assistant widgets**: switches, buttons, sensors, cameras and
+  dashboard cards ([below](#home-assistant)).
 - **Your own**: a widget is a folder with a small manifest and a QML file, in
   `~/.config/caelestia/plugins/widgets/`. [PLUGINS.md](shell/PLUGINS.md)
   explains how, and [`examples/widgets/clock`](shell/examples/widgets/clock) is
@@ -133,6 +135,31 @@ the left one:
 - **Your own actions**: a folder with an `action.json` that runs a command, a
   shell line or any of the shell's IPC functions ([PLUGINS.md](shell/PLUGINS.md)).
 
+### Home Assistant
+
+<img src="shell/docs/screenshots/ha-widgets.jpg" alt="Home Assistant widgets on the desktop: a light, a script, a sensor, a camera, a dashboard tile and cards (camera feeds and data blurred here)">
+
+One place for your Home Assistant, as many instances as you have (a home and a
+holiday flat, say): Settings → Home Assistant takes each one's URL and a
+long-lived access token, kept in its own file readable only by you. The shell
+keeps one live WebSocket to each, so everything below updates the moment an
+entity changes.
+
+- **Desktop widgets**: a switch or light (tap to toggle), a button (press,
+  run a script or scene), an entity's state, a camera, and any card from your
+  dashboards, drawn natively (tiles, entities, glance, gauges, pictures,
+  stacks). Place them with the widget editor and pick what they show in
+  Settings → Plugins.
+- **Right bar shortcuts**: an entity or a dashboard card as a button on the
+  right bar, lit while it's on (Settings → Panels → Right bar).
+- **The lock screen**: cameras, energy, entities and dashboard cards, which
+  only show there (see below).
+
+Each widget, shortcut and card says which instance it comes from, so two homes
+with the same entity names don't clash.
+
+<img src="shell/docs/screenshots/ha-settings.jpg" alt="Settings: Home Assistant instances, and the lock screen's cards per column">
+
 ### Right to left
 
 ![Right to left: the bar on the right edge, the right bar on the left](shell/docs/screenshots/rtl.jpg)
@@ -199,8 +226,11 @@ nothing is hardcoded. Searchable, grouped by your config's sections.
 
 <img src="shell/docs/screenshots/lock.jpg" alt="The lock screen with an animated profile picture and Home Assistant cards (blurred here)">
 
-An animated profile picture, read-only Home Assistant cards (a camera, energy,
-your devices), and face unlock.
+An animated profile picture, face unlock, and the cards you choose in
+Settings → Lock screen: weather, system, media, resources, notifications and
+Home Assistant ones (a camera, energy, entities, a dashboard card), in either
+column, in any order. They only show: nothing there can be pressed. Without
+changes it's the layout it always had.
 
 </td>
 <td valign="top">
