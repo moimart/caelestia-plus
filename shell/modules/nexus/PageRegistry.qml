@@ -58,7 +58,7 @@ QtObject {
         {
             label: Tr.tr("Updates"),
             icon: "update",
-            description: Tr.tr("System updates"),
+            description: Tr.tr("System updates through your package manager"),
             category: "system"
         },
         {
