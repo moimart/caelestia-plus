@@ -127,6 +127,8 @@ Plugins → (the placed widget) draws a form for them:
 ]
 ```
 
+Any field can have a `description`, shown under its label; keep
+`placeholder` to a word or two, as it moves above the text once there is some.
 `haInstance` picks one of your Home Assistant instances (Settings → Home
 Assistant), `haEntity` searches its entities (only the `domains` given, if
 any), and `haCard` picks a card from one of its dashboards: it sets

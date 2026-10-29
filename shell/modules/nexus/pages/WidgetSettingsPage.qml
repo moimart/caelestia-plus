@@ -78,6 +78,7 @@ PageBase {
                         first: field.index === 0
                         last: field.index === root.schema.length - 1
                         label: field.modelData.label ?? field.modelData.key
+                        subtext: field.modelData.description ?? ""
                         placeholderText: field.modelData.placeholder ?? ""
                         value: root.settings[field.modelData.key] ?? ""
                         onEditingFinished: value => root.set(field.modelData.key, value.trim())

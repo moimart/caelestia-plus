@@ -90,7 +90,7 @@ ColumnLayout {
 
     InfoRow {
         icon: "dashboard"
-        label: root.current ? root.describe(root.current) : Tr.tr("No card yet: search below")
+        label: root.current ? root.describe(root.current) : Tr.tr("Pick one below")
         subtext: root.current ? `${root.current.type} · ${root.current.view}` : ""
     }
 

@@ -129,7 +129,6 @@ PageBase {
                 TextFieldRow {
                     label: Tr.tr("URL")
                     value: instance.modelData.url
-                    placeholderText: "http://homeassistant.local:8123"
                     onEditingFinished: value => {
                         if (/^https?:\/\//.test(value.trim()) && value.trim() !== instance.modelData.url)
                             HomeAssistant.updateInstance(instance.modelData.id, {
@@ -176,7 +175,7 @@ PageBase {
 
         TextFieldRow {
             label: Tr.tr("URL")
-            placeholderText: "http://homeassistant.local:8123"
+            subtext: Tr.tr("Like http://homeassistant.local:8123")
             onValueEdited: value => root.newUrl = value
             value: root.newUrl
         }
