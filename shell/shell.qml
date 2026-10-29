@@ -34,6 +34,7 @@ ShellRoot {
         HomeAssistant;
         LockLayout;
         SystemUpdates;
+        HostSensors;
         Weather.reload();
 
         if (GlobalConfig.utilities.vpn.enabled)
