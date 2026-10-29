@@ -263,4 +263,22 @@ Singleton {
             } catch (e) {}
         }
     }
+
+    // qs ipc call lockLayout get | edit left 1 (then: nexus subPage "lock screen" 1)
+    IpcHandler {
+        function get(): string {
+            return JSON.stringify({
+                isDefault: root.isDefault,
+                left: root.left,
+                right: root.right
+            });
+        }
+
+        function edit(side: string, index: int): void {
+            root.editSide = side === "right" ? "right" : "left";
+            root.editIndex = index;
+        }
+
+        target: "lockLayout"
+    }
 }

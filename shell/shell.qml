@@ -32,6 +32,7 @@ ShellRoot {
         Players;
         Brightness;
         HomeAssistant;
+        LockLayout;
         Weather.reload();
 
         if (GlobalConfig.utilities.vpn.enabled)
