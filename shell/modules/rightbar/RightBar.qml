@@ -71,14 +71,15 @@ Item {
                     IconButton {
                         anchors.horizontalCenter: parent.horizontalCenter
                         type: action.active ? IconButton.Filled : IconButton.Text
-                        icon: action.active ? "stop_circle" : action.modelData.icon
+                        // A recording shows stop; a Home Assistant entity that's on stays itself
+                        icon: action.active && action.modelData.recorder ? "stop_circle" : action.modelData.icon
                         onClicked: action.modelData.run()
                     }
 
                     // How long the recording has run
                     StyledText {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        visible: action.active
+                        visible: action.active && !!action.modelData.recorder
                         text: {
                             const s = Math.floor(Recorder.elapsed);
                             return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
