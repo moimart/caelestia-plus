@@ -81,6 +81,57 @@ PageBase {
             onClicked: root.nState.openSubPage(1)
         }
 
+        // Temperatures from the host, for a virtual machine
+        SectionHeader {
+            text: Tr.tr("Host temperature")
+        }
+
+        InfoRow {
+            first: true
+            icon: HostSensors.fromHost ? "thermostat" : Cpu.temperature > 0 ? "check_circle" : "device_thermostat"
+            label: {
+                if (Cpu.temperature > 0)
+                    return Tr.tr("This machine has its own sensors");
+                if (HostSensors.connected && HostSensors.cpu)
+                    return Tr.tr("Showing the host's CPU: %1").arg(Units.formatSensorTemp(HostSensors.cpu.value));
+                if (HostSensors.enabled)
+                    return HostSensors.error || Tr.tr("Connecting…");
+                return Tr.tr("No CPU temperature here");
+            }
+            subtext: {
+                if (Cpu.temperature > 0)
+                    return Tr.tr("A host is only used where there are none, as in a virtual machine");
+                if (HostSensors.connected && HostSensors.cpu)
+                    return `${HostSensors.target} · ${HostSensors.cpu.chip} ${HostSensors.cpu.label}`;
+                return Tr.tr("In a virtual machine, the host's can show instead: it's read over ssh with a key that can only read temperatures");
+            }
+        }
+
+        TextFieldRow {
+            label: Tr.tr("Host")
+            subtext: Tr.tr("user@host, as for ssh. Empty turns it off")
+            placeholderText: "root@192.168.1.2"
+            value: HostSensors.target
+            onEditingFinished: value => {
+                const next = Object.assign({}, HostSensors.config);
+                if (value.trim())
+                    next.ssh = value.trim();
+                else
+                    delete next.ssh;
+                HostSensors.save(next);
+            }
+        }
+
+        RowButton {
+            Layout.fillWidth: true
+            last: true
+            disabled: !HostSensors.target
+            icon: "key"
+            text: Tr.tr("Set up access")
+            subtext: Tr.tr("In a terminal: makes a key and adds it on the host, asking for its password once")
+            onClicked: Quickshell.execDetached([...GlobalConfig.general.apps.terminal, "sh", "-c", `"$0" "$1" "$2"; echo; printf '%s' "${Tr.tr("Press Enter to close").replace(/"/g, "")}"; read _`, `${Quickshell.shellDir}/assets/host-sensors-setup.sh`, HostSensors.target, HostSensors.key])
+        }
+
         // Polling
         SectionHeader {
             text: Tr.tr("Polling")

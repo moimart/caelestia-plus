@@ -76,7 +76,7 @@ Item {
                         label: Tr.tr("CPU")
                         subLabel: Cpu.name
                         usage: Cpu.percentage
-                        temperature: Cpu.temperature
+                        temperature: HostSensors.cpuTemperature
                         accent: Colours.palette.m3primary
 
                         ServiceRef {

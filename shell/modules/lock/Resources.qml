@@ -102,8 +102,8 @@ StyledRect {
                         x: cpu.mShape.pointAtAngle(45).x - implicitSize / 2 + Tokens.padding.medium
                         y: Math.max(cpu.mShape.pointAtAngle(45).y - implicitSize / 2, 1 - Tokens.padding.large)
 
-                        shape: Cpu.temperature > 90 ? MaterialShape.SoftBurst : MaterialShape.Circle
-                        color: Cpu.temperature > 90 ? Colours.palette.m3errorContainer : Colours.palette.m3secondaryContainer
+                        shape: HostSensors.cpuTemperature > 90 ? MaterialShape.SoftBurst : MaterialShape.Circle
+                        color: HostSensors.cpuTemperature > 90 ? Colours.palette.m3errorContainer : Colours.palette.m3secondaryContainer
                         implicitSize: {
                             const size = Math.round(tempLabel.implicitHeight * 2);
                             return size % 2 === 0 ? size : size + 1; // Ensure even size so center works properly
@@ -119,8 +119,8 @@ StyledRect {
                             anchors.centerIn: parent
                             anchors.verticalCenterOffset: Math.round(fontInfo.pointSize * 0.04)
 
-                            text: Units.formatSensorTemp(Cpu.temperature)
-                            color: Cpu.temperature > 90 ? Colours.palette.m3onErrorContainer : Colours.palette.m3secondary
+                            text: Units.formatSensorTemp(HostSensors.cpuTemperature)
+                            color: HostSensors.cpuTemperature > 90 ? Colours.palette.m3onErrorContainer : Colours.palette.m3secondary
                             font: Tokens.font.title.builders.medium.scale(cpu.width / 112).width(50).build()
                         }
                     }

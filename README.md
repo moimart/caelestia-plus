@@ -176,6 +176,15 @@ run, so expect to fix the odd detail. They're all in
 [`services/SystemUpdates.qml`](shell/services/SystemUpdates.qml), one small
 block each.
 
+### In a virtual machine
+
+A VM has no temperature sensors, so the CPU temperature (the dashboard, the
+lock screen) read 0. Settings → Services → Host temperature shows the host's
+instead: give it `user@host` and press **Set up access** once. That makes a
+key of its own and installs it on the host so that all it can do is print the
+readings from `/sys/class/hwmon` every few seconds: no shell, no forwarding,
+nothing to install there. Machines with their own sensors keep using them.
+
 ### Right to left
 
 ![Right to left: the bar on the right edge, the right bar on the left](shell/docs/screenshots/rtl.jpg)

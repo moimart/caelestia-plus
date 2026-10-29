@@ -1,0 +1,1 @@
+while :; do for h in /sys/class/hwmon/hwmon*; do n=$(cat $h/name 2>/dev/null); for t in $h/temp*_input; do [ -r $t ] && echo $n\|$(cat ${t%_input}_label 2>/dev/null)\|$(cat $t); done; done; echo .; sleep 3; done
