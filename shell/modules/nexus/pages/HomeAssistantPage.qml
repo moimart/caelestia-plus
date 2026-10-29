@@ -2,18 +2,16 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.components.controls
 import qs.services
-import qs.utils
 import qs.modules.nexus.common
 
 // Home Assistant instances, as many as you have: each with its URL and a
 // long-lived access token. The lock screen's cards, the desktop widgets and the
-// right bar's shortcuts pick one of them.
+// right bar's shortcuts (Panels → Right bar) pick one of them.
 PageBase {
     id: root
 
@@ -21,14 +19,6 @@ PageBase {
     property string newUrl
     property string newToken
     readonly property bool canAdd: /^https?:\/\/.+/.test(newUrl.trim()) && newToken.trim().length > 20
-    // Which instance new right bar shortcuts come from
-    property string shortcutInstance: HomeAssistant.defaultId
-
-    // A right bar shortcut, put on the bar at once
-    function addShortcut(entityId: string, name: string): void {
-        const id = HomeAssistant.addShortcut(shortcutInstance, entityId, name);
-        GlobalConfig.rightBar.actions = [...GlobalConfig.rightBar.actions, id];
-    }
 
     function statusText(id: string): string {
         const c = HomeAssistant.connection(id);
@@ -169,91 +159,6 @@ PageBase {
                     subtext: Tr.tr("Cards and widgets using it stop updating; its token file stays")
                     onClicked: HomeAssistant.removeInstance(instance.modelData.id)
                 }
-            }
-        }
-
-        // Buttons on the right bar that act like tapping an entity
-        SectionHeader {
-            visible: HomeAssistant.instances.length > 0
-            text: Tr.tr("Right bar shortcuts")
-        }
-
-        Repeater {
-            model: HomeAssistant.shortcuts
-
-            RowButton {
-                required property var modelData
-                required property int index
-                readonly property var entity: HomeAssistant.entity(modelData.instance, modelData.entity)
-
-                Layout.fillWidth: true
-                first: index === 0
-                icon: HaIcons.iconFor(modelData.entity, entity)
-                text: modelData.name || entity?.attributes?.friendly_name || modelData.entity
-                subtext: `${modelData.entity} · ${HomeAssistant.instances.find(i => i.id === modelData.instance)?.name ?? modelData.instance}`
-                trailingIcon: "delete"
-                onClicked: {
-                    GlobalConfig.rightBar.actions = GlobalConfig.rightBar.actions.filter(a => a !== modelData.id);
-                    HomeAssistant.removeShortcut(modelData.id);
-                }
-            }
-        }
-
-        InfoRow {
-            visible: HomeAssistant.instances.length > 0 && HomeAssistant.shortcuts.length === 0
-            first: true
-            icon: "touch_app"
-            label: Tr.tr("None yet: pick an entity or a dashboard card below")
-            subtext: Tr.tr("They act like tapping it: toggle a light, press a button, run a script")
-        }
-
-        SelectRow {
-            visible: HomeAssistant.instances.length > 1
-            label: Tr.tr("From")
-            menuItems: shortcutInstanceItems.instances
-            active: shortcutInstanceItems.instances.find(i => i.value === root.shortcutInstance) ?? null
-            onSelected: item => root.shortcutInstance = item.value
-
-            Variants {
-                id: shortcutInstanceItems
-
-                model: HomeAssistant.instances
-
-                MenuItem {
-                    required property var modelData
-
-                    text: modelData.name
-                    value: modelData.id
-                }
-            }
-        }
-
-        HaEntityPicker {
-            visible: HomeAssistant.instances.length > 0
-            first: false
-            last: true
-            label: Tr.tr("Add an entity")
-            instance: root.shortcutInstance
-            domains: ["light", "switch", "input_boolean", "fan", "lock", "cover", "button", "input_button", "scene", "script", "automation", "media_player"]
-            onPicked: id => root.addShortcut(id, "")
-        }
-
-        StyledText {
-            visible: HomeAssistant.instances.length > 0
-            Layout.topMargin: Tokens.spacing.medium
-            Layout.leftMargin: Tokens.padding.large
-            text: Tr.tr("Or a card from a dashboard (its entity, as its tap does):")
-            color: Colours.palette.m3outline
-            font: Tokens.font.label.medium
-        }
-
-        HaCardPicker {
-            visible: HomeAssistant.instances.length > 0
-            instance: root.shortcutInstance
-            onPicked: (dashboard, path, card) => {
-                const entity = card?.entity ?? card?.tap_action?.target?.entity_id ?? "";
-                if (entity)
-                    root.addShortcut(entity, card?.name ?? "");
             }
         }
 

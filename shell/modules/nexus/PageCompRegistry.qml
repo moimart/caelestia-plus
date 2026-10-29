@@ -182,6 +182,18 @@ QtObject {
             }
         },
         Component {
+            // Lock screen
+            StackPage {
+                Component {
+                    LockScreenPage {}
+                }
+                // 1: one card (LockLayout.editSide / editIndex)
+                Component {
+                    LockCardPage {}
+                }
+            }
+        },
+        Component {
             // Apps
             StackPage {
                 Component {
