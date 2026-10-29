@@ -69,6 +69,9 @@ Singleton {
         if (dc && byDeviceClass[dc] && ["sensor", "binary_sensor"].includes(domain))
             return byDeviceClass[dc];
         const pair = byDomain[domain] ?? ["home_iot_device", "home_iot_device"];
+        // Cameras are idle, recording or streaming when they work
+        if (domain === "camera")
+            return ["unavailable", "unknown", "off"].includes(entity?.state) ? pair[1] : pair[0];
         return !entity || isOn(entity.state) || !["light", "switch", "input_boolean", "fan", "binary_sensor", "person", "device_tracker", "camera"].includes(domain) ? pair[0] : pair[1];
     }
 

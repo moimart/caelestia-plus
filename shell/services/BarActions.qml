@@ -113,7 +113,7 @@ Singleton {
             id: sc.id,
             name: sc.name || entity?.attributes?.friendly_name || sc.entity,
             icon: sc.icon || HaIcons.iconFor(sc.entity, entity),
-            description: Tr.tr("Home Assistant: %1").arg(sc.entity),
+            description: HomeAssistant.instances.length > 1 ? Tr.tr("%1: %2").arg(HomeAssistant.instances.find(i => i.id === sc.instance)?.name ?? sc.instance).arg(sc.entity) : Tr.tr("Home Assistant: %1").arg(sc.entity),
             ha: sc,
             run: () => HomeAssistant.activate(sc.instance, sc.entity)
         };
