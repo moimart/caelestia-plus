@@ -10,8 +10,11 @@ import qs.services
 
 // Window cards: two windows paired into one that flips over (modules/cards
 // animates it) to show the other. The side not showing waits on a special
-// workspace of its own (special:caelestia-cards, never shown); a flip swaps
-// the two, so the other takes exactly its place. They're ordinary windows
+// workspace of its own (special:caelestia-cards, never shown). A flip brings
+// it onto the workspace beside the front (inside the front's own slot), swaps
+// the two and sends the front away, so the other takes exactly its place.
+// (Not a swap straight from the special workspace: Hyprland sometimes leaves
+// a window swapped in that way suspended, frozen on its last frame.) They're ordinary windows
 // otherwise: their borders, focus and rules as any other's. The pairing lives
 // in Hyprland -- both carry the caelestia-card tag and a tag of their pair --
 // so it survives shell restarts. The Lua helpers below are installed into
@@ -195,9 +198,14 @@ Singleton {
     hl.dispatch(hl.dsp.window.tag({ tag = "-${tag}-hidden", window = "address:" .. a }))
   end,
   turn = function(a, b)
+    local A = hl.get_window("address:" .. a)
+    if not A or not A.workspace then return end
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-hidden", window = "address:" .. a }))
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-shown", window = "address:" .. b }))
+    hl.dispatch(hl.dsp.focus({ window = "address:" .. a }))
+    hl.dispatch(hl.dsp.window.move({ workspace = tostring(A.workspace.id), window = "address:" .. b, follow = false }))
     hl.dispatch(hl.dsp.window.swap({ window = "address:" .. a, target = "address:" .. b }))
+    hl.dispatch(hl.dsp.window.move({ workspace = "${stash}", window = "address:" .. a, follow = false }))
     hl.dispatch(hl.dsp.focus({ window = "address:" .. b }))
   end,
   settle = function(a)
