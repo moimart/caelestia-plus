@@ -42,7 +42,10 @@ Singleton {
         for (const members of Object.values(pairs)) {
             if (members.length !== 2)
                 continue;
-            const front = members.find(m => m.lastIpcObject.workspace?.name !== stash) ?? members[0];
+            // The live workspace, not lastIpcObject (only as fresh as the
+            // last refresh: right after a flip it still has the old sides)
+            const ws = m => m.workspace?.name ?? m.lastIpcObject.workspace?.name;
+            const front = members.find(m => ws(m) !== stash) ?? members[0];
             out.push({
                 front: front,
                 back: members.find(m => m !== front)
@@ -97,6 +100,7 @@ Singleton {
         if (!front || !back || front === back || isGrouped(front) || isGrouped(back))
             return;
         lua(`caelestia_cards.pair("0x${front.address}", "0x${back.address}", "${tag}-p${Date.now().toString(36)}")`);
+        Hyprland.refreshToplevels();
     }
 
     function unpair(toplevel: HyprlandToplevel): void {
@@ -124,9 +128,13 @@ Singleton {
             return;
         }
         const showing = card.back === target || card.front === target ? target : card.front;
+        // Its monitor is settled now: halfway through, the front moves to the
+        // special workspace and reads as on none, which must not move the flip
+        // (or start it over)
         flipping = {
             front: showing,
-            back: showing === card.front ? card.back : card.front
+            back: showing === card.front ? card.back : card.front,
+            monitor: showing.monitor?.name ?? Hyprland.focusedMonitor?.name ?? ""
         };
     }
 
@@ -137,9 +145,7 @@ Singleton {
     }
 
     // Makes a window invisible (or visible again) without Hyprland's fade, by
-    // tagging it for the rules install() sets up. Mid-flip a window has no
-    // border either: borders are drawn outside the window, where the flip's
-    // card doesn't cover, and would flash
+    // tagging it for the rules install() sets up
     function hide(toplevel: HyprlandToplevel): void {
         lua(`caelestia_cards.hide("0x${toplevel.address}")`);
     }
@@ -200,8 +206,14 @@ Singleton {
     hl.dispatch(hl.dsp.window.tag({ tag = "-${tag}-hidden", window = "address:" .. a }))
   end,
   turn = function(a, b)
-    local A = hl.get_window("address:" .. a)
-    if not A or not A.workspace then return end
+    local A, B = hl.get_window("address:" .. a), hl.get_window("address:" .. b)
+    if not A or not B or not A.workspace or not B.workspace then return end
+    local aAway, bAway = A.workspace.name == "${stash}", B.workspace.name == "${stash}"
+    if aAway and bAway then return end
+    if aAway then
+      a, b = b, a
+      A, B = B, A
+    elseif not bAway then return end
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-hidden", window = "address:" .. a }))
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-shown", window = "address:" .. b }))
     hl.dispatch(hl.dsp.focus({ window = "address:" .. a }))
@@ -241,8 +253,8 @@ Singleton {
   end,
 }
 hl.window_rule({ name = "${tag}", match = { tag = "${tag}" }, decorate = true })
-hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true, border_size = 0 })
-hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true, border_size = 0 })`);
+hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true })
+hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true })`);
         // Separate, so an older Hyprland rejecting it can't take the rest down
         lua(`hl.layer_rule({ name = "caelestia-cards", match = { namespace = "caelestia-cards" }, no_anim = true })`);
     }
@@ -320,6 +332,8 @@ hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_ani
             for (const a of addresses)
                 root.lua(`caelestia_cards.settle("0x${a}")`);
             addresses = [];
+            // Where the windows are now, for the next flip's card
+            Hyprland.refreshToplevels();
         }
     }
 
