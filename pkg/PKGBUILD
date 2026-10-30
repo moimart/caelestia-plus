@@ -90,6 +90,7 @@ package_caelestia-shell-moimart() {
         'howdy: face unlock on the lock screen'
         'python-websockets: Home Assistant (lock screen cards, desktop widgets, right bar shortcuts)'
         'pacman-contrib: checking for system updates (checkupdates), Settings → Updates'
+        'chromium: Home Assistant custom (HACS) cards on the desktop, drawn headless'
     )
     # Upstream split M3Shapes (Material shapes QML module) out of the shell
     # build; it's built here too so this stays a single package.

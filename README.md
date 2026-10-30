@@ -150,8 +150,10 @@ entity changes.
 
 - **Desktop widgets**: a switch or light (tap to toggle), a button (press,
   run a script or scene), an entity's state, a camera, and any card from your
-  dashboards, drawn natively (tiles, entities, glance, gauges, pictures,
-  stacks). Place them with the widget editor and pick what they show in
+  dashboards: built-in ones drawn natively (tiles, entities, glance, gauges,
+  pictures, stacks), custom ones from HACS drawn live by a headless Chromium
+  on the GPU, with your scheme's colours. They freeze in power saver mode,
+  and while a window covers them. Place them with the widget editor and pick what they show in
   Settings → Plugins.
 - **Right bar shortcuts**: an entity or a dashboard card as a button on the
   right bar, lit while it's on (Settings → Panels → Right bar).

@@ -11,13 +11,16 @@ import qs.utils
 // Home Assistant's own frontend would, in the shell's style): tile, entity,
 // button and button-card as a tile; entities as rows; glance as a row of icons;
 // picture-entity, picture-glance and camera pictures; heading; gauge; stacks
-// and grids of cards. Other types show what they are.
+// and grids of cards. Custom cards (custom:..., from HACS) are drawn by a
+// headless browser (HaWebCard). Other types show what they are.
 Item {
     id: root
 
     property string instance
     property var card: ({})
     property bool readOnly
+    // On the desktop, where windows can cover it (custom cards freeze then)
+    property bool onDesktop
 
     readonly property string type: (card?.type ?? "").replace(/^custom:/, "")
     // Every entity this card (and its children) shows, kept live
@@ -85,8 +88,18 @@ Item {
             case "grid":
                 return stackCard;
             default:
-                return unsupportedCard;
+                return (root.card?.type ?? "").startsWith("custom:") ? webCard : unsupportedCard;
             }
+        }
+    }
+
+    Component {
+        id: webCard
+
+        HaWebCard {
+            instance: root.instance
+            card: root.card
+            pauseWhenCovered: root.onDesktop
         }
     }
 
