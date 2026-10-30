@@ -88,7 +88,7 @@ os.execute("mkdir -p '" .. cConf .. "'")
 
 -- Each require() runs in its own Lua scope so an error in one file
 -- will not abort the rest of the config.
-require("colors")       -- color palette (parses scheme/current.conf)
+require("colors")       -- color palette (scheme/current.lua or current.conf)
 require("variables")    -- shared user variables (apps, gaps, blur...)
 
 -- Load plugins SYNCHRONOUSLY before any hl.config that mentions plugin keys.

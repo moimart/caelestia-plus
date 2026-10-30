@@ -1,5 +1,5 @@
--- Poll scheme/current.conf and re-apply the palette into the live config
--- when caelestia rewrites it.
+-- Poll the scheme files (scheme/current.lua, or the older current.conf) and
+-- re-apply the palette into the live config when caelestia rewrites one.
 --
 -- Caelestia's apply_hypr() (caelestia/utils/theme.py) just writes the file
 -- and walks away — it never tells Hyprland to reload. Under hyprlang that
@@ -12,7 +12,7 @@
 -- Track caelestia-dots/caelestia#405 to remove this once upstream calls
 -- `hyprctl reload` itself.
 
-local scheme_path = require("paths").user .. "/scheme/current.conf"
+local scheme_dir = require("paths").user .. "/scheme"
 
 local function read_all(path)
   local f = io.open(path, "r")
@@ -24,11 +24,15 @@ end
 
 -- Snapshot the scheme content at config-load time so the first tick after
 -- caelestia's write actually detects a change.
-local last = read_all(scheme_path)
+local function read_scheme()
+  return (read_all(scheme_dir .. "/current.lua") or "") .. "\n" .. (read_all(scheme_dir .. "/current.conf") or "")
+end
+
+local last = read_scheme()
 
 hl.timer(function()
-  local cur = read_all(scheme_path)
-  if cur and cur ~= last then
+  local cur = read_scheme()
+  if cur ~= last then
     last = cur
     hl.exec_cmd("hyprctl reload")
   end
