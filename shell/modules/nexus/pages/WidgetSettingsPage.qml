@@ -92,6 +92,7 @@ PageBase {
                         first: field.index === 0
                         last: field.index === root.schema.length - 1
                         label: field.modelData.label ?? field.modelData.key
+                        subtext: field.modelData.description ?? ""
                         value: root.settings[field.modelData.key] ?? field.modelData.default ?? 0
                         from: field.modelData.min ?? 0
                         to: field.modelData.max ?? 100
@@ -107,6 +108,7 @@ PageBase {
                         first: field.index === 0
                         last: field.index === root.schema.length - 1
                         text: field.modelData.label ?? field.modelData.key
+                        subtext: field.modelData.description ?? ""
                         checked: root.settings[field.modelData.key] ?? field.modelData.default ?? false
                         onToggled: root.set(field.modelData.key, checked)
                     }

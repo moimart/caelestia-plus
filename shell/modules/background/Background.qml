@@ -42,8 +42,6 @@ Variants {
         }
 
         Item {
-            id: behindClock
-
             anchors.fill: parent
 
             Loader {
@@ -67,122 +65,10 @@ Variants {
             }
         }
 
-        // Desktop widgets, above the wallpaper and below the clock
+        // Desktop widgets (the clock is one), above the wallpaper
         DesktopWidgets {
             anchors.fill: parent
             screen: win.modelData
-        }
-
-        Loader {
-            id: clockLoader
-
-            // The bar's and the right bar's room
-            readonly property real barSpace: Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness)
-            readonly property real otherSpace: Config.rightBar.enabled ? barSpace : 0
-
-            asynchronous: true
-            active: Config.background.desktopClock.enabled
-
-            anchors.margins: Tokens.padding.extraLargeIncreased
-            // Clear of the bar, and of the right bar when it's on (sides swapped
-            // when right to left)
-            anchors.leftMargin: Tokens.padding.extraLargeIncreased + (Config.general.rightToLeft ? otherSpace : barSpace)
-            anchors.rightMargin: Tokens.padding.extraLargeIncreased + (Config.general.rightToLeft ? barSpace : otherSpace)
-
-            state: Config.background.desktopClock.position
-            states: [
-                State {
-                    name: "top-left"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "top-center"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "top-right"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "middle-left"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "middle-center"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-right"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "bottom-left"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "bottom-center"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "bottom-right"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                    }
-                }
-            ]
-
-            transitions: Transition {
-                AnchorAnim {}
-            }
-
-            sourceComponent: DesktopClock {
-                wallpaper: behindClock
-                absX: clockLoader.x
-                absY: clockLoader.y
-            }
         }
     }
 }

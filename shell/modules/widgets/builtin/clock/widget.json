@@ -1,0 +1,46 @@
+{
+    "id": "clock",
+    "name": "Clock",
+    "description": "The time and date, large, in the scheme's colours",
+    "icon": "schedule",
+    "author": "caelestia",
+    "version": "2.0",
+    "main": "Clock.qml",
+    "defaultSize": [
+        520,
+        180
+    ],
+    "minSize": [
+        160,
+        56
+    ],
+    "keepAspect": true,
+    "settings": [
+        {
+            "key": "invertColors",
+            "type": "bool",
+            "label": "Inverted colours",
+            "description": "The light colour set on a dark scheme, and the other way round"
+        },
+        {
+            "key": "shadow",
+            "type": "bool",
+            "label": "Shadow",
+            "default": true
+        },
+        {
+            "key": "background",
+            "type": "bool",
+            "label": "Background"
+        },
+        {
+            "key": "backgroundOpacity",
+            "type": "number",
+            "label": "Background opacity (%)",
+            "min": 10,
+            "max": 100,
+            "step": 5,
+            "default": 70
+        }
+    ]
+}

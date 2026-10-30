@@ -99,9 +99,57 @@ Singleton {
         stateFile.setText(JSON.stringify(next, null, 4));
     }
 
+    // The clock used to be built into the background (background.desktopClock
+    // in shell.json); it's the clock widget now. Where the old one is on, a
+    // clock widget takes its place, size and settings, and the old setting
+    // goes off, so this happens once. New installs get theirs the same way.
+    function migrateClock(): void {
+        const plugin = pluginFor("clock");
+        if (!loaded || !plugin)
+            return;
+        const next = instances.slice();
+        let found = false;
+        for (const screen of Screens.screens) {
+            const old = GlobalConfig.forScreen(screen.name).background.desktopClock;
+            if (!old.enabled)
+                continue;
+            found = true;
+            if (next.some(i => i.type === "clock" && i.screen === screen.name))
+                continue;
+            const w = Math.round(plugin.defaultSize[0] * old.scale);
+            const h = Math.round(plugin.defaultSize[1] * old.scale);
+            // Where it sat: clear of the bars at the sides, a margin otherwise
+            const side = 96;
+            const margin = 40;
+            const pos = old.position;
+            next.push({
+                uid: `clock-${Date.now().toString(36)}-${screen.name}`,
+                type: "clock",
+                screen: screen.name,
+                x: Math.round(pos.endsWith("left") ? side : pos.endsWith("right") ? screen.width - w - side : (screen.width - w) / 2),
+                y: Math.round(pos.startsWith("top") ? margin : pos.startsWith("bottom") ? screen.height - h - margin : (screen.height - h) / 2),
+                width: w,
+                height: h,
+                settings: {
+                    invertColors: old.invertColors,
+                    shadow: old.shadow.enabled,
+                    background: old.background.enabled,
+                    backgroundOpacity: Math.round(old.background.opacity * 100)
+                }
+            });
+        }
+        if (!found)
+            return;
+        save(next);
+        GlobalConfig.background.desktopClock.enabled = false;
+    }
+
     function rescan(): void {
         scanProc.running = true;
     }
+
+    onLoadedChanged: Qt.callLater(migrateClock)
+    onPluginsChanged: Qt.callLater(migrateClock)
 
     // Only poll the pointer while a widget that follows it can be seen
     Binding {
