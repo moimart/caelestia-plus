@@ -15,4 +15,5 @@ HaCard {
         })
     readOnly: editing
     onDesktop: true
+    animate: settings.animate ?? false
 }

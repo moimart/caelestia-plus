@@ -21,6 +21,8 @@ Item {
     property bool readOnly
     // On the desktop, where windows can cover it (custom cards freeze then)
     property bool onDesktop
+    // Custom cards: their own animations, which cost
+    property bool animate
 
     readonly property string type: (card?.type ?? "").replace(/^custom:/, "")
     // Every entity this card (and its children) shows, kept live
@@ -100,6 +102,7 @@ Item {
             instance: root.instance
             card: root.card
             pauseWhenCovered: root.onDesktop
+            animate: root.animate
         }
     }
 

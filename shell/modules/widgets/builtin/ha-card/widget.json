@@ -6,10 +6,30 @@
     "author": "moimart",
     "version": "1.0",
     "main": "HaDashboardCard.qml",
-    "defaultSize": [300, 180],
-    "minSize": [120, 56],
+    "defaultSize": [
+        300,
+        180
+    ],
+    "minSize": [
+        120,
+        56
+    ],
     "settings": [
-        { "key": "instance", "type": "haInstance", "label": "Home Assistant" },
-        { "key": "card", "type": "haCard", "label": "Card" }
+        {
+            "key": "instance",
+            "type": "haInstance",
+            "label": "Home Assistant"
+        },
+        {
+            "key": "card",
+            "type": "haCard",
+            "label": "Card"
+        },
+        {
+            "key": "animate",
+            "type": "bool",
+            "label": "Animate",
+            "description": "Custom (HACS) cards only. Off, it still updates with its data, at a fraction of the CPU"
+        }
     ]
 }
