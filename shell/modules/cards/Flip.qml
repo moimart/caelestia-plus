@@ -21,12 +21,9 @@ Item {
 
     readonly property HyprlandToplevel front: card ? card.front : null
     readonly property HyprlandToplevel back: card ? card.back : null
-    readonly property rect area: {
-        const ipc = front?.lastIpcObject;
-        if (!ipc?.at || !monitor)
-            return Qt.rect(0, 0, 0, 0);
-        return Qt.rect(ipc.at[0] - monitor.lastIpcObject.x, ipc.at[1] - monitor.lastIpcObject.y, ipc.size[0], ipc.size[1]);
-    }
+    // Where the card is, taken when the flip starts: the front moves away to
+    // wait out of sight halfway through, and the card must stay put
+    property rect area: Qt.rect(0, 0, 0, 0)
     readonly property var hyprOptions: Hypr.options
     readonly property real rounding: hyprOptions["decoration:rounding"] ?? 0
     readonly property int sign: GlobalConfig.cards.direction === "left" ? -1 : 1
@@ -57,6 +54,12 @@ Item {
         Cards.show(back);
         Cards.show(front); // hidden behind the back now, but untagged for next time
         landTimer.start();
+    }
+
+    Component.onCompleted: {
+        const ipc = front?.lastIpcObject;
+        if (ipc?.at && monitor)
+            area = Qt.rect(ipc.at[0] - monitor.lastIpcObject.x, ipc.at[1] - monitor.lastIpcObject.y, ipc.size[0], ipc.size[1]);
     }
 
     // Shadow under the card, narrowing as it turns edge-on
