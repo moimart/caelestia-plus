@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Wayland
 import qs.components.containers
@@ -46,32 +47,56 @@ Scope {
         }
     }
 
-    // The flip: a click-through overlay on the card's monitor
-    LazyLoader {
-        active: Cards.flipping !== null
+    // The flip: a click-through overlay on the card's monitor. It's there
+    // (empty) whenever a card shows on that monitor, not made when a flip
+    // starts: a new window reaches the screen a few frames late, after the
+    // back has already moved in, which flashed it. (Not while the card is
+    // fullscreen, to keep games on the direct path to the display.)
+    Variants {
+        model: Quickshell.screens
 
-        StyledWindow {
-            id: flipWin
+        Scope {
+            id: screenScope
 
-            readonly property var card: Cards.flipping
+            required property ShellScreen modelData
+            readonly property HyprlandMonitor monitor: Hyprland.monitors.values.find(m => m.name === modelData.name) ?? null
+            readonly property var flipHere: {
+                const f = Cards.flipping;
+                if (!f)
+                    return null;
+                return f.monitor === modelData.name || (!f.monitor && modelData === Quickshell.screens[0]) ? f : null;
+            }
+            readonly property bool cardShowing: Cards.cards.some(c => c.front.monitor?.name === modelData.name && c.front.workspace?.id === monitor?.activeWorkspace?.id && !(c.front.lastIpcObject?.fullscreen > 0))
 
-            screen: Quickshell.screens.find(s => s.name === card?.front.monitor?.name) ?? Quickshell.screens[0]
-            name: "cards"
-            WlrLayershell.exclusionMode: ExclusionMode.Ignore
-            WlrLayershell.layer: WlrLayer.Overlay
-            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-            mask: Region {}
+            LazyLoader {
+                active: screenScope.cardShowing || screenScope.flipHere !== null
 
-            anchors.top: true
-            anchors.bottom: true
-            anchors.left: true
-            anchors.right: true
+                StyledWindow {
+                    id: flipWin
 
-            Flip {
-                anchors.fill: parent
-                card: flipWin.card
-                monitor: flipWin.card ? flipWin.card.front.monitor : null
-                onFinished: Cards.flipping = null
+                    screen: screenScope.modelData
+                    name: "cards"
+                    WlrLayershell.exclusionMode: ExclusionMode.Ignore
+                    WlrLayershell.layer: WlrLayer.Overlay
+                    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+                    mask: Region {}
+
+                    anchors.top: true
+                    anchors.bottom: true
+                    anchors.left: true
+                    anchors.right: true
+
+                    Loader {
+                        anchors.fill: parent
+                        active: screenScope.flipHere !== null
+
+                        sourceComponent: Flip {
+                            card: screenScope.flipHere
+                            monitor: screenScope.monitor
+                            onFinished: Cards.flipping = null
+                        }
+                    }
+                }
             }
         }
     }

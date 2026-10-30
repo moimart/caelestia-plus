@@ -93,7 +93,7 @@ Item {
                 live: root.phase === 0
                 onHasContentChanged: {
                     if (hasContent && root.phase === 0)
-                        coverTimer.start();
+                        cover.running = true;
                 }
             }
         }
@@ -164,13 +164,36 @@ Item {
         }
     }
 
-    // The real front is hidden next, so let the compositor show the card over
-    // it for a few frames first; hiding it straight away flashes the wallpaper
-    Timer {
-        id: coverTimer
+    // The back comes into the front's place next, so the card has to be on
+    // screen over it first. The overlay is a new window each flip, and the
+    // compositor can take a while to first show it (longer with a big browser
+    // window to capture), so this waits for frames it has actually drawn, not
+    // a fixed time: otherwise the back flashes before the turn
+    FrameAnimation {
+        id: cover
 
-        interval: 60
-        onTriggered: root.captureBack()
+        onTriggered: {
+            if (currentFrame >= 4 && elapsedTime >= 0.06) {
+                running = false;
+                coverFallback.stop();
+                root.captureBack();
+            }
+        }
+        onRunningChanged: if (running)
+            coverFallback.start()
+    }
+
+    // If frames don't come, it goes on anyway
+    Timer {
+        id: coverFallback
+
+        interval: 400
+        onTriggered: {
+            if (cover.running) {
+                cover.running = false;
+                root.captureBack();
+            }
+        }
     }
 
     // Give Hyprland a moment to switch the group before capturing the back
