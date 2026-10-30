@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Caelestia.Components
 import Caelestia.Config
 import Caelestia.I18n
@@ -159,6 +160,22 @@ PageBase {
             text: Tr.tr("Dark theme")
             checked: !Colours.light
             onToggled: Colours.setMode(checked ? "dark" : "light")
+        }
+
+        // Google Chrome and Chromium in the scheme's colour (services/ChromeTheme)
+        SectionHeader {
+            text: Tr.tr("Apps")
+        }
+
+        RowButton {
+            Layout.fillWidth: true
+            first: true
+            last: true
+            icon: ChromeTheme.enabled ? "check_circle" : "web"
+            text: ChromeTheme.enabled ? Tr.tr("Chrome follows the colour scheme") : Tr.tr("Let Chrome follow the colour scheme")
+            subtext: ChromeTheme.enabled ? Tr.tr("Live, as the scheme changes. Its menu says it's managed, and its colour picker is locked") : Tr.tr("Asks for your password once (in a terminal), then Chrome and Chromium change colour with the scheme")
+            disabled: ChromeTheme.enabled
+            onClicked: Quickshell.execDetached([...GlobalConfig.general.apps.terminal, "sh", "-c", `sudo "$0"; echo; printf '%s' "${Tr.tr("Press Enter to close").replace(/"/g, "")}"; read _`, `${Quickshell.shellDir}/assets/chrome-theme-setup.sh`])
         }
     }
 }

@@ -200,6 +200,14 @@ instead, read from either:
 
 Machines with their own sensors keep using them.
 
+### Chrome in your colours
+
+Settings → Wallpaper & style → **Let Chrome follow the colour scheme**: Google
+Chrome and Chromium take the scheme's colour and change with it, live, through
+their `BrowserThemeColor` policy. It asks for your password once to make the
+policy file; Chrome's menu then says it's managed, and its own colour picker is
+locked (`sudo …/assets/chrome-theme-setup.sh --undo` gives it back).
+
 ### Right to left
 
 ![Right to left: the bar on the right edge, the right bar on the left](shell/docs/screenshots/rtl.jpg)

@@ -35,6 +35,7 @@ ShellRoot {
         LockLayout;
         SystemUpdates;
         HostSensors;
+        ChromeTheme;
         Weather.reload();
 
         if (GlobalConfig.utilities.vpn.enabled)
