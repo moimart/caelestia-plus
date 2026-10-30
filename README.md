@@ -203,8 +203,9 @@ Machines with their own sensors keep using them.
 ### Chrome in your colours
 
 Settings → Wallpaper & style → **Let Chrome follow the colour scheme**: Google
-Chrome and Chromium take the scheme's colour and change with it, live, through
-their `BrowserThemeColor` policy. It asks for your password once to make the
+Chrome and Chromium take the nearest of Chrome's own colours (its Customize
+Chrome presets, matched by hue) and change with the scheme, live, through their
+`BrowserThemeColor` policy. It asks for your password once to make the
 policy file; Chrome's menu then says it's managed, and its own colour picker is
 locked (`sudo …/assets/chrome-theme-setup.sh --undo` gives it back).
 
