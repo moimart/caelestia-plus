@@ -8,32 +8,38 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.services
 
-// Window cards: two windows paired into one Hyprland group that flips over
-// (modules/cards animates it) to show the other. The pairing lives entirely in
-// Hyprland -- a two-window group whose members carry the caelestia-card tag
-// and no decorations -- so it survives shell restarts. The Lua helpers below
-// are installed into Hyprland on start and after every config reload.
+// Window cards: two windows paired into one that flips over (modules/cards
+// animates it) to show the other. The side not showing waits on a special
+// workspace of its own (special:caelestia-cards, never shown); a flip swaps
+// the two, so the other takes exactly its place. They're ordinary windows
+// otherwise: their borders, focus and rules as any other's. The pairing lives
+// in Hyprland -- both carry the caelestia-card tag and a tag of their pair --
+// so it survives shell restarts. The Lua helpers below are installed into
+// Hyprland on start and after every config reload.
+//
+// (Cards used to be locked Hyprland groups without decorations, to hide the
+// group's tabs, which took the focus border too. Such pairs are made over
+// into the new kind when found.)
 Singleton {
     id: root
 
     readonly property string tag: "caelestia-card"
+    readonly property string stash: "special:caelestia-cards"
 
     // [{ front, back }] of HyprlandToplevels; front is the side showing now
     readonly property var cards: {
-        const byAddr = {};
-        for (const t of Hypr.toplevels.values)
-            byAddr[`0x${t.address}`] = t;
-        const out = [];
-        const seen = new Set();
+        const pairs = {};
         for (const t of Hypr.toplevels.values) {
-            const ipc = t.lastIpcObject;
-            if (!ipc?.tags?.includes(tag) || seen.has(t.address))
-                continue;
-            const members = (ipc.grouped ?? []).map(a => byAddr[a]).filter(m => m);
-            members.forEach(m => seen.add(m.address));
+            const tags = t.lastIpcObject?.tags ?? [];
+            const id = tags.map(x => String(x).replace(/\*$/, "")).find(x => x.startsWith(`${tag}-p`));
+            if (tags.some(x => String(x).replace(/\*$/, "") === tag) && id)
+                (pairs[id] = pairs[id] ?? []).push(t);
+        }
+        const out = [];
+        for (const members of Object.values(pairs)) {
             if (members.length !== 2)
                 continue;
-            const front = members.find(m => m.lastIpcObject.visible) ?? members[0];
+            const front = members.find(m => m.lastIpcObject.workspace?.name !== stash) ?? members[0];
             out.push({
                 front: front,
                 back: members.find(m => m !== front)
@@ -87,7 +93,7 @@ Singleton {
         pickFront = null;
         if (!front || !back || front === back || isGrouped(front) || isGrouped(back))
             return;
-        lua(`caelestia_cards.pair("0x${front.address}", "0x${back.address}")`);
+        lua(`caelestia_cards.pair("0x${front.address}", "0x${back.address}", "${tag}-p${Date.now().toString(36)}")`);
     }
 
     function unpair(toplevel: HyprlandToplevel): void {
@@ -97,6 +103,7 @@ Singleton {
             return;
         }
         lua(`caelestia_cards.unpair("0x${card.front.address}", "0x${card.back.address}")`);
+        Hyprland.refreshToplevels();
     }
 
     // Asks modules/cards to flip the card holding this (or the focused) window
@@ -121,9 +128,9 @@ Singleton {
     }
 
     // Steps the animation drives; addresses are taken from the card being flipped
-    // Hides the front (so Hyprland's group switch can't ghost it) and shows the back, in one go
+    // Swaps the back into the front's place, the front hidden away, in one go
     function showOther(card: var): void {
-        lua(`caelestia_cards.turn("0x${card.front.address}")`);
+        lua(`caelestia_cards.turn("0x${card.front.address}", "0x${card.back.address}")`);
     }
 
     // Makes a window invisible (or visible again) without Hyprland's fade, by
@@ -142,15 +149,15 @@ Singleton {
         if (!GlobalConfig.cards.enabled)
             return false;
         if (!Hypr.usingLua) {
-            Toaster.toast(Tr.tr("Cards need Hyprland's Lua config"), Tr.tr("Window cards use Hyprland 0.55+ Lua groups"), "flip");
+            Toaster.toast(Tr.tr("Cards need Hyprland's Lua config"), Tr.tr("Window cards use Hyprland 0.55+ Lua"), "flip");
             return false;
         }
         return true;
     }
 
     // Hyprland's socket takes one line per request, and Lua doesn't need newlines
-    // (so no -- comments in the Lua here). The card group is locked when paired,
-    // or group:auto_group would drop newly opened windows into it.
+    // (so no -- comments in the Lua here). Windows go to the stash with
+    // follow = false: otherwise Hyprland would open the special workspace.
     function lua(code: string): void {
         Hypr.extras.message(`eval ${code.replace(/\s*\n\s*/g, " ")}`);
     }
@@ -159,18 +166,26 @@ Singleton {
         if (!Hypr.usingLua)
             return;
         lua(`caelestia_cards = {
-  pair = function(a, b)
+  untag = function(x)
+    local w = hl.get_window("address:" .. x)
+    if not w then return end
+    local tags = type(w.tags) == "table" and w.tags or {}
+    for _, t in ipairs(tags) do
+      t = tostring(t):gsub("%*$", "")
+      if t:sub(1, #"${tag}") == "${tag}" then
+        hl.dispatch(hl.dsp.window.tag({ tag = "-" .. t, window = "address:" .. x }))
+      end
+    end
+  end,
+  pair = function(a, b, id)
     local A, B = hl.get_window("address:" .. a), hl.get_window("address:" .. b)
     if not A or not B or A.group or B.group then return end
-    hl.dispatch(hl.dsp.group.toggle({ window = "address:" .. a }))
-    if not A.group then return end
-    A.group:add(B)
     for _, x in ipairs({ a, b }) do
       hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}", window = "address:" .. x }))
+      hl.dispatch(hl.dsp.window.tag({ tag = "+" .. id, window = "address:" .. x }))
     end
-    hl.dispatch(hl.dsp.group.active({ index = 1, window = "address:" .. a }))
+    hl.dispatch(hl.dsp.window.move({ workspace = "${stash}", window = "address:" .. b, follow = false }))
     hl.dispatch(hl.dsp.focus({ window = "address:" .. a }))
-    hl.dispatch(hl.dsp.group.lock_active({ action = "enable" }))
   end,
   hide = function(a)
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-hidden", window = "address:" .. a }))
@@ -179,21 +194,31 @@ Singleton {
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-shown", window = "address:" .. a }))
     hl.dispatch(hl.dsp.window.tag({ tag = "-${tag}-hidden", window = "address:" .. a }))
   end,
-  turn = function(a)
+  turn = function(a, b)
     hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-hidden", window = "address:" .. a }))
-    hl.dispatch(hl.dsp.group.next({ window = "address:" .. a }))
+    hl.dispatch(hl.dsp.window.tag({ tag = "+${tag}-shown", window = "address:" .. b }))
+    hl.dispatch(hl.dsp.window.swap({ window = "address:" .. a, target = "address:" .. b }))
+    hl.dispatch(hl.dsp.focus({ window = "address:" .. b }))
   end,
   settle = function(a)
     hl.dispatch(hl.dsp.window.tag({ tag = "-${tag}-shown", window = "address:" .. a }))
   end,
-  unpair = function(a, b)
-    for _, x in ipairs({ a, b }) do
-      if hl.get_window("address:" .. x) then
-        for _, t in ipairs({ "${tag}", "${tag}-hidden", "${tag}-shown" }) do
-          hl.dispatch(hl.dsp.window.tag({ tag = "-" .. t, window = "address:" .. x }))
-        end
-      end
+  release = function(a, ws)
+    local w = hl.get_window("address:" .. a)
+    if w and w.workspace and w.workspace.name == "${stash}" then
+      hl.dispatch(hl.dsp.window.move({ workspace = tostring(ws), window = "address:" .. a, follow = false }))
     end
+  end,
+  unpair = function(a, b)
+    local A, B = hl.get_window("address:" .. a), hl.get_window("address:" .. b)
+    caelestia_cards.untag(a)
+    caelestia_cards.untag(b)
+    if A and B then
+      if B.workspace and B.workspace.name == "${stash}" and A.workspace then caelestia_cards.release(b, A.workspace.id) end
+      if A.workspace and A.workspace.name == "${stash}" and B.workspace then caelestia_cards.release(a, B.workspace.id) end
+    end
+  end,
+  ungroup = function(a, b)
     local A, B = hl.get_window("address:" .. a), hl.get_window("address:" .. b)
     if A and A.group then
       hl.dispatch(hl.dsp.focus({ window = "address:" .. a }))
@@ -205,23 +230,52 @@ Singleton {
     end
   end,
 }
-hl.window_rule({ name = "${tag}", match = { tag = "${tag}" }, decorate = false })
+hl.window_rule({ name = "${tag}", match = { tag = "${tag}" }, decorate = true })
 hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true })
 hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true })`);
         // Separate, so an older Hyprland rejecting it can't take the rest down
         lua(`hl.layer_rule({ name = "caelestia-cards", match = { namespace = "caelestia-cards" }, no_anim = true })`);
     }
 
-    // A card whose other window closed is just a lone window again
+    // A card whose other window closed is just a lone window again (brought
+    // back if it was the one waiting); cards from before, which were groups,
+    // become cards of the new kind
     function tidy(): void {
+        const paired = new Set();
+        for (const c of cards) {
+            paired.add(c.front);
+            paired.add(c.back);
+        }
+        const ws = Hyprland.focusedWorkspace?.id ?? 1;
         for (const t of Hypr.toplevels.values) {
             const ipc = t.lastIpcObject;
-            if (ipc?.tags?.includes(tag) && (ipc.grouped?.length ?? 0) < 2)
-                lua(`caelestia_cards.unpair("0x${t.address}", "")`);
+            if (!ipc?.tags?.some(x => String(x).replace(/\*$/, "") === tag))
+                continue;
+            const grouped = ipc.grouped ?? [];
+            if (grouped.length === 2) {
+                if (grouped[0] !== `0x${t.address}`)
+                    continue;
+                const other = Hypr.toplevels.values.find(o => `0x${o.address}` === grouped[1]);
+                const showing = ipc.visible ? t : other;
+                const hidden = showing === t ? other : t;
+                if (!other)
+                    continue;
+                lua(`caelestia_cards.ungroup("0x${t.address}", "0x${other.address}")`);
+                lua(`caelestia_cards.untag("0x${t.address}")`);
+                lua(`caelestia_cards.untag("0x${other.address}")`);
+                lua(`caelestia_cards.pair("0x${showing.address}", "0x${hidden.address}", "${tag}-p${Date.now().toString(36)}${t.address.slice(-4)}")`);
+            } else if (!paired.has(t)) {
+                lua(`caelestia_cards.untag("0x${t.address}")`);
+                lua(`caelestia_cards.release("0x${t.address}", ${ws})`);
+            }
         }
+        Hyprland.refreshToplevels();
     }
 
-    Component.onCompleted: install()
+    Component.onCompleted: {
+        install();
+        startTidy.start();
+    }
 
     Connections {
         function onConfigReloaded(): void {
@@ -257,6 +311,14 @@ hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_ani
                 root.lua(`caelestia_cards.settle("0x${a}")`);
             addresses = [];
         }
+    }
+
+    // Once the windows' details are in
+    Timer {
+        id: startTidy
+
+        interval: 2500
+        onTriggered: root.tidy()
     }
 
     Timer {

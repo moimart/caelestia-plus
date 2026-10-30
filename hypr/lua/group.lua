@@ -3,8 +3,8 @@ local C = require("colors")
 
 -- Group tabs in the shell's style (Material 3, like its chips and the
 -- workspace pills): pills in the shell's font, the focused tab in the accent
--- colour, the others on a soft surface. A locked group (window cards use
--- them) has its focused tab in the tertiary colour.
+-- colour, the others on a soft surface. A locked group has its focused tab in
+-- the tertiary colour.
 local tabHeight = 28
 
 hl.config({

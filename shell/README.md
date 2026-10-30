@@ -177,8 +177,11 @@ Pair two windows into one card and flip it over, in 3D, to show the other
 **Super+Alt+Tab** makes the focused window a card's front and lets you pick the
 back; **Super+Tab** flips; **Super+Shift+Tab** splits it back into two windows.
 
-No Hyprland plugin is involved: a card is a locked Hyprland group, and the shell
-draws the flip with real perspective, then hands back to the live window.
+No Hyprland plugin is involved: the side not showing waits on a special
+workspace of its own (never shown), and a flip swaps the two windows, so the
+other takes exactly its place. A card is an ordinary window otherwise, focus
+border included. The shell draws the flip with real perspective, then hands
+back to the live window.
 
 ## Camera
 

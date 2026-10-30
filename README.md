@@ -29,8 +29,9 @@ hold your changes.
 Pair two windows into one card and flip it over in 3D to show the other:
 **Super+Alt+Tab** pairs (the focused window is the front; pick the back),
 **Super+Tab** flips, **Super+Shift+Tab** splits them again. No Hyprland plugin:
-a card is a locked window group, and the shell draws the turn with real
-perspective, then hands back to the live window.
+the side not showing waits out of sight and a flip swaps it into place, so a
+card is an ordinary window (its border, focus and rules as any other's); the
+shell draws the turn with real perspective, then hands back to the live window.
 
 ### Plugins: desktop widgets
 

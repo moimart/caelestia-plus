@@ -27,7 +27,7 @@ Item {
     // Floating windows last, so they sit on top of tiled ones
     readonly property var candidates: Hypr.toplevels.values.filter(t => {
         const ipc = t.lastIpcObject;
-        return t !== front && ipc?.mapped && ipc.visible !== false && visibleWs.includes(ipc.workspace?.id) && !Cards.isGrouped(t);
+        return t !== front && ipc?.mapped && ipc.visible !== false && visibleWs.includes(ipc.workspace?.id) && !Cards.isGrouped(t) && !Cards.cardFor(t);
     }).sort((a, b) => a.lastIpcObject.floating - b.lastIpcObject.floating)
     property int current: -1
 
