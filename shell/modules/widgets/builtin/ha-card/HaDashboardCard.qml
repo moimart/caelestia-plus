@@ -14,4 +14,5 @@ HaCard {
             heading: "Pick a card in Settings → Plugins"
         })
     readOnly: editing
+    onDesktop: true
 }
