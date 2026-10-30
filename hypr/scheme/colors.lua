@@ -1,9 +1,10 @@
 -- Color palette loader.
 --
--- The Caelestia desktop framework writes the active palette into
--- scheme/current.conf as `$name = hexrgb` lines. We parse that file at config
--- load time so theme changes (which rewrite current.conf and trigger
--- `hyprctl reload`) keep working without conversion.
+-- The Caelestia shell writes the active palette for Hyprland: as
+-- scheme/current.lua (a table of name = "hexrgb") when the config is Lua, as
+-- caelestia-cli does since it learned about Lua configs, or as the older
+-- scheme/current.conf (`$name = hexrgb` lines). The Lua one wins when both
+-- are there; scheme_watcher.lua reloads when either changes.
 --
 -- If you no longer use Caelestia, replace `read_scheme()` with a static table.
 
@@ -34,8 +35,18 @@ local function read_scheme(path)
   return t
 end
 
+-- scheme/current.lua: `return { primary = "71fb7d", ... }`
+local function read_lua_scheme(path)
+  local f = io.open(path, "r")
+  if not f then return nil end
+  f:close()
+  local ok, t = pcall(dofile, path)
+  if ok and type(t) == "table" then return t end
+  return nil
+end
+
 ensure_current()
-M.palette = read_scheme(hypr .. "/scheme/current.conf")
+M.palette = read_lua_scheme(hypr .. "/scheme/current.lua") or read_scheme(hypr .. "/scheme/current.conf")
 
 -- Build a "rgba(<hex><alpha>)" string from a palette entry.
 function M.rgba(name, alpha)
