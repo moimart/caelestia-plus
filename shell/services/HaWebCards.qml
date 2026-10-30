@@ -44,7 +44,7 @@ Singleton {
         };
     }
 
-    function openCard(id: string, instanceId: string, card: var, width: real, height: real, scale: real, paused: bool): void {
+    function openCard(id: string, instanceId: string, card: var, width: real, height: real, scale: real, paused: bool, animate: bool): void {
         const inst = HomeAssistant.instances.find(i => i.id === (instanceId || HomeAssistant.defaultId));
         if (!inst)
             return;
@@ -61,6 +61,7 @@ Singleton {
             height: Math.round(height),
             scale: scale,
             paused: paused,
+            animate: animate,
             theme: theme()
         };
         const next = Object.assign({}, open);

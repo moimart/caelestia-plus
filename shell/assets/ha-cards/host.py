@@ -47,7 +47,9 @@ from websockets.datastructures import Headers
 from websockets.http11 import Response
 
 HERE = Path(__file__).resolve().parent
-FPS = 30
+# Frames a second at most: each is a PNG that Chromium encodes, this passes on
+# and the shell decodes
+FPS = 15
 
 # What a card may ask Home Assistant, as in docker-home's server
 READ = re.compile(
@@ -390,6 +392,11 @@ class Card:
         self.last_emit = 0.0
         self.pending = None
         self.flush_handle = None
+        self.fps = FPS
+        self.last_ack = 0.0
+        # Its CSS animations: most of what a card costs (the compositor runs
+        # them at 60 frames a second). Without, it changes with its data only
+        self.animate = False
         safe = re.sub(r"[^\w.-]", "_", cid)
         self.files = [host.frames / f"{safe}-0.png", host.frames / f"{safe}-1.png"]
         self.size = (1, 1, 1.0)
@@ -416,6 +423,9 @@ class Card:
         except TimeoutError:
             pass
         await self.emulate()
+        if not self.animate:
+            await b.send("Animation.enable", {}, self.session)
+            await b.send("Animation.setPlaybackRate", {"playbackRate": 0}, self.session)
         if not self.paused:
             await self.screencast(True, thaw=False)
 
@@ -469,9 +479,13 @@ class Card:
         if method == "Page.loadEventFired" and not self.loaded.done():
             self.loaded.set_result(True)
         elif method == "Page.screencastFrame":
-            asyncio.create_task(self.host.browser.send("Page.screencastFrameAck", {"sessionId": params["sessionId"]}, self.session))
             if not self.paused:
                 self.frame(params["data"])
+            # Chromium sends the next frame once this one is acknowledged:
+            # acknowledging at the card's rate is what keeps it from
+            # encoding frames nobody will see
+            wait = max(0.0, 1 / self.fps - (time.monotonic() - self.last_ack))
+            asyncio.get_running_loop().call_later(wait, self.ack, params["sessionId"])
         elif method == "Runtime.consoleAPICalled" and params.get("type") in ("error", "warning"):
             log(self.id, "console:", " ".join(str(a.get("value", a.get("description", ""))) for a in params.get("args", []))[:300])
         elif method == "Runtime.exceptionThrown":
@@ -483,10 +497,14 @@ class Card:
             e = params["entry"]
             log(self.id, "log:", e.get("text", "")[:200], e.get("url", ""))
 
+    def ack(self, frame_session):
+        self.last_ack = time.monotonic()
+        asyncio.create_task(self.host.browser.send("Page.screencastFrameAck", {"sessionId": frame_session}, self.session))
+
     def frame(self, data):
         # At most FPS a second; after a burst, the last frame always gets out
         self.pending = data
-        wait = 1 / FPS - (time.monotonic() - self.last_emit)
+        wait = 1 / self.fps - (time.monotonic() - self.last_emit)
         if wait <= 0:
             self.flush()
         elif self.flush_handle is None:
@@ -549,6 +567,7 @@ class Host:
                 inst.cards[cid] = {"card": req["card"], "theme": req.get("theme")}
                 card = Card(self, cid)
                 card.paused = bool(req.get("paused"))
+                card.animate = bool(req.get("animate"))
                 self.cards[cid] = card
                 await card.open(inst, req["width"], req["height"], req.get("scale", 1))
                 emit({"id": cid, "status": "ready"})

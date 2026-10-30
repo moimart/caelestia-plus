@@ -152,8 +152,9 @@ entity changes.
   run a script or scene), an entity's state, a camera, and any card from your
   dashboards: built-in ones drawn natively (tiles, entities, glance, gauges,
   pictures, stacks), custom ones from HACS drawn live by a headless Chromium
-  on the GPU, with your scheme's colours. They freeze in power saver mode,
-  and while a window covers them. Place them with the widget editor and pick what they show in
+  on the GPU, with your scheme's colours. They update with their data; their
+  own animations are a switch away (they're most of the CPU a card costs).
+  They freeze in power saver mode, and while a window covers them. Place them with the widget editor and pick what they show in
   Settings → Plugins.
 - **Right bar shortcuts**: an entity or a dashboard card as a button on the
   right bar, lit while it's on (Settings → Panels → Right bar).

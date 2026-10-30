@@ -19,6 +19,9 @@ Item {
     // On the desktop: frozen while that screen's workspace has tiled or
     // fullscreen windows over it
     property bool pauseWhenCovered
+    // The card's own animations: most of what it costs. Without, it still
+    // changes with its data
+    property bool animate
 
     readonly property string uid: `webcard-${Math.random().toString(36).slice(2)}`
     readonly property real scale: Screen.devicePixelRatio > 0 ? Screen.devicePixelRatio : 1
@@ -42,18 +45,22 @@ Item {
     readonly property var cardState: HaWebCards.states[uid] ?? null
     property bool opened
 
+    // Afresh, as a new config or animating or not needs
+    function reopen(): void {
+        if (opened)
+            HaWebCards.closeCard(uid);
+        opened = false;
+        settle.restart();
+    }
+
     implicitWidth: 320
     implicitHeight: 320
 
     onWidthChanged: settle.restart()
     onHeightChanged: settle.restart()
     onScaleChanged: settle.restart()
-    onCardChanged: {
-        if (opened)
-            HaWebCards.closeCard(uid);
-        opened = false;
-        settle.restart();
-    }
+    onAnimateChanged: reopen()
+    onCardChanged: reopen()
     onPausedChanged: if (opened)
         HaWebCards.setPaused(uid, paused)
     Component.onCompleted: settle.start()
@@ -79,7 +86,7 @@ Item {
             if (root.width < 8 || root.height < 8)
                 return;
             if (!root.opened) {
-                HaWebCards.openCard(root.uid, root.instance, root.card, root.width, root.height, root.scale, root.paused);
+                HaWebCards.openCard(root.uid, root.instance, root.card, root.width, root.height, root.scale, root.paused, root.animate);
                 root.opened = true;
             } else {
                 HaWebCards.resize(root.uid, root.width, root.height, root.scale);
