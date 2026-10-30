@@ -41,6 +41,9 @@ desktop, above the wallpaper:
   that follow your pointer, blink, and half-close when it rests.
 - **Daruma**: the winking daruma, its painted eye following the pointer. It
   winks now and then, and shuts both eyes when the pointer is still.
+- **Clock**: the large desktop clock, now a widget like the rest: put it
+  anywhere, on any screen, at any size, with or without a background. An
+  older `background.desktopClock` setting becomes a clock widget where it was.
 - **The editor** (**Super+Ctrl+W**): drag widgets to move them, drag a corner
   to resize, add more from the palette. Each widget's settings are a form in
   Settings → Plugins.

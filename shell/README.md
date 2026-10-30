@@ -129,7 +129,7 @@ opens them as the screen edge did).
 **Right to left** (Settings → Panels, `general.rightToLeft`) mirrors the
 layout: the bar and its popouts on the right, the right bar on the left, the
 sidebar, notifications, session menu, volume popup and toasts from the left
-edge, the desktop clock and reserved space following. Contents keep their
+edge, and the reserved space following. Contents keep their
 order (it's the panels that swap, not the text direction).
 
 ## Launchpad
