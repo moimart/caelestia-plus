@@ -61,10 +61,28 @@ Singleton {
             seed: "#4f3a78"
         }
     ]
-    // Nearest by hue as the eye sees it (OKLCH); brown and rose only for a
-    // muted scheme, orange and pink otherwise
+    // The scheme's overall hue: its primary, secondary and tertiary key
+    // colours averaged as the eye sees them (OKLCH), each by how colourful it
+    // is. A green scheme with a cyan tertiary reads teal, and so it should
+    readonly property var schemeColour: {
+        let a = 0;
+        let b = 0;
+        let c = 0;
+        for (const k of [Colours.palette.m3primary_paletteKeyColor, Colours.palette.m3secondary_paletteKeyColor, Colours.palette.m3tertiary_paletteKeyColor]) {
+            const o = oklch(k);
+            a += o.c * Math.cos(o.h * Math.PI / 180);
+            b += o.c * Math.sin(o.h * Math.PI / 180);
+            c += o.c;
+        }
+        return {
+            c: c / 3,
+            h: (Math.atan2(b, a) * 180 / Math.PI + 360) % 360
+        };
+    }
+    // Nearest by that hue; brown and rose only for a muted scheme, orange and
+    // pink otherwise
     readonly property var preset: {
-        const key = oklch(Colours.palette.m3primary_paletteKeyColor);
+        const key = schemeColour;
         const muted = key.c < 0.07;
         let best = presets[0];
         let bestScore = Infinity;
