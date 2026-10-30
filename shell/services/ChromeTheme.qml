@@ -54,4 +54,16 @@ Singleton {
             onWantedChanged: sync()
         }
     }
+
+    // A file that isn't there can't be watched: they're looked for again
+    // until they are (the setup is usually run while the shell is)
+    Timer {
+        running: !root.enabled
+        repeat: true
+        interval: 5000
+        onTriggered: {
+            for (let i = 0; i < files.count; i++)
+                files.objectAt(i)?.reload();
+        }
+    }
 }
