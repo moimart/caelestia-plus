@@ -137,7 +137,9 @@ Singleton {
     }
 
     // Makes a window invisible (or visible again) without Hyprland's fade, by
-    // tagging it for the rules install() sets up
+    // tagging it for the rules install() sets up. Mid-flip a window has no
+    // border either: borders are drawn outside the window, where the flip's
+    // card doesn't cover, and would flash
     function hide(toplevel: HyprlandToplevel): void {
         lua(`caelestia_cards.hide("0x${toplevel.address}")`);
     }
@@ -239,8 +241,8 @@ Singleton {
   end,
 }
 hl.window_rule({ name = "${tag}", match = { tag = "${tag}" }, decorate = true })
-hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true })
-hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true })`);
+hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true, no_border = true })
+hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true, no_border = true })`);
         // Separate, so an older Hyprland rejecting it can't take the rest down
         lua(`hl.layer_rule({ name = "caelestia-cards", match = { namespace = "caelestia-cards" }, no_anim = true })`);
     }
