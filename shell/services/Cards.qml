@@ -232,7 +232,7 @@ Singleton {
     local A, B = hl.get_window("address:" .. a), hl.get_window("address:" .. b)
     if A and A.group then
       hl.dispatch(hl.dsp.focus({ window = "address:" .. a }))
-      hl.dispatch(hl.dsp.group.lock_active({ action = "disable" }))
+      hl.dispatch(hl.dsp.group.lock({ action = "disable" }))
     end
     if A and B and A.group and B.group == A.group then A.group:remove(B) end
     for _, w in ipairs({ A, B }) do
@@ -241,8 +241,8 @@ Singleton {
   end,
 }
 hl.window_rule({ name = "${tag}", match = { tag = "${tag}" }, decorate = true })
-hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true, no_border = true })
-hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true, no_border = true })`);
+hl.window_rule({ name = "${tag}-hidden", match = { tag = "${tag}-hidden" }, opacity = "0 override", no_anim = true, border_size = 0 })
+hl.window_rule({ name = "${tag}-shown", match = { tag = "${tag}-shown" }, no_anim = true, border_size = 0 })`);
         // Separate, so an older Hyprland rejecting it can't take the rest down
         lua(`hl.layer_rule({ name = "caelestia-cards", match = { namespace = "caelestia-cards" }, no_anim = true })`);
     }

@@ -229,7 +229,7 @@ hl.bind("CTRL + ALT + Tab",         hl.dsp.group.next(),                        
 hl.bind("CTRL + SHIFT + ALT + Tab", hl.dsp.group.prev(),                              { repeating = true })
 hl.bind("SUPER + Comma",            hl.dsp.group.toggle())
 hl.bind("SUPER + U",                hl.dsp.window.move({ out_of_group = true }))
-hl.bind("SUPER + SHIFT + Comma",    hl.dsp.group.lock_active({ action = "toggle" }))
+hl.bind("SUPER + SHIFT + Comma",    hl.dsp.group.lock({ action = "toggle" }))
 
 -- hyprexpo binds live in lua/hyprexpo.lua, next to the plugin config.
 
