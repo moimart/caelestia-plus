@@ -124,7 +124,13 @@ Item {
                         icon: modelData.icon
                         text: modelData.name
                         type: TextButton.Tonal
-                        onClicked: Widgets.add(modelData.id, root.screen)
+                        // One that shows nothing until it's set up (a Home
+                        // Assistant camera, say) opens its settings at once
+                        onClicked: {
+                            const uid = Widgets.add(modelData.id, root.screen);
+                            if (uid && Widgets.needsSetup(modelData.id))
+                                Widgets.openSettings(uid);
+                        }
                     }
                 }
 

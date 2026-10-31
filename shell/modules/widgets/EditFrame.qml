@@ -3,10 +3,8 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Caelestia.Config
-import Caelestia.I18n
 import qs.components
 import qs.services
-import qs.modules.nexus
 
 // One widget in the editor: drag it to move, drag a corner to resize; its
 // settings and remove buttons above it
@@ -127,14 +125,7 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                Widgets.settingsUid = root.uid;
-                Widgets.editing = false;
-                WindowFactory.create(null, {
-                    initialPage: PageRegistry.pages.findIndex(p => p.label === Tr.tr("Plugins")),
-                    initialSubPage: 1
-                });
-            }
+            onClicked: Widgets.openSettings(root.uid)
         }
     }
 
