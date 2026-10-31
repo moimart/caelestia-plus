@@ -28,6 +28,12 @@ Item {
     // This display's brightness, where it can be set (each display's bar has its own)
     readonly property var brightness: Brightness.getMonitorForScreen(screen)
     readonly property bool showBrightness: Config.rightBar.brightness && !!brightness?.controllable
+    // The action button under the pointer, for its tooltip
+    property Item hoveredButton
+    property var hoveredAction
+    // The last one hovered: where the tooltip stays while the pointer moves
+    // between buttons
+    property Item tipButton
 
     implicitWidth: thickness
     clip: true
@@ -76,6 +82,15 @@ Item {
                         // A recording shows stop; a Home Assistant entity that's on stays itself
                         icon: action.active && action.modelData.recorder ? "stop_circle" : action.modelData.icon
                         onClicked: action.modelData.run()
+                        onHoveredChanged: {
+                            if (hovered) {
+                                root.hoveredButton = this;
+                                root.tipButton = this;
+                                root.hoveredAction = action.modelData;
+                            } else if (root.hoveredButton === this) {
+                                root.hoveredButton = null;
+                            }
+                        }
                     }
 
                     // How long the recording has run
@@ -177,6 +192,93 @@ Item {
                     onMoved: Audio.setSourceVolume(value)
                 }
             }
+        }
+    }
+
+    // What the hovered button does, beside the bar: in the window around it,
+    // as the bar clips what's outside it (and on its other side when the
+    // layout is right to left)
+    StyledRect {
+        id: tooltip
+
+        readonly property bool mirrored: root.LayoutMirroring.enabled
+        readonly property bool shown: (root.hoveredButton !== null || grace.running) && showDelay.done
+        readonly property point at: root.tipButton ? root.tipButton.mapToItem(parent, 0, root.tipButton.height / 2) : Qt.point(0, 0)
+
+        parent: root.parent
+        z: 10
+        x: mirrored ? root.x + root.width + Tokens.spacing.medium : root.x - width - Tokens.spacing.medium
+        y: at.y - height / 2
+        implicitWidth: tipText.implicitWidth + Tokens.padding.large * 2
+        implicitHeight: tipText.implicitHeight + Tokens.padding.small * 2
+        radius: Tokens.rounding.full
+        color: Colours.palette.m3inverseSurface
+        opacity: shown ? 1 : 0
+        visible: opacity > 0
+
+        Behavior on opacity {
+            Anim {
+                type: Anim.FastEffects
+            }
+        }
+
+        Behavior on y {
+            enabled: tooltip.opacity > 0
+
+            Anim {
+                type: Anim.FastSpatial
+            }
+        }
+
+        Column {
+            id: tipText
+
+            anchors.centerIn: parent
+
+            StyledText {
+                text: root.hoveredAction?.name ?? ""
+                color: Colours.palette.m3inverseOnSurface
+                font: Tokens.font.label.large
+            }
+
+            StyledText {
+                visible: text !== ""
+                width: Math.min(implicitWidth, 320)
+                text: root.hoveredAction?.description ?? ""
+                color: Qt.alpha(Colours.palette.m3inverseOnSurface, 0.7)
+                font: Tokens.font.label.small
+                elide: Text.ElideRight
+            }
+        }
+
+        // A moment's hover first: not on every pass of the pointer
+        Timer {
+            id: showDelay
+
+            property bool done
+
+            interval: 400
+            running: root.hoveredButton !== null && !done
+            onTriggered: done = true
+        }
+
+        // Off a button for a moment (on the way to the next one, say), it
+        // stays up; longer, and the next hover waits again
+        Timer {
+            id: grace
+
+            interval: 200
+            onTriggered: if (root.hoveredButton === null)
+                showDelay.done = false
+        }
+
+        Connections {
+            function onHoveredButtonChanged(): void {
+                if (root.hoveredButton === null)
+                    grace.restart();
+            }
+
+            target: root
         }
     }
 }
