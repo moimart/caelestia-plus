@@ -3,10 +3,13 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Quickshell
 import Caelestia.Config
+import Caelestia.I18n
 import qs.components
 import qs.services
+import qs.modules.nexus
 
-// One widget in the editor: drag it to move, drag a corner to resize
+// One widget in the editor: drag it to move, drag a corner to resize; its
+// settings and remove buttons above it
 Item {
     id: root
 
@@ -98,7 +101,46 @@ Item {
         }
     }
 
+    // Its settings, for widgets that have some: straight to its page in
+    // Settings (the editor closes, or it would cover the window)
     StyledRect {
+        anchors.right: removeButton.left
+        anchors.rightMargin: Tokens.spacing.small
+        anchors.bottom: parent.top
+        anchors.bottomMargin: Tokens.padding.small + Tokens.spacing.small
+        visible: (root.plugin?.schema?.length ?? 0) > 0
+        implicitWidth: Tokens.padding.large * 2
+        implicitHeight: implicitWidth
+        radius: implicitWidth / 2
+        color: settingsArea.containsMouse ? Colours.palette.m3primary : Colours.palette.m3secondaryContainer
+
+        MaterialIcon {
+            anchors.centerIn: parent
+            text: "tune"
+            color: settingsArea.containsMouse ? Colours.palette.m3onPrimary : Colours.palette.m3onSecondaryContainer
+            fontStyle: Tokens.font.icon.small
+        }
+
+        MouseArea {
+            id: settingsArea
+
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                Widgets.settingsUid = root.uid;
+                Widgets.editing = false;
+                WindowFactory.create(null, {
+                    initialPage: PageRegistry.pages.findIndex(p => p.label === Tr.tr("Plugins")),
+                    initialSubPage: 1
+                });
+            }
+        }
+    }
+
+    StyledRect {
+        id: removeButton
+
         anchors.right: parent.right
         anchors.bottom: parent.top
         anchors.bottomMargin: Tokens.padding.small + Tokens.spacing.small
