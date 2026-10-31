@@ -33,6 +33,9 @@ Singleton {
 
     readonly property bool needsCursor: GlobalConfig.widgets.enabled && instances.some(i => pluginFor(i.type)?.needsCursor)
 
+    // Settings asked for on a widget (modules/widgets/WidgetsEditor opens it)
+    signal settingsRequested(uid: string)
+
     function pluginFor(type: string): var {
         return plugins.find(p => p.id === type) ?? null;
     }
@@ -41,16 +44,32 @@ Singleton {
         return instances.filter(i => i.screen === screen);
     }
 
-    function add(type: string, screen: ShellScreen): void {
+    // A widget that shows nothing until it's told what (a Home Assistant
+    // entity or card): Settings opens on it as soon as it's placed
+    function needsSetup(type: string): bool {
+        return (pluginFor(type)?.schema ?? []).some(f => f.type === "haEntity" || f.type === "haCard");
+    }
+
+    // Opens Settings on a placed widget's page (closing the editor, which would
+    // cover the window)
+    function openSettings(uid: string): void {
+        settingsUid = uid;
+        editing = false;
+        settingsRequested(uid);
+    }
+
+    // Places a widget; its uid, or "" if it couldn't be
+    function add(type: string, screen: ShellScreen): string {
         const p = pluginFor(type);
         if (!p || !screen)
-            return;
+            return "";
         const [w, h] = p.defaultSize;
         // Centre it, nudged so repeated adds don't stack exactly
         const n = instancesOn(screen.name).length % 6;
+        const uid = `${type}-${Date.now().toString(36)}`;
         save([...instances,
             {
-                uid: `${type}-${Date.now().toString(36)}`,
+                uid: uid,
                 type: type,
                 screen: screen.name,
                 x: Math.round((screen.width - w) / 2 + n * 32),
@@ -60,6 +79,7 @@ Singleton {
                 settings: {}
             }
         ]);
+        return uid;
     }
 
     function remove(uid: string): void {

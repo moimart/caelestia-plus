@@ -5,9 +5,11 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Caelestia.Config
+import Caelestia.I18n
 import qs.components.containers
 import qs.components.misc
 import qs.services
+import qs.modules.nexus
 
 // Placing and resizing desktop widgets, on every monitor that has a desktop
 Scope {
@@ -43,6 +45,19 @@ Scope {
                 }
             }
         }
+    }
+
+    // A widget's settings asked for (its button in the editor, a widget
+    // just placed that needs setting up, the IPC call): Settings, on its page
+    Connections {
+        function onSettingsRequested(uid: string): void {
+            WindowFactory.create(null, {
+                initialPage: PageRegistry.pages.findIndex(p => p.label === Tr.tr("Plugins")),
+                initialSubPage: 1
+            });
+        }
+
+        target: Widgets
     }
 
     IpcHandler {
@@ -94,8 +109,7 @@ Scope {
 
         // Opens a placed widget's settings (Settings → Plugins)
         function settings(uid: string): void {
-            Widgets.settingsUid = uid;
-            Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "nexus", "subPage", "Plugins", "1"]);
+            Widgets.openSettings(uid);
         }
 
         function rescan(): void {
