@@ -37,8 +37,8 @@ M.shadowColour      = C.rgba("surface", "d4")
 -- far they bend (0 to 2)
 M.wobbleEnabled   = true
 M.wobbleStiffness = 200
-M.wobbleDamping   = 12
-M.wobbleIntensity = 0.2
+M.wobbleDamping   = 8
+M.wobbleIntensity = 0.5
 
 -- Gaps
 M.workspaceGaps      = 20
