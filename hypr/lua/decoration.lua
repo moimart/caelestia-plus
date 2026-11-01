@@ -22,6 +22,13 @@ hl.config({
       render_power = V.shadowRenderPower,
       color        = V.shadowColour,
     },
+
+    wobble = {
+      enabled   = V.wobbleEnabled,
+      stiffness = V.wobbleStiffness,
+      damping   = V.wobbleDamping,
+      intensity = V.wobbleIntensity,
+    },
   },
 })
 

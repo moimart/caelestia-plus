@@ -32,6 +32,14 @@ M.shadowRange       = 20
 M.shadowRenderPower = 3
 M.shadowColour      = C.rgba("surface", "d4")
 
+-- Wobbly windows (Hyprland 0.57): windows wobble as you drag and resize them.
+-- Stiffer springs settle faster, more damping wobbles less, intensity is how
+-- far they bend (0 to 2)
+M.wobbleEnabled   = true
+M.wobbleStiffness = 200
+M.wobbleDamping   = 12
+M.wobbleIntensity = 0.2
+
 -- Gaps
 M.workspaceGaps      = 20
 M.windowGapsIn       = 10
