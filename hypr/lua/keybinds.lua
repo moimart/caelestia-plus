@@ -290,7 +290,7 @@ hl.bind("SUPER + ALT + F",    hl.dsp.window.fullscreen({ mode = "maximized"  }))
 hl.bind("SUPER + ALT + Space", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("SUPER + W",          hl.dsp.window.close())
 hl.bind("SUPER + J",          hl.dsp.layout("togglesplit"))
-hl.bind("SUPER + SHIFT + J",  hl.dsp.layout("promote"))
+hl.bind("SUPER + CTRL + J",   hl.dsp.layout("promote"))  -- SUPER + SHIFT + J is Claude Code
 
 -- Special workspace toggles. Direct Lua dispatcher (caelestia's wrappers
 -- are broken on 0.55 — see SUPER+S note above).
@@ -303,10 +303,11 @@ hl.bind("SUPER + R",             function() hl.dispatch(hl.dsp.workspace.toggle_
 -- Apps
 -- =====================================================================
 hl.bind("SUPER + Return",     hl.dsp.exec_cmd("app2unit -- " .. V.terminal))
--- A floating terminal at the pointer, kept on screen, running `args` if given
-local function terminal_at_pointer(args)
+-- A floating terminal at the pointer, kept on screen, running `args` if given,
+-- 960x600 unless `w`, `h` say otherwise
+local function terminal_at_pointer(args, w, h)
   local cmd = "app2unit -- " .. V.terminal .. (args and (" " .. args) or "")
-  local w, h = 960, 600
+  w, h = w or 960, h or 600
   local x, y = Pointer.spot(w, h)
   if not x then
     return hl.exec_cmd(cmd)
@@ -344,6 +345,11 @@ hl.bind("SHIFT + SUPER + Return", function()
   else
     terminal_at_pointer()
   end
+end)
+-- SUPER + SHIFT + J → Claude Code in a floating terminal, in the folder you
+-- type first (Enter alone, or one that isn't there: your home)
+hl.bind("SHIFT + SUPER + J", function()
+  terminal_at_pointer("--title 'Claude Code' " .. P.root .. "/scripts/claude-here.sh", 1100, 720)
 end)
 hl.bind("SHIFT + SUPER + B",  hl.dsp.exec_cmd("app2unit -- " .. V.browser))
 hl.bind("SUPER + C",          hl.dsp.exec_cmd("app2unit -- " .. V.editor))
