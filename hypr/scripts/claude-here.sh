@@ -39,4 +39,22 @@ elif [ -n "$dir" ]; then
 fi
 
 printf '\e[2m%s\e[0m\n\n' "${PWD/#$HOME/\~}"
-exec claude
+
+# The native install (~/.local/bin, where Claude Code installs and updates
+# itself) before whatever else is on PATH: an npm one there can be broken
+claude=$HOME/.local/bin/claude
+[ -x "$claude" ] || claude=$(command -v claude)
+if [ -z "$claude" ]; then
+    printf '\e[31mClaude Code isn'"'"'t installed\e[0m (https://claude.com/claude-code)\n'
+    status=127
+else
+    "$claude"
+    status=$?
+fi
+
+# It failing shows why, instead of the window just vanishing
+if [ "$status" -ne 0 ]; then
+    printf '\n\e[2mExited with %s. Enter to close\e[0m' "$status"
+    read -rs
+fi
+exit "$status"
