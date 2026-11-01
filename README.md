@@ -383,7 +383,7 @@ caelestia-plus-setup
 ```
 
 This needs the AUR packages the shell depends on (`quickshell-git`,
-`caelestia-cli`, `libcava`, `app2unit`, `ttf-rubik-vf`) from your AUR helper
+`python-materialyoucolor`, `libcava`, `app2unit`, `ttf-rubik-vf`) from your AUR helper
 first. An AUR recipe, [`caelestia-plus-git`](aur/caelestia-plus-git), is
 ready for when AUR registration reopens.
 

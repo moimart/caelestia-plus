@@ -313,6 +313,11 @@ install_pkgs() {
     ver=$(cat "$cache/last")
     [ "$ver" = "$(pacman -Q caelestia-plus 2> /dev/null | cut -d' ' -f2)" ] \
         && note "$ver is already installed; reinstalling"
+    # The cli used to come from the AUR: pacman -U won't swap it for ours
+    # unattended (it asks), so it goes first, keeping what needs it
+    if pacman -Qq caelestia-cli > /dev/null 2>&1 && ! pacman -Qq caelestia-cli-moimart > /dev/null 2>&1; then
+        sudo pacman -Rdd --noconfirm caelestia-cli
+    fi
     sudo pacman -U --noconfirm "$cache"/out/*-"$ver"-*.pkg.tar.zst
     if [ -L "$link" ]; then
         note "installed; the shell still runs the checkout (tools/dev.sh shell off to use the package)"

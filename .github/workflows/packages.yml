@@ -23,7 +23,7 @@ concurrency:
 env:
   REPO_NAME: caelestia-plus
   PACKAGES_REPO: git@github.com:moimart/caelestia-plus-packages.git
-  AUR_PACKAGES: libcava ttf-rubik-vf quickshell-git caelestia-cli app2unit
+  AUR_PACKAGES: libcava ttf-rubik-vf quickshell-git python-materialyoucolor app2unit
 
 jobs:
   build:
@@ -54,7 +54,7 @@ jobs:
           (cd yay-bin && makepkg -si --noconfirm)
           mkdir -p ~/aur ~/out
           yay -S --noconfirm --needed --builddir ~/aur $AUR_PACKAGES
-          # Everything built, including AUR dependencies (python-materialyoucolor)
+          # Everything built, including their own AUR dependencies
           cp ~/aur/*/*.pkg.tar.zst ~/out/
           EOF
 
