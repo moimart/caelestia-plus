@@ -10,6 +10,12 @@ history_file=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia-plus/claude-folders
 mkdir -p "${history_file%/*}"
 
 cd "$HOME" || exit 1
+
+# Caelestia theme colours. Interactive shells print these from their rc file,
+# but this script runs straight in kitty, so the window would keep kitty's
+# default palette until the next scheme change.
+sequences=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/sequences.txt
+[ -f "$sequences" ] && cat "$sequences"
 HISTFILE=$history_file
 HISTSIZE=200
 history -r
