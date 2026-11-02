@@ -165,12 +165,12 @@ def list_windows(args):
 
 @tool("screenshot", "Capture a monitor (or all) as an image so you can see the desktop. While the screen is locked this shows the lock screen.",
       {"monitor": MONITOR,
-       "max_width": {"type": "integer", "description": "Downscale to at most this width in pixels (default 1920)."}})
+       "max_width": {"type": "integer", "description": "Downscale to at most this width in pixels (default 1280; more costs more context)."}})
 def screenshot(args):
     if not shutil.which("grim"):
         raise ToolError("grim is not installed")
     monitor = args.get("monitor")
-    max_width = int(args.get("max_width") or 1920)
+    max_width = int(args.get("max_width") or 1280)
     mons = hyprctl_json("monitors")
     if monitor:
         m = next((m for m in mons if m["name"] == monitor), None)
@@ -180,7 +180,7 @@ def screenshot(args):
     else:
         width = max(m["x"] / m["scale"] + m["width"] / m["scale"] for m in mons) if mons else max_width
     scale = min(1.0, max_width / width)
-    cmd = ["grim", "-t", "jpeg", "-q", "85", "-s", f"{scale:.4f}"]
+    cmd = ["grim", "-t", "jpeg", "-q", "75", "-s", f"{scale:.4f}"]
     if monitor:
         cmd += ["-o", monitor]
     data = run(cmd + ["-"], binary=True)
