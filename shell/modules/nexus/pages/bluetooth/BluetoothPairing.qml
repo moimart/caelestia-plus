@@ -16,10 +16,18 @@ PageBase {
     id: root
 
     readonly property BluetoothAdapter adapter: Bluetooth.defaultAdapter
+    // Whether this page is holding a scan (services/BluetoothScan stops the
+    // ones nobody holds)
+    property bool scanning
 
     function setScan(on: bool): void {
-        if (adapter?.enabled)
-            adapter.discovering = on;
+        if (on === scanning)
+            return;
+        scanning = on;
+        if (on)
+            BluetoothScan.hold();
+        else
+            BluetoothScan.release();
     }
 
     title: Tr.tr("Pair new device")

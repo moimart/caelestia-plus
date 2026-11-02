@@ -36,6 +36,7 @@ ShellRoot {
         SystemUpdates;
         HostSensors;
         ChromeTheme;
+        BluetoothScan;
         Weather.reload();
 
         if (GlobalConfig.utilities.vpn.enabled)
