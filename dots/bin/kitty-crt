@@ -29,8 +29,19 @@ pipeline="$runtime/$SHADER.$$.pipeline"
 cat > "$pipeline" <<EOF
 var float TIME_OFFSET = $offset
 
+# Same two passes as kitty/shaders/caelestia-crt.pipeline: a static CRT that
+# only redraws when the text changes, plus the moving band while focused.
 startgroup
+    animation_step 0
+    var int MODE = 1
+    shaders $shaders/$SHADER
+endgroup
+
+startgroup
+    animation_start os-window-focus-in
+    animation_stop os-window-focus-out
     animation_step 16
+    var int MODE = 2
     shaders $shaders/$SHADER
 endgroup
 EOF

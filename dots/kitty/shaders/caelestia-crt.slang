@@ -44,6 +44,16 @@ static const float  BURST_EVERY    = 5.0f;   // seconds between chances of a har
 // BAND_PERIOD and BURST_EVERY, so the animation does not jump when it wraps.
 static const float  TIME_OFFSET    = 0.0f;   // seconds, set at launch
 
+// Which part of the effect this pass draws, so a pipeline can split it in two:
+//   0 = everything (animated, needs a redraw every frame)
+//   1 = the static CRT only: curvature, scanlines, bloom, vignette, fixed grain.
+//       Time-independent, so with `animation_step 0` kitty only redraws it when
+//       the text changes.
+//   2 = only the moving parts (band, tear, colour split, flicker, live grain),
+//       applied on top of a MODE 1 pass. caelestia-crt.pipeline runs this pass
+//       only while the window is focused, so unfocused terminals stay idle.
+static const int    MODE           = 0;
+
 // ---- Helpers --------------------------------------------------------------
 
 float
@@ -92,18 +102,22 @@ fragment_main(float4 color, KittyTextures t, KittyCustomShaderData d) {
     float2 vp = float2(d.viewport_size_pixels) * float2(t.viewport.z, t.viewport.w);
     float2 px = 1.0f / vp;
 
-    float2 uv = crt_curve(t.pos);
+    bool drawStatic = MODE != 2;
+    bool animate = MODE != 1;
+
+    // The overlay pass works on an image that is already curved
+    float2 uv = drawStatic ? crt_curve(t.pos) : t.pos;
 
     // Outside the curved glass: let the desktop show through
     if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f) return float4(0.0f);
 
-    float tm = d.timestamp + TIME_OFFSET;
+    float tm = animate ? d.timestamp + TIME_OFFSET : 0.0f;
 
     // Rolling band, top to bottom (UV origin is bottom-left, so count down)
     float bandY = 1.0f - frac(tm / BAND_PERIOD);
     float dist = abs(uv.y - bandY);
     dist = min(dist, 1.0f - dist); // wrap so the band enters smoothly
-    float band = exp(-pow(dist / BAND_HEIGHT, 2.0f));
+    float band = animate ? exp(-pow(dist / BAND_HEIGHT, 2.0f)) : 0.0f;
 
     // Hard glitch: some bursts are much stronger, lasting ~0.35s
     float burstSlot = floor(tm / BURST_EVERY);
@@ -123,39 +137,51 @@ fragment_main(float4 color, KittyTextures t, KittyCustomShaderData d) {
     float4 mid = t.backbuffer.Sample(uv);
     float r = t.backbuffer.Sample(uv + float2(split, 0.0f)).r;
     float b = t.backbuffer.Sample(uv - float2(split, 0.0f)).b;
-    float3 src = float3(r, mid.g, b);
+    float3 col = float3(r, mid.g, b);
     float a = mid.a;
 
-    // Bloom: cheap 8-tap blur, in the text's own colours
-    float3 blur = float3(0.0f);
-    blur += t.backbuffer.Sample(uv + float2( 2.0f,  0.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2(-2.0f,  0.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2( 0.0f,  2.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2( 0.0f, -2.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2( 3.0f,  3.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2(-3.0f,  3.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2( 3.0f, -3.0f) * px).rgb;
-    blur += t.backbuffer.Sample(uv + float2(-3.0f, -3.0f) * px).rgb;
-    blur = max(blur / 8.0f - BLOOM_FLOOR, 0.0f);
+    if (drawStatic) {
+        // Bloom: cheap 8-tap blur, in the text's own colours
+        float3 blur = float3(0.0f);
+        blur += t.backbuffer.Sample(uv + float2( 2.0f,  0.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2(-2.0f,  0.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2( 0.0f,  2.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2( 0.0f, -2.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2( 3.0f,  3.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2(-3.0f,  3.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2( 3.0f, -3.0f) * px).rgb;
+        blur += t.backbuffer.Sample(uv + float2(-3.0f, -3.0f) * px).rgb;
+        blur = max(blur / 8.0f - BLOOM_FLOOR, 0.0f);
+        col += blur * BLOOM * 0.5f;
+    }
 
-    float3 col = src + blur * BLOOM * 0.5f;
+    if (animate) {
+        // Brighter band, plus a flicker while glitching
+        float flicker = 1.0f + (crt_hash11(frame) - 0.5f) * 0.25f * glitch;
+        col *= (1.0f + band * BAND_GLOW) * flicker;
+        col += crt_band_tint(d) * band * 0.03f * a;
+    }
 
-    // Brighter band, plus a flicker while glitching
-    float flicker = 1.0f + (crt_hash11(frame) - 0.5f) * 0.25f * glitch;
-    col *= (1.0f + band * BAND_GLOW) * flicker;
-    col += crt_band_tint(d) * band * 0.03f * a;
+    if (drawStatic) {
+        // Scanlines (in viewport pixels, so they stay put while the band moves)
+        float scan = 0.5f + 0.5f * cos(t.pos.y * vp.y * 6.2831853f / SCANLINE_PX);
+        col *= 1.0f - SCANLINE_DEPTH * scan;
+    }
 
-    // Scanlines (in viewport pixels, so they stay put while the band moves)
-    float scan = 0.5f + 0.5f * cos(t.pos.y * vp.y * 6.2831853f / SCANLINE_PX);
-    col *= 1.0f - SCANLINE_DEPTH * scan;
+    if (animate) {
+        // Global slow flicker
+        col *= 0.97f + 0.03f * sin(tm * 110.0f);
+    }
 
-    // Global slow flicker and static
-    col *= 0.97f + 0.03f * sin(tm * 110.0f);
-    col += (crt_hash21(t.pos * vp + frac(tm) * 100.0f) - 0.5f) * NOISE * a;
+    // Static grain: a fixed pattern in the static pass, live in the others.
+    // The overlay pass adds none of its own, or grain would double up.
+    if (MODE != 2) col += (crt_hash21(t.pos * vp + frac(tm) * 100.0f) - 0.5f) * NOISE * a;
 
-    // Vignette
-    float2 v = uv * (1.0f - uv);
-    col *= lerp(1.0f, pow(max(v.x * v.y * 16.0f, 0.0f), 0.25f), VIGNETTE);
+    if (drawStatic) {
+        // Vignette
+        float2 v = uv * (1.0f - uv);
+        col *= lerp(1.0f, pow(max(v.x * v.y * 16.0f, 0.0f), 0.25f), VIGNETTE);
+    }
 
     return float4(max(col, 0.0f), a);
 }

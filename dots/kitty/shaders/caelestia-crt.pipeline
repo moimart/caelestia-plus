@@ -1,8 +1,23 @@
-# Amber CRT: one group, always animating (no animation_start = runs every frame).
-# animation_step is the frame interval in ms; 16 ≈ 60fps for a smooth rolling
-# band. Raise it (e.g. 33 ≈ 30fps) if it costs too much power.
+# Amber CRT in two passes, so only the focused window animates.
+#
+# Pass 1 is the static CRT look. It has no animation_start, so it always runs,
+# and animation_step 0 means kitty only redraws it when the content changes:
+# an unfocused terminal costs nothing.
+#
+# Pass 2 adds the rolling band, tearing and flicker on top, at ~60fps
+# (animation_step 16; raise it, e.g. 33 ≈ 30fps, to save power). It runs only
+# while this kitty window has focus.
 
 startgroup
+    animation_step 0
+    var int MODE = 1
+    shaders caelestia-crt
+endgroup
+
+startgroup
+    animation_start os-window-focus-in
+    animation_stop os-window-focus-out
     animation_step 16
+    var int MODE = 2
     shaders caelestia-crt
 endgroup
