@@ -1,0 +1,5 @@
+# The Microsoft Surface Dial, for the shell (services/SurfaceDial.qml): the
+# logged-in user may read it, and may make the virtual wheel its scroll mode
+# uses through /dev/uinput.
+KERNEL=="event*", SUBSYSTEM=="input", ATTRS{name}=="Surface Dial System Multi Axis", TAG+="uaccess"
+KERNEL=="uinput", SUBSYSTEM=="misc", OPTIONS+="static_node=uinput", TAG+="uaccess"

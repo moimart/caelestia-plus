@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
@@ -159,6 +160,64 @@ PageBase {
                     onClicked: HomeAssistant.removeInstance(instance.modelData.id)
                 }
             }
+        }
+
+        // The Surface Dial's "Home Assistant volume" mode
+        SectionHeader {
+            visible: HomeAssistant.instances.length > 0
+            text: Tr.tr("Surface Dial")
+        }
+
+        SelectRow {
+            visible: HomeAssistant.instances.length > 1
+            first: true
+            label: Tr.tr("Instance")
+            menuItems: dialInstances.instances
+            active: dialInstances.instances.find(i => i.value === SurfaceDial.haInstance) ?? null
+            onSelected: item => {
+                GlobalConfig.surfaceDial.haInstance = item.value;
+                GlobalConfig.surfaceDial.haEntity = "";
+            }
+
+            Variants {
+                id: dialInstances
+
+                model: HomeAssistant.instances
+
+                MenuItem {
+                    required property var modelData
+
+                    text: modelData.name
+                    value: modelData.id
+                }
+            }
+        }
+
+        HaEntityPicker {
+            visible: HomeAssistant.instances.length > 0
+            first: HomeAssistant.instances.length < 2
+            last: false
+            label: Tr.tr("Media player")
+            instance: SurfaceDial.haInstance
+            domains: ["media_player"]
+            value: GlobalConfig.surfaceDial.haEntity
+            onPicked: id => {
+                GlobalConfig.surfaceDial.haEntity = id;
+                // Picking one is wanting the mode
+                if (!GlobalConfig.surfaceDial.modes.includes("haVolume"))
+                    GlobalConfig.surfaceDial.modes = SurfaceDial.allModes.filter(m => m === "haVolume" || GlobalConfig.surfaceDial.modes.includes(m));
+            }
+        }
+
+        StepperRow {
+            visible: HomeAssistant.instances.length > 0
+            last: true
+            label: Tr.tr("Volume step")
+            subtext: GlobalConfig.surfaceDial.haEntity ? Tr.tr("Percent per step of the dial") : Tr.tr("Pick a player for the dial's Home Assistant volume mode")
+            value: GlobalConfig.surfaceDial.haStep
+            from: 1
+            to: 20
+            onMoved: v => GlobalConfig.surfaceDial.haStep = v
         }
 
         SectionHeader {

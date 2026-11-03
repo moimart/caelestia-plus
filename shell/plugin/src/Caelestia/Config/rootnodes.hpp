@@ -22,6 +22,7 @@
 #include "serviceconfig.hpp"
 #include "sessionconfig.hpp"
 #include "sidebarconfig.hpp"
+#include "surfacedialconfig.hpp"
 #include "tokens.hpp"
 #include "userpaths.hpp"
 #include "utilitiesconfig.hpp"
@@ -52,6 +53,7 @@ class ConfigRoot : public settings::RootNode {
     CONFIG_SUBOBJECT(ServiceConfig, services)
     CONFIG_SUBOBJECT(SessionConfig, session)
     CONFIG_SUBOBJECT(SidebarConfig, sidebar)
+    CONFIG_SUBOBJECT(SurfaceDialConfig, surfaceDial)
     CONFIG_SUBOBJECT(UtilitiesConfig, utilities)
     CONFIG_SUBOBJECT(WidgetsConfig, widgets)
     CONFIG_SUBOBJECT(UserPaths, paths)

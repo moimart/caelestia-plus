@@ -99,6 +99,14 @@ QtObject {
             }
         },
         Component {
+            // Surface Dial
+            StackPage {
+                Component {
+                    SurfaceDialPage {}
+                }
+            }
+        },
+        Component {
             // Audio
             StackPage {
                 Component {

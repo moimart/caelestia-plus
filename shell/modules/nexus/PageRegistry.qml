@@ -42,6 +42,12 @@ QtObject {
             category: "connectivity"
         },
         {
+            label: Tr.tr("Surface Dial"),
+            icon: "adjust",
+            description: Tr.tr("Its modes: volume, zoom, scrolling, Home Assistant"),
+            category: "connectivity"
+        },
+        {
             label: Tr.tr("Audio"),
             icon: "volume_up",
             description: Tr.tr("App volumes, sound devices"),

@@ -17,7 +17,9 @@ Item {
 
     property bool hovered
     readonly property Brightness.Monitor monitor: Brightness.getMonitorForScreen(root.screen)
-    readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && !rightBarHasVolume && !(screenState.utilities && Config.utilities.enabled)
+    // A Home Assistant player's volume, from the Surface Dial, shows even with
+    // the right bar's slider there (alone, then)
+    readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && (!rightBarHasVolume || SurfaceDial.haShowing) && !(screenState.utilities && Config.utilities.enabled)
     property real offsetScale: shouldBeActive ? 0 : 1
     property real sidebarOffset: sidebarOrSessionVisible ? 12 : 0
 
@@ -83,6 +85,14 @@ Item {
         target: root.monitor
     }
 
+    Connections {
+        function onHaVolumeShown(): void {
+            root.show();
+        }
+
+        target: SurfaceDial
+    }
+
     Timer {
         id: timer
 
@@ -110,6 +120,7 @@ Item {
             sourceVolume: root.sourceVolume
             sourceMuted: root.sourceMuted
             brightness: root.brightness
+            onlyHa: root.rightBarHasVolume
         }
     }
 }

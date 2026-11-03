@@ -28,6 +28,7 @@ qml_module(caelestia-config
         serviceconfig.hpp
         sessionconfig.hpp
         sidebarconfig.hpp
+        surfacedialconfig.hpp
         userpaths.hpp
         utilitiesconfig.hpp
         widgetsconfig.hpp

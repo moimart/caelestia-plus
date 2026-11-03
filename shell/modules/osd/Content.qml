@@ -20,6 +20,8 @@ Item {
     required property real sourceVolume
     required property bool sourceMuted
     required property real brightness
+    // Only the Surface Dial's Home Assistant volume (the right bar has the rest)
+    property bool onlyHa
 
     implicitWidth: layout.implicitWidth + Tokens.padding.large + layout.anchors.horizontalCenterOffset * 2
     implicitHeight: layout.implicitHeight + Tokens.padding.large * 2
@@ -33,6 +35,8 @@ Item {
 
         // Speaker volume
         CustomMouseArea {
+            visible: !root.onlyHa
+
             function onWheel(event: WheelEvent) {
                 if (event.angleDelta.y > 0)
                     Audio.incrementVolume();
@@ -55,7 +59,7 @@ Item {
 
         // Microphone volume
         WrappedLoader {
-            shouldBeActive: Config.osd.enableMicrophone && (!Config.osd.enableBrightness || !root.screenState.session)
+            shouldBeActive: !root.onlyHa && Config.osd.enableMicrophone && (!Config.osd.enableBrightness || !root.screenState.session)
 
             sourceComponent: CustomMouseArea {
                 function onWheel(event: WheelEvent) {
@@ -81,7 +85,7 @@ Item {
 
         // Brightness
         WrappedLoader {
-            shouldBeActive: Config.osd.enableBrightness
+            shouldBeActive: !root.onlyHa && Config.osd.enableBrightness
 
             sourceComponent: CustomMouseArea {
                 function onWheel(event: WheelEvent) {
@@ -103,6 +107,29 @@ Item {
                     icon: `brightness_${(Math.round(value * 6) + 1)}`
                     value: root.brightness
                     onMoved: root.monitor?.setBrightness(value)
+                }
+            }
+        }
+
+        // A Home Assistant player's volume, while the Surface Dial moves it
+        WrappedLoader {
+            shouldBeActive: SurfaceDial.haShowing
+
+            sourceComponent: CustomMouseArea {
+                function onWheel(event: WheelEvent) {
+                    if (event.angleDelta.y !== 0)
+                        SurfaceDial.haStep(event.angleDelta.y > 0 ? 1 : -1);
+                }
+
+                implicitWidth: Tokens.sizes.osd.sliderWidth
+                implicitHeight: Tokens.sizes.osd.sliderHeight
+
+                FilledSlider {
+                    anchors.fill: parent
+
+                    icon: "speaker"
+                    value: SurfaceDial.haVolume
+                    onMoved: SurfaceDial.setHaVolume(value)
                 }
             }
         }
