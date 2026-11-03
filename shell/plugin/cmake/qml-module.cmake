@@ -45,7 +45,8 @@ function(qml_module arg_TARGET)
     install(FILES "${module_qmldir}" DESTINATION "${module_dir}")
     install(FILES "${module_typeinfo}" DESTINATION "${module_dir}")
 
-    target_link_libraries(${arg_TARGET} PRIVATE caelestia-pch Qt::Core Qt::Qml ${arg_LIBRARIES})
+    target_link_libraries(${arg_TARGET} PRIVATE Qt::Core Qt::Qml ${arg_LIBRARIES})
+    target_precompile_headers(${arg_TARGET} REUSE_FROM caelestia-pch)
 
     # Expose headers to other modules as <prefix>/xxx.hpp
     if(arg_INCLUDE_PREFIX)
