@@ -20,7 +20,7 @@ Item {
     required property real sourceVolume
     required property bool sourceMuted
     required property real brightness
-    // Only the Surface Dial's Home Assistant volume (the right bar has the rest)
+    // Only the Surface Dial's Home Assistant level (the right bar has the rest)
     property bool onlyHa
 
     implicitWidth: layout.implicitWidth + Tokens.padding.large + layout.anchors.horizontalCenterOffset * 2
@@ -111,7 +111,8 @@ Item {
             }
         }
 
-        // A Home Assistant player's volume, while the Surface Dial moves it
+        // A Home Assistant entity's level (a light's brightness, a player's
+        // volume...), while the Surface Dial moves it
         WrappedLoader {
             shouldBeActive: SurfaceDial.haShowing
 
@@ -127,9 +128,9 @@ Item {
                 FilledSlider {
                     anchors.fill: parent
 
-                    icon: "speaker"
-                    value: SurfaceDial.haVolume
-                    onMoved: SurfaceDial.setHaVolume(value)
+                    icon: SurfaceDial.haIcon
+                    value: SurfaceDial.haLevel
+                    onMoved: SurfaceDial.setHaLevel(value)
                 }
             }
         }

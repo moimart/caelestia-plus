@@ -17,7 +17,7 @@ Item {
 
     property bool hovered
     readonly property Brightness.Monitor monitor: Brightness.getMonitorForScreen(root.screen)
-    // A Home Assistant player's volume, from the Surface Dial, shows even with
+    // A Home Assistant entity's level, from the Surface Dial, shows even with
     // the right bar's slider there (alone, then)
     readonly property bool shouldBeActive: screenState.osd && Config.osd.enabled && (!rightBarHasVolume || SurfaceDial.haShowing) && !(screenState.utilities && Config.utilities.enabled)
     property real offsetScale: shouldBeActive ? 0 : 1
@@ -86,7 +86,7 @@ Item {
     }
 
     Connections {
-        function onHaVolumeShown(): void {
+        function onHaLevelShown(): void {
             root.show();
         }
 

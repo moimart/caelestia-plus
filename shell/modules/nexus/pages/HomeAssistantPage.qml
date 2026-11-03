@@ -162,62 +162,110 @@ PageBase {
             }
         }
 
-        // The Surface Dial's "Home Assistant volume" mode
+        // Surface Dial modes: an entity's level, turned by the dial
         SectionHeader {
             visible: HomeAssistant.instances.length > 0
             text: Tr.tr("Surface Dial")
         }
 
-        SelectRow {
-            visible: HomeAssistant.instances.length > 1
-            first: true
-            label: Tr.tr("Instance")
-            menuItems: dialInstances.instances
-            active: dialInstances.instances.find(i => i.value === SurfaceDial.haInstance) ?? null
-            onSelected: item => {
-                GlobalConfig.surfaceDial.haInstance = item.value;
-                GlobalConfig.surfaceDial.haEntity = "";
-            }
+        Repeater {
+            model: HomeAssistant.dialControls
 
-            Variants {
-                id: dialInstances
+            ColumnLayout {
+                id: control
 
-                model: HomeAssistant.instances
+                required property var modelData
+                readonly property var domain: SurfaceDial.haDomain(modelData)
+                readonly property var state: HomeAssistant.entity(modelData.instance, modelData.entity)
+                // Temperatures and numbers step in their own units; the rest in percent
+                readonly property real unitStep: domain && state && !["light", "media_player", "cover", "valve", "fan"].includes(modelData.entity.split(".")[0]) ? domain.step(state) : 1
 
-                MenuItem {
-                    required property var modelData
+                Layout.fillWidth: true
+                Layout.bottomMargin: Tokens.spacing.small
+                spacing: Tokens.spacing.extraSmall / 2
 
-                    text: modelData.name
-                    value: modelData.id
+                // To turn another entity, remove this and add that one
+                InfoRow {
+                    first: true
+                    icon: control.domain?.icon ?? "error"
+                    iconColour: control.domain ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3error
+                    label: SurfaceDial.info(`ha:${control.modelData.id}`).name
+                    subtext: control.modelData.entity
+                    value: !control.state ? Tr.tr("Not found") : control.domain?.available && !control.domain.available(control.state) ? Tr.tr("Unavailable now") : control.domain ? `${control.domain.value(control.state)}${control.domain.unit}` : ""
+                }
+
+                SelectRow {
+                    visible: HomeAssistant.instances.length > 1
+                    label: Tr.tr("Instance")
+                    menuItems: instanceItems.instances
+                    active: instanceItems.instances.find(i => i.value === control.modelData.instance) ?? null
+                    onSelected: item => HomeAssistant.updateDialControl(control.modelData.id, {
+                            instance: item.value
+                        })
+
+                    Variants {
+                        id: instanceItems
+
+                        model: HomeAssistant.instances
+
+                        MenuItem {
+                            required property var modelData
+
+                            text: modelData.name
+                            value: modelData.id
+                        }
+                    }
+                }
+
+                TextFieldRow {
+                    label: Tr.tr("Name")
+                    subtext: Tr.tr("In the toast when the dial switches to it")
+                    placeholderText: control.state?.attributes?.friendly_name ?? control.modelData.entity
+                    value: control.modelData.name ?? ""
+                    onEditingFinished: value => HomeAssistant.updateDialControl(control.modelData.id, {
+                            name: value.trim()
+                        })
+                }
+
+                StepperRow {
+                    label: Tr.tr("Step")
+                    subtext: control.domain ? Tr.tr("%1 per step of the dial, in %2").arg(control.domain.what).arg(control.domain.unit || Tr.tr("its units")) : Tr.tr("The dial can't turn this entity")
+                    value: SurfaceDial.stepOf(control.modelData)
+                    from: control.unitStep
+                    to: control.unitStep * 50
+                    stepSize: control.unitStep
+                    onMoved: v => HomeAssistant.updateDialControl(control.modelData.id, {
+                            step: v
+                        })
+                }
+
+                RowButton {
+                    Layout.fillWidth: true
+                    last: true
+                    icon: "delete"
+                    text: Tr.tr("Remove")
+                    subtext: Tr.tr("The dial stops offering it")
+                    onClicked: {
+                        const mode = `ha:${control.modelData.id}`;
+                        GlobalConfig.surfaceDial.modes = GlobalConfig.surfaceDial.modes.filter(m => m !== mode);
+                        HomeAssistant.removeDialControl(control.modelData.id);
+                    }
                 }
             }
         }
 
         HaEntityPicker {
             visible: HomeAssistant.instances.length > 0
-            first: HomeAssistant.instances.length < 2
-            last: false
-            label: Tr.tr("Media player")
-            instance: SurfaceDial.haInstance
-            domains: ["media_player"]
-            value: GlobalConfig.surfaceDial.haEntity
-            onPicked: id => {
-                GlobalConfig.surfaceDial.haEntity = id;
-                // Picking one is wanting the mode
-                if (!GlobalConfig.surfaceDial.modes.includes("haVolume"))
-                    GlobalConfig.surfaceDial.modes = SurfaceDial.allModes.filter(m => m === "haVolume" || GlobalConfig.surfaceDial.modes.includes(m));
-            }
-        }
-
-        StepperRow {
-            visible: HomeAssistant.instances.length > 0
+            first: true
             last: true
-            label: Tr.tr("Volume step")
-            subtext: GlobalConfig.surfaceDial.haEntity ? Tr.tr("Percent per step of the dial") : Tr.tr("Pick a player for the dial's Home Assistant volume mode")
-            value: GlobalConfig.surfaceDial.haStep
-            from: 1
-            to: 20
-            onMoved: v => GlobalConfig.surfaceDial.haStep = v
+            label: Tr.tr("Add a dial control")
+            instance: HomeAssistant.defaultId
+            domains: SurfaceDial.haSupportedDomains
+            value: ""
+            onPicked: id => {
+                const mode = `ha:${HomeAssistant.addDialControl(HomeAssistant.defaultId, id)}`;
+                GlobalConfig.surfaceDial.modes = SurfaceDial.allModes.filter(m => m === mode || GlobalConfig.surfaceDial.modes.includes(m));
+            }
         }
 
         SectionHeader {

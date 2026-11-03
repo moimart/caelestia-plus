@@ -14,8 +14,11 @@ import qs.utils
 //
 // The instances are in ~/.config/caelestia/home-assistant.json:
 //   { "instances": [{ "id", "name", "url", "tokenFile" }],
-//     "shortcuts": [{ "id", "instance", "entity", "name", "icon" }] }
-// (shortcuts are buttons for the right bar: they act like tapping the entity)
+//     "shortcuts": [{ "id", "instance", "entity", "name", "icon" }],
+//     "dialControls": [{ "id", "instance", "entity", "name", "step" }] }
+// (shortcuts are buttons for the right bar: they act like tapping the entity;
+// dial controls are Surface Dial modes that turn an entity's level, see
+// services/SurfaceDial.qml)
 // Tokens stay in their files (chmod 600); only the bridge reads them.
 // Settings → Home Assistant edits the instances, Panels → Right bar the shortcuts.
 Singleton {
@@ -29,6 +32,9 @@ Singleton {
     property var instances: []
     // [{ id, instance, entity, name, icon }]: the right bar's buttons for them
     property var shortcuts: []
+    // [{ id, instance, entity, name, step }]: Surface Dial modes (step 0: the
+    // entity's own, see SurfaceDial.haControl)
+    property var dialControls: []
     property bool loaded
     // Only when home-assistant.json doesn't exist yet: carry lock-ha.json over
     property bool migrate
@@ -147,7 +153,8 @@ Singleton {
     function writeConfig(): void {
         configFile.setText(JSON.stringify({
             instances: instances,
-            shortcuts: shortcuts
+            shortcuts: shortcuts,
+            dialControls: dialControls
         }, null, 4) + "\n");
     }
 
@@ -170,6 +177,35 @@ Singleton {
 
     function removeShortcut(id: string): void {
         shortcuts = shortcuts.filter(s => s.id !== id);
+        writeConfig();
+    }
+
+    // A Surface Dial mode for an entity; its id
+    function addDialControl(instanceId: string, entityId: string): string {
+        const base = entityId.replace(/[^a-z0-9]+/g, "-");
+        let id = base, n = 2;
+        while (dialControls.some(c => c.id === id))
+            id = `${base}-${n++}`;
+        dialControls = [...dialControls,
+            {
+                id: id,
+                instance: instanceId || defaultId,
+                entity: entityId,
+                name: "",
+                step: 0
+            }
+        ];
+        writeConfig();
+        return id;
+    }
+
+    function updateDialControl(id: string, changes: var): void {
+        dialControls = dialControls.map(c => c.id === id ? Object.assign({}, c, changes) : c);
+        writeConfig();
+    }
+
+    function removeDialControl(id: string): void {
+        dialControls = dialControls.filter(c => c.id !== id);
         writeConfig();
     }
 
@@ -287,6 +323,7 @@ Singleton {
                 const data = JSON.parse(text());
                 root.instances = data.instances ?? [];
                 root.shortcuts = data.shortcuts ?? [];
+                root.dialControls = data.dialControls ?? [];
             } catch (e) {
                 console.warn(`HomeAssistant: bad home-assistant.json: ${e}`);
             }

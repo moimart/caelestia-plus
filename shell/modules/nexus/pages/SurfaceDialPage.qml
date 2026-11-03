@@ -54,7 +54,7 @@ PageBase {
 
                     MaterialIcon {
                         anchors.centerIn: parent
-                        text: SurfaceDial.connected ? (SurfaceDial.modeInfo[SurfaceDial.mode]?.icon ?? "adjust") : "adjust"
+                        text: SurfaceDial.connected && SurfaceDial.mode ? SurfaceDial.info(SurfaceDial.mode).icon : "adjust"
                         color: SurfaceDial.connected ? Colours.palette.m3onPrimaryContainer : Colours.palette.m3onSurfaceVariant
                         fill: 1
                         fontStyle: Tokens.font.icon.large
@@ -67,7 +67,7 @@ PageBase {
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: !root.cfg.enabled ? Tr.tr("Off") : SurfaceDial.connected ? Tr.tr("Connected · %1").arg(SurfaceDial.modeInfo[SurfaceDial.mode]?.name ?? Tr.tr("no modes")) : Tr.tr("Not connected")
+                        text: !root.cfg.enabled ? Tr.tr("Off") : SurfaceDial.connected ? Tr.tr("Connected · %1").arg(SurfaceDial.mode ? SurfaceDial.info(SurfaceDial.mode).name : Tr.tr("no modes")) : Tr.tr("Not connected")
                         font: Tokens.font.title.medium
                         elide: Text.ElideRight
                     }
@@ -111,25 +111,23 @@ PageBase {
             model: SurfaceDial.allModes
 
             ToggleRow {
-                id: modeRow
-
                 required property string modelData
                 required property int index
-                readonly property var subtexts: ({
-                        volume: Tr.tr("The system volume"),
-                        zoom: Tr.tr("Hyprland's cursor zoom"),
-                        haVolume: root.cfg.haEntity ? Tr.tr("%1, in Home Assistant").arg(SurfaceDial.haName || root.cfg.haEntity) : Tr.tr("Pick a media player in Home Assistant's settings first"),
-                        appScroll: Tr.tr("Scrolls whatever is under the pointer"),
-                        layoutScroll: Tr.tr("Moves through the columns of Hyprland's scrolling layout")
-                    })
+                readonly property var info: SurfaceDial.info(modelData)
 
                 first: index === 0
-                last: index === SurfaceDial.allModes.length - 1
-                text: modelData === "haVolume" ? Tr.tr("Home Assistant volume") : SurfaceDial.modeInfo[modelData].name
-                subtext: subtexts[modelData]
+                text: info.name
+                subtext: info.description
                 checked: root.cfg.modes.includes(modelData)
                 onToggled: root.setMode(modelData, checked)
             }
+        }
+
+        InfoRow {
+            last: true
+            icon: "home_iot_device"
+            label: Tr.tr("Home Assistant")
+            subtext: Tr.tr("Any light, player, cover, fan, thermostat or number can be a mode: add them in Home Assistant's settings")
         }
 
         SectionHeader {

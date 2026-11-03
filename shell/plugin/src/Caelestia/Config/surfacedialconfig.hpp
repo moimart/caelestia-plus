@@ -17,11 +17,13 @@ class SurfaceDialConfig : public settings::ObjectNode {
 
     CONFIG_PROPERTY(bool, enabled, true)
     // The modes a press cycles through, in order: "volume" (system volume),
-    // "zoom" (Hyprland's cursor zoom), "haVolume" (a Home Assistant media
-    // player's volume, see haEntity), "appScroll" (scrolls what's under the
-    // pointer), "layoutScroll" (Hyprland's scrolling layout, a column at a time)
+    // "zoom" (Hyprland's cursor zoom), "appScroll" (scrolls what's under the
+    // pointer), "layoutScroll" (Hyprland's scrolling layout, a column at a
+    // time), and "ha:<id>" for each Home Assistant dial control (the entities
+    // in home-assistant.json's dialControls: a light's brightness, a player's
+    // volume, a cover's position...; Nexus → Home Assistant adds them)
     CONFIG_PROPERTY(QStringList, modes,
-        (QStringList { u"volume"_s, u"zoom"_s, u"haVolume"_s, u"appScroll"_s, u"layoutScroll"_s }))
+        (QStringList { u"volume"_s, u"zoom"_s, u"appScroll"_s, u"layoutScroll"_s }))
     // A toast when the mode changes, and when the dial connects or goes away
     CONFIG_PROPERTY(bool, toasts, true)
     // Percent per step
@@ -32,11 +34,6 @@ class SurfaceDialConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(int, scrollSpeed, 1)
     // Scrolling layout: 0 moves a column at a time, more moves this many pixels
     CONFIG_PROPERTY(int, layoutPixels, 0)
-    // The Home Assistant media player for "haVolume" (instance id, empty for the
-    // default one), and its volume step in percent
-    CONFIG_PROPERTY(QString, haInstance, u""_s)
-    CONFIG_PROPERTY(QString, haEntity, u""_s)
-    CONFIG_PROPERTY(int, haStep, 2)
 };
 
 } // namespace caelestia::config
