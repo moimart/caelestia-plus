@@ -97,7 +97,15 @@ Singleton {
         }
         return best;
     }
-    readonly property string colour: preset.seed
+    // Chrome builds its whole palette from the seed's colourfulness, and its
+    // blue preset is far more vivid than the rest (OKLCH chroma 0.16 against
+    // 0.07-0.10), which made a blue scheme's toolbar glaring. The seed keeps
+    // its hue and lightness but is capped to the other presets' chroma
+    readonly property real maxChroma: 0.08
+    readonly property string colour: {
+        const o = oklch(Qt.color(preset.seed));
+        return o.c <= maxChroma ? preset.seed : hexOklch(o.l, maxChroma, o.h);
+    }
     readonly property string text: JSON.stringify({
         BrowserThemeColor: colour
     }, null, 4) + "\n"
@@ -125,6 +133,21 @@ Singleton {
             c: Math.hypot(A, B),
             h: (Math.atan2(B, A) * 180 / Math.PI + 360) % 360
         };
+    }
+
+    // OKLCH back to an sRGB hex colour, clipped to the gamut
+    function hexOklch(L: real, C: real, H: real): string {
+        const A = C * Math.cos(H * Math.PI / 180);
+        const B = C * Math.sin(H * Math.PI / 180);
+        const l = Math.pow(L + 0.3963377774 * A + 0.2158037573 * B, 3);
+        const m = Math.pow(L - 0.1055613458 * A - 0.0638541728 * B, 3);
+        const s = Math.pow(L - 0.0894841775 * A - 1.291485548 * B, 3);
+        const lin = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+        return "#" + lin.map(v => {
+            v = Math.max(0, Math.min(1, v));
+            v = v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+            return Math.round(v * 255).toString(16).padStart(2, "0");
+        }).join("");
     }
 
     Instantiator {
