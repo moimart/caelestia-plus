@@ -461,7 +461,6 @@ git repo: `caelestia-plus-setup --overlay <git URL>` clones it.
 CI builds, signs and publishes the packages to
 [caelestia-plus-packages](https://github.com/moimart/caelestia-plus-packages)
 on every push. To work on it: [DEVELOPMENT.md](docs/DEVELOPMENT.md).
-[PLAN.md](PLAN.md) has the design and how it came together.
 
 ## Credits
 

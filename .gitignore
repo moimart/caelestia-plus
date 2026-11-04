@@ -2,3 +2,4 @@ pkg/src/
 pkg/pkg/
 pkg/*.pkg.tar.zst
 __pycache__/
+PLAN.md
