@@ -40,7 +40,9 @@ PageBase {
                 opacity: modelData ? 1 : 0
                 enabled: modelData
 
-                source: String(modelData?.path ?? "")
+                // A video shows its poster frame, not the video
+                video: !!modelData && Wallpapers.isVideo(modelData.path)
+                source: video ? Posters.get(modelData.path)?.path ?? "" : String(modelData?.path ?? "")
                 text: modelData?.name ?? ""
                 onClicked: {
                     Wallpapers.setWallpaper(modelData.path);

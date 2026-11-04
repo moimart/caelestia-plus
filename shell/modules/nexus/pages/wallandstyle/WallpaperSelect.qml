@@ -44,9 +44,9 @@ PageBase {
                 FileDialog {
                     id: browseDialog
 
-                    title: Tr.tr("Select an image")
-                    filterLabel: Tr.tr("Image files")
-                    filters: Images.validImageExtensions
+                    title: Tr.tr("Select an image or a video")
+                    filterLabel: Tr.tr("Images and videos")
+                    filters: [...Images.validImageExtensions, ...Wallpapers.videoExtensions]
                     onAccepted: path => {
                         Wallpapers.setWallpaper(path);
                         root.nState.closeSubPage();
@@ -82,6 +82,53 @@ PageBase {
             }
         }
 
+        // Video wallpapers (paths.videoWallpaperDir), each as its poster frame:
+        // no video plays here
+        StyledText {
+            Layout.topMargin: Tokens.spacing.large
+            visible: videoWalls.count > 0
+            text: Tr.tr("Video wallpapers")
+            font: Tokens.font.title.small
+        }
+
+        GridLayout {
+            Layout.fillWidth: true
+            visible: videoWalls.count > 0
+
+            columns: Config.nexus.wallpapersPerRow
+            rowSpacing: Tokens.spacing.medium
+            columnSpacing: Tokens.spacing.large
+
+            Repeater {
+                id: videoWalls
+
+                model: {
+                    const list = Wallpapers.list.filter(w => Wallpapers.isVideo(w.path)).sort((a, b) => a.name.localeCompare(b.name));
+                    if (list.length === 0)
+                        return [];
+                    while (list.length % Config.nexus.wallpapersPerRow !== 0 && list.length < Config.nexus.wallpapersPerRow)
+                        list.push(null);
+                    return list;
+                }
+
+                WallItem {
+                    required property FileSystemEntry modelData
+
+                    // Empty placeholders for sizing
+                    opacity: modelData ? 1 : 0
+                    enabled: modelData
+
+                    video: true
+                    source: modelData ? Posters.get(modelData.path)?.path ?? "" : ""
+                    text: modelData ? modelData.name.replace(/\.[^.]+$/, "") : ""
+                    onClicked: {
+                        Wallpapers.setWallpaper(modelData.path);
+                        root.nState.closeSubPage();
+                    }
+                }
+            }
+        }
+
         StyledText {
             Layout.topMargin: Tokens.spacing.large
             text: Tr.tr("Local wallpapers")
@@ -105,6 +152,9 @@ PageBase {
                     const categories = {};
                     const list = [];
                     for (const w of walls) {
+                        // Videos have their own section below
+                        if (Wallpapers.isVideo(w.path))
+                            continue;
                         if (w.parentDir !== baseDir) {
                             const category = Wallpapers.getCategoryFor(w);
                             if (category && (!(category in categories) || categories[category].name.localeCompare(w.name) > 0))

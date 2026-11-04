@@ -16,6 +16,8 @@ Item {
     property alias radius: imgWrapper.radius
     property alias imgHeight: imgWrapper.implicitHeight
     property bool fillLabel: true
+    // A video wallpaper: source is its poster frame, and it's marked as a video
+    property bool video
 
     signal clicked
 
@@ -70,6 +72,27 @@ Item {
 
                 anchors.fill: parent
                 playing: stateLayer.containsMouse
+            }
+
+            // What makes it a video wallpaper, as only its poster shows here
+            StyledRect {
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.margins: Tokens.padding.small
+                visible: root.video
+                implicitWidth: videoIcon.implicitWidth + Tokens.padding.small * 2
+                implicitHeight: implicitWidth
+                radius: Tokens.rounding.full
+                color: Qt.alpha(Colours.palette.m3surface, 0.8)
+
+                MaterialIcon {
+                    id: videoIcon
+
+                    anchors.centerIn: parent
+                    text: "movie"
+                    color: Colours.palette.m3onSurface
+                    fontStyle: Tokens.font.icon.small
+                }
             }
         }
 
