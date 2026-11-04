@@ -48,6 +48,15 @@ desktop, above the wallpaper:
 - **The editor** (**Super+Ctrl+W**): drag widgets to move them, drag a corner
   to resize, add more from the palette. Each widget's settings are a form in
   Settings → Plugins.
+- **Performance dials**: the CPU, GPU, memory and storage gauges of the
+  dashboard's Performance tab, as widgets. Put them on the desktop at any
+  size, or **inside the left or right bar**: in the editor each bar has a dock
+  along its edge, so drag a dial onto it (and along it to reorder, or back out
+  onto the desktop), or pick the bar in the dial's settings. Each one can show
+  its percentage or only its ring; storage can watch any disk. They cost next
+  to nothing: their readings only run while a dial shows them, and they don't
+  animate between readings unless you ask (four in a bar: under 1% of one
+  core for the whole shell).
 - **Home Assistant widgets**: switches, buttons, sensors, cameras and
   dashboard cards ([below](#home-assistant)).
 - **Your own**: a widget is a folder with a small manifest and a QML file, in
@@ -56,6 +65,13 @@ desktop, above the wallpaper:
   a working template.
 
 <img src="shell/docs/screenshots/widgets-editor.jpg" alt="The widget editor with the eyes and daruma widgets" width="70%">
+
+<table>
+<tr>
+<td width="63%" valign="top"><img src="shell/docs/screenshots/perf-dials.jpg" alt="The four performance dials on the desktop (memory without its percentage), and the same four, small, in the right bar"></td>
+<td width="37%" valign="top"><img src="shell/docs/screenshots/perf-dials-editor.jpg" alt="The widget editor: the right bar's dock holding the dials, beside the desktop ones"></td>
+</tr>
+</table>
 
 ### Camera
 
@@ -200,12 +216,33 @@ instead, read from either:
 
 Machines with their own sensors keep using them.
 
+### Surface Dial
+
+<img src="shell/docs/screenshots/surface-dial.jpg" alt="Settings → Surface Dial: its state, modes and steps" width="60%">
+
+The Microsoft Surface Dial, read by the shell itself: no separate daemon, no
+app of its own. Press it to change mode, turn it to act; the mode shows as a
+toast, and levels in the shell's own OSD.
+
+- **Modes**: the system volume, Hyprland's cursor zoom, scrolling whatever is
+  under the pointer, and moving through the columns of the scrolling layout.
+- **Any Home Assistant entity with a level** can be a mode too: a light's
+  brightness, a player's volume, a cover's position, a fan's speed, a
+  thermostat's temperature, a number. Add them in Settings → Home Assistant;
+  each gets its own name and step.
+- **Settings → Surface Dial**: which modes a press cycles through, and how far
+  each step goes. It tells a sleeping dial from one that was never paired.
+- **Free while idle**: it's event driven, and the shell watches its Home
+  Assistant entities only while the dial is awake. A udev rule gives your
+  session the dial (pair it once in Bluetooth settings).
+
 ### Chrome in your colours
 
 Settings → Wallpaper & style → **Let Chrome follow the colour scheme**: Google
 Chrome and Chromium take the nearest of Chrome's own colours (its Customize
 Chrome presets, matched by hue) and change with the scheme, live, through their
-`BrowserThemeColor` policy. It asks for your password once to make the
+`BrowserThemeColor` policy, toned down so a vivid scheme doesn't give a
+glaring browser. It asks for your password once to make the
 policy file; Chrome's menu then says it's managed, and its own colour picker is
 locked (`sudo …/assets/chrome-theme-setup.sh --undo` gives it back).
 
@@ -339,7 +376,8 @@ Around the shell, from the Hyprland config and app configs:
   password manager saving a passkey, say), at the size they asked for, instead
   of opening as full tiled windows.
 - **kitty with a CRT shader**, phase-locked to the wall clock so every window
-  flickers in sync (`kitty-crt`).
+  flickers in sync (`kitty-crt`). Only the focused window animates: the rest
+  keep the look but sit still, costing nothing.
 - fish with starship, eza and handy git abbreviations; foot and ghostty
   (with an amber CRT shader) as alternatives.
 - A download sorter and AppImage launcher entries, as user services.

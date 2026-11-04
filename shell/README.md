@@ -19,6 +19,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Keyboard shortcuts panel](#keyboard-shortcuts-panel)
 - [Displays](#displays)
 - [The right bar](#the-right-bar)
+- [Surface Dial](#surface-dial)
 - [Launchpad](#launchpad)
 - [Emoji picker](#emoji-picker)
 - [Window cards](#window-cards)
@@ -56,6 +57,15 @@ widget to move it, drag a corner to resize it, add more from the palette.
   abstract styles (orbit, almond, dots). They blink, and half-close when the
   pointer rests.
 - **Daruma**: the winking daruma, its painted eye following the pointer.
+- **Performance dials**: CPU, GPU, memory and storage, as in the dashboard's
+  Performance tab. On the desktop at any size, or inside the left or right
+  bar: the editor has a dock along each bar's edge to drag them onto (and
+  along, to reorder, or back out); their settings have a Where row too. Each
+  can hide its percentage; storage can follow any mount point. Their services
+  only poll while a dial shows them, and they don't animate between readings
+  unless asked, as every frame of an animation redraws the whole window.
+
+<img src="docs/screenshots/perf-dials.jpg" alt="The performance dials on the desktop and in the right bar" width="63%"> <img src="docs/screenshots/perf-dials-editor.jpg" alt="The editor, with the right bar's dock" width="35%">
 
 Widgets are a folder with a small manifest and a QML file; drop your own in
 `~/.config/caelestia/plugins/widgets/`. [PLUGINS.md](PLUGINS.md) explains how to
@@ -131,6 +141,29 @@ layout: the bar and its popouts on the right, the right bar on the left, the
 sidebar, notifications, session menu, volume popup and toasts from the left
 edge, and the reserved space following. Contents keep their
 order (it's the panels that swap, not the text direction).
+
+## Surface Dial
+
+<img src="docs/screenshots/surface-dial.jpg" alt="Settings → Surface Dial" width="60%">
+
+The Microsoft Surface Dial, in the shell's own process
+(`plugin/src/Caelestia/Services/surfacedial.cpp` reads it from evdev and
+grabs it; `services/SurfaceDial.qml` decides what it does). Press to cycle
+modes, turn to act; toasts for the mode, the OSD for levels.
+
+- **Built-in modes**: volume, Hyprland's cursor zoom, scroll what's under the
+  pointer (a virtual wheel through uinput), scroll the layout's columns.
+- **Home Assistant modes**: any light, media player, cover, valve, fan,
+  thermostat, water heater, humidifier, number or input number, added in
+  Settings → Home Assistant (`dialControls` in `home-assistant.json`). Turning
+  sets its level, snapped to the step; the OSD shows it.
+- **Settings → Surface Dial** (`surfaceDial` in `shell.json`): on/off, toasts,
+  the modes and the steps. The page says whether the dial is connected,
+  asleep, or not paired at all.
+- **Cheap**: inotify finds the dial when it wakes, its events are read as they
+  come, and its Home Assistant entities are only watched while it's awake.
+  Access is from `assets/udev/70-caelestia-surface-dial.rules` (installed by
+  the package).
 
 ## Launchpad
 
