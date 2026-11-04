@@ -8,7 +8,7 @@
 #   tools/dev.sh hypr on|off|status
 #   tools/dev.sh check [--all]     # format and lint what you changed
 #   tools/dev.sh build             # the packages, from HEAD, incrementally
-#   tools/dev.sh install           # sudo pacman -U the last build, restart the shell
+#   tools/dev.sh install           # pacman -U the last build as root, restart the shell
 #   tools/dev.sh status
 set -euo pipefail
 
@@ -307,6 +307,21 @@ build() {
     note "built $ver: tools/dev.sh install"
 }
 
+# Runs a command as root: sudo at a terminal (or with sudo's password still
+# cached), otherwise pkexec, which asks in a dialog on the desktop (a "! ..."
+# command from Claude Code, a launcher or a keybind has no terminal for
+# sudo to ask in)
+as_root() {
+    if [ -t 0 ] || sudo -n true 2> /dev/null; then
+        sudo "$@"
+    elif command -v pkexec > /dev/null; then
+        note "no terminal for sudo: asking for your password in a dialog"
+        pkexec "$@"
+    else
+        die "no terminal to ask for your password in, and no pkexec: run this in a terminal"
+    fi
+}
+
 install_pkgs() {
     [ -f "$cache/last" ] || die "nothing built yet: tools/dev.sh build"
     local ver
@@ -316,9 +331,9 @@ install_pkgs() {
     # The cli used to come from the AUR: pacman -U won't swap it for ours
     # unattended (it asks), so it goes first, keeping what needs it
     if pacman -Qq caelestia-cli > /dev/null 2>&1 && ! pacman -Qq caelestia-cli-moimart > /dev/null 2>&1; then
-        sudo pacman -Rdd --noconfirm caelestia-cli
+        as_root pacman -Rdd --noconfirm caelestia-cli
     fi
-    sudo pacman -U --noconfirm "$cache"/out/*-"$ver"-*.pkg.tar.zst
+    as_root pacman -U --noconfirm "$cache"/out/*-"$ver"-*.pkg.tar.zst
     if [ -L "$link" ]; then
         note "installed; the shell still runs the checkout (tools/dev.sh shell off to use the package)"
     else
