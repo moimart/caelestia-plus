@@ -32,6 +32,10 @@ PageBase {
 
     title: Tr.tr("Home Assistant")
 
+    // The dial controls below show their entities' values
+    Component.onCompleted: SurfaceDial.viewers++
+    Component.onDestruction: SurfaceDial.viewers--
+
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top

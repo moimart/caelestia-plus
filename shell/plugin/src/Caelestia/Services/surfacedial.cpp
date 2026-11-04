@@ -8,13 +8,14 @@
 #include <qsocketnotifier.h>
 #include <qtimer.h>
 
-#include <cerrno>
-#include <cstring>
 #include <fcntl.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
+#include <cerrno>
+#include <cstring>
 
 Q_LOGGING_CATEGORY(lcDial, "caelestia.services.surfacedial", QtInfoMsg)
 
@@ -223,7 +224,7 @@ bool SurfaceDial::ensureWheel() {
         return false;
     }
 
-    uinput_setup setup {};
+    uinput_setup setup{};
     setup.id.bustype = BUS_VIRTUAL;
     setup.id.vendor = 0x045e; // Microsoft, like the dial
     setup.id.product = 0x091b;
@@ -249,7 +250,7 @@ void SurfaceDial::scroll(int notches) {
     }
 
     const auto event = [](unsigned short type, unsigned short code, int value) {
-        input_event ev {};
+        input_event ev{};
         ev.type = type;
         ev.code = code;
         ev.value = value;

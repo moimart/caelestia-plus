@@ -35,14 +35,14 @@ Item {
 
         // Speaker volume
         CustomMouseArea {
-            visible: !root.onlyHa
-
             function onWheel(event: WheelEvent) {
                 if (event.angleDelta.y > 0)
                     Audio.incrementVolume();
                 else if (event.angleDelta.y < 0)
                     Audio.decrementVolume();
             }
+
+            visible: !root.onlyHa
 
             implicitWidth: Tokens.sizes.osd.sliderWidth
             implicitHeight: Tokens.sizes.osd.sliderHeight

@@ -22,8 +22,7 @@ class SurfaceDialConfig : public settings::ObjectNode {
     // time), and "ha:<id>" for each Home Assistant dial control (the entities
     // in home-assistant.json's dialControls: a light's brightness, a player's
     // volume, a cover's position...; Nexus → Home Assistant adds them)
-    CONFIG_PROPERTY(QStringList, modes,
-        (QStringList { u"volume"_s, u"zoom"_s, u"appScroll"_s, u"layoutScroll"_s }))
+    CONFIG_PROPERTY(QStringList, modes, (QStringList{ u"volume"_s, u"zoom"_s, u"appScroll"_s, u"layoutScroll"_s }))
     // A toast when the mode changes, and when the dial connects or goes away
     CONFIG_PROPERTY(bool, toasts, true)
     // Percent per step

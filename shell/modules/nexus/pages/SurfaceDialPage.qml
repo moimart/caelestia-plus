@@ -25,6 +25,10 @@ PageBase {
 
     title: Tr.tr("Surface Dial")
 
+    // Home Assistant modes are named after their entities
+    Component.onCompleted: SurfaceDial.viewers++
+    Component.onDestruction: SurfaceDial.viewers--
+
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
@@ -67,14 +71,24 @@ PageBase {
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: !root.cfg.enabled ? Tr.tr("Off") : SurfaceDial.connected ? Tr.tr("Connected · %1").arg(SurfaceDial.mode ? SurfaceDial.info(SurfaceDial.mode).name : Tr.tr("no modes")) : Tr.tr("Not connected")
+                        text: !root.cfg.enabled ? Tr.tr("Off") : SurfaceDial.connected ? Tr.tr("Connected · %1").arg(SurfaceDial.mode ? SurfaceDial.info(SurfaceDial.mode).name : Tr.tr("no modes")) : SurfaceDial.paired ? Tr.tr("Asleep") : Tr.tr("No Surface Dial paired")
                         font: Tokens.font.title.medium
                         elide: Text.ElideRight
                     }
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: SurfaceDial.error || (SurfaceDial.connected ? Tr.tr("Press the dial to change mode, turn it to act.") : Tr.tr("It sleeps when it's not used: turn it or press it to wake it. Pair it once in Connected devices."))
+                        text: {
+                            if (SurfaceDial.error)
+                                return SurfaceDial.error;
+                            if (SurfaceDial.connected)
+                                return Tr.tr("Press the dial to change mode, turn it to act.");
+                            if (SurfaceDial.paired)
+                                return Tr.tr("It sleeps when it's not used: turn it or press it to wake it.");
+                            if (!SurfaceDial.bluetoothOn)
+                                return Tr.tr("Bluetooth is off. Turn it on, then pair the dial in Bluetooth settings.");
+                            return Tr.tr("Pair it in Bluetooth settings: hold the button by its battery until the light blinks.");
+                        }
                         color: SurfaceDial.error ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
                         font: Tokens.font.body.small
                         wrapMode: Text.WordWrap

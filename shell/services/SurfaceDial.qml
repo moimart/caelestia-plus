@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Bluetooth
 import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
@@ -27,7 +28,17 @@ Singleton {
     readonly property bool connected: DialDevice.connected
     readonly property string error: DialDevice.error
 
+    // Paired over Bluetooth, awake or not: without one, there's nothing to wait for
+    readonly property bool paired: Bluetooth.devices.values.some(d => d.paired && d.name.startsWith("Surface Dial"))
+
+    readonly property bool bluetoothOn: Bluetooth.defaultAdapter?.enabled ?? false
+
+    // Settings pages showing the controls' current values keep them live
+    // while open, as the dial does only while it's awake
+    property int viewers
+
     readonly property list<string> builtinModes: ["volume", "zoom", "appScroll", "layoutScroll"]
+
     readonly property var builtinInfo: ({
             volume: {
                 name: Tr.tr("Volume"),
@@ -199,35 +210,61 @@ Singleton {
                     ]
             }
         })
+
     readonly property list<string> haSupportedDomains: Object.keys(haDomains)
 
     // Every mode there is, in their usual order: Home Assistant ones after zoom
     readonly property list<string> allModes: ["volume", "zoom", ...HomeAssistant.dialControls.map(c => `ha:${c.id}`), "appScroll", "layoutScroll"]
+
     // The modes a press cycles through
     readonly property list<string> modes: cfg.modes.filter(m => allModes.includes(m))
+
     property int index
     readonly property string mode: modes.length ? modes[index % modes.length] : ""
 
     // The Home Assistant control the current mode is, or null
     readonly property var haControl: mode.startsWith("ha:") ? controlFor(mode) : null
+
     readonly property var haState: haControl ? HomeAssistant.entity(haControl.instance, haControl.entity) : null
 
     // What the current control is at, as far as we know: what we last asked
     // for, until Home Assistant reports back. In its units, and 0-1 for the OSD
     property real haValue
+
     property bool haPending
+
     readonly property real haLevel: {
         const r = haState && haDomain(haControl) ? haDomain(haControl).range(haState) : [0, 1];
         return r[1] > r[0] ? (haValue - r[0]) / (r[1] - r[0]) : 0;
     }
+
     // The OSD shows the control's level for a moment after the dial moves it
     readonly property bool haShowing: haShow.running
+
     readonly property string haIcon: haControl ? (haDomain(haControl)?.icon ?? "home_iot_device") : "home_iot_device"
-    signal haLevelShown
 
     // Rotation since the last step: steps are taken at most every 120 ms, one
     // per tick whatever the speed, as the dial sends many small events
     property int pending
+
+    readonly property string dialLabel: Tr.tr("Surface Dial")
+
+    // Keep the controls in the cycle live while the dial is awake (or their
+    // settings are open), one watch per instance
+    readonly property var haWatched: {
+        const out = {};
+        if (cfg.enabled && (connected || viewers > 0))
+            for (const m of modes) {
+                const c = controlFor(m);
+                if (c?.entity)
+                    (out[c.instance] = out[c.instance] ?? []).push(c.entity);
+            }
+        return out;
+    }
+
+    property var haWatchedBefore: ({})
+
+    signal haLevelShown
 
     function controlFor(mode: string): var {
         const id = mode.slice(3);
@@ -352,7 +389,14 @@ Singleton {
         Toaster.toast(title, dialLabel, icon, type ?? Toast.Info, 1500);
     }
 
-    readonly property string dialLabel: Tr.tr("Surface Dial")
+    function syncWatches(): void {
+        for (const inst of Object.keys(haWatchedBefore))
+            if (!(inst in haWatched))
+                HomeAssistant.unwatch("surface-dial", inst);
+        for (const inst of Object.keys(haWatched))
+            HomeAssistant.watch("surface-dial", inst, haWatched[inst]);
+        haWatchedBefore = haWatched;
+    }
 
     onModesChanged: {
         if (index >= modes.length)
@@ -371,29 +415,7 @@ Singleton {
             syncHaValue();
     }
 
-    // Keep the controls in the cycle live, one watch per instance
-    readonly property var haWatched: {
-        const out = {};
-        if (cfg.enabled)
-            for (const m of modes) {
-                const c = controlFor(m);
-                if (c?.entity)
-                    (out[c.instance] = out[c.instance] ?? []).push(c.entity);
-            }
-        return out;
-    }
-    property var haWatchedBefore: ({})
-
     onHaWatchedChanged: syncWatches()
-
-    function syncWatches(): void {
-        for (const inst of Object.keys(haWatchedBefore))
-            if (!(inst in haWatched))
-                HomeAssistant.unwatch("surface-dial", inst);
-        for (const inst of Object.keys(haWatched))
-            HomeAssistant.watch("surface-dial", inst, haWatched[inst]);
-        haWatchedBefore = haWatched;
-    }
 
     // Before dial controls, one media player could be the "haVolume" mode
     Component.onCompleted: {
