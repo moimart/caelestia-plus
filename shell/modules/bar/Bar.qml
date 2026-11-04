@@ -8,6 +8,7 @@ import Quickshell
 import Caelestia.Config
 import qs.components
 import qs.services
+import qs.modules.widgets as WidgetsModule
 import qs.modules.bar.popouts as BarPopouts
 
 ColumnLayout {
@@ -129,7 +130,20 @@ ColumnLayout {
         id: repeater
 
         model: ScriptModel {
-            values: root.Config.bar.entries.values.filter(e => e.enabled)
+            // Widgets docked in the bar go where "widgets" is; a list from
+            // before there was one gets it before the tray (or at the end)
+            values: {
+                const entries = root.Config.bar.entries.values;
+                const shown = entries.filter(e => e.enabled);
+                if (entries.some(e => e.id === "widgets"))
+                    return shown;
+                const at = shown.findIndex(e => e.id === "tray");
+                const slot = {
+                    id: "widgets",
+                    enabled: true
+                };
+                return at < 0 ? [...shown, slot] : [...shown.slice(0, at), slot, ...shown.slice(at)];
+            }
         }
 
         DelegateChooser {
@@ -166,6 +180,16 @@ ColumnLayout {
                         objectName: "taskbarActiveWindow"
                         bar: root
                         monitor: Brightness.getMonitorForScreen(root.screen)
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "widgets"
+                delegate: EntryWrapper {
+                    WidgetsModule.BarWidgets {
+                        objectName: "taskbarWidgets"
+                        screen: root.screen
+                        side: "left"
                     }
                 }
             }

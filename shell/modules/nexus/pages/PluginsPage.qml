@@ -170,7 +170,7 @@ PageBase {
                 last: index === Widgets.instances.length - 1
                 icon: plugin?.icon ?? "widgets"
                 text: modelData.settings?.name || plugin?.name || modelData.type
-                subtext: [plugin?.name, modelData.settings?.entity, modelData.screen].filter(s => s && s !== text).join(" · ")
+                subtext: [plugin?.name, modelData.settings?.entity, modelData.screen, modelData.dock === "left" ? Tr.tr("Left bar") : modelData.dock === "right" ? Tr.tr("Right bar") : ""].filter(s => s && s !== text).join(" · ")
                 onClicked: {
                     Widgets.settingsUid = modelData.uid;
                     root.nState.openSubPage(1);

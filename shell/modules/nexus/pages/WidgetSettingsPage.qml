@@ -38,10 +38,45 @@ PageBase {
 
         InfoRow {
             first: true
-            last: root.schema.length > 0
+            last: root.schema.length > 0 && !root.plugin?.bar
             icon: root.plugin?.icon ?? "widgets"
             label: root.plugin?.description ?? ""
             value: root.instance ? root.instance.screen : ""
+        }
+
+        // Widgets that can sit inside a bar: which one, or the desktop
+        SelectRow {
+            visible: root.plugin?.bar ?? false
+            last: root.schema.length > 0
+            label: Tr.tr("Where")
+            subtext: Tr.tr("In the editor, drag it onto a bar or back out")
+            menuItems: [desktopItem, leftItem, rightItem]
+            active: [desktopItem, leftItem, rightItem].find(i => i.value === (root.instance?.dock ?? "")) ?? desktopItem
+            onSelected: item => Widgets.dock(Widgets.settingsUid, item.value, -1)
+
+            MenuItem {
+                id: desktopItem
+
+                text: Tr.tr("Desktop")
+                icon: "desktop_windows"
+                value: ""
+            }
+
+            MenuItem {
+                id: leftItem
+
+                text: Tr.tr("Left bar")
+                icon: "dock_to_left"
+                value: "left"
+            }
+
+            MenuItem {
+                id: rightItem
+
+                text: Tr.tr("Right bar")
+                icon: "dock_to_right"
+                value: "right"
+            }
         }
 
         InfoRow {

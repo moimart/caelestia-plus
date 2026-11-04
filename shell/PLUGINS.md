@@ -55,6 +55,7 @@ one's settings, are saved in `~/.local/state/caelestia/widgets.json`.
 | `minSize` | | The smallest the editor lets it be resized to (default `[64, 64]`) |
 | `keepAspect` | | Keep the width:height ratio while resizing |
 | `needsCursor` | | Give the widget the pointer position (see below). The shell only polls the pointer while a placed widget asks for it. |
+| `bar` | | It can also sit inside the left or right bar: drag it onto a bar in the editor, or pick the bar in its settings. There it gets the bar's width (40 px by default) and is as tall as its `implicitHeight`; see `bar` below. The performance dials do this. |
 
 ## The QML file
 
@@ -68,6 +69,11 @@ them; leave out the ones you don't need:
 | `editing` | `bool` | True while the editor is open, e.g. to show a hint or pause animations |
 | `screen` | `ShellScreen` | The monitor the widget is on |
 | `settings` | `var` | This widget's own settings object, `{}` until set |
+| `bar` | `string` | `"left"` or `"right"` while it's inside that bar, `""` on the desktop. In a bar, set `implicitHeight` and draw something compact: it's only as wide as the bar. Needs `"bar": true`. |
+
+Mind what an animation costs: the window a widget is in (the desktop, or the
+bar's) is redrawn whole for every frame of it. Something that only changes
+every second or so is best drawn without animating between values.
 
 You can import the shell's own modules, so a widget matches the rest of the
 desktop and follows the colour scheme:

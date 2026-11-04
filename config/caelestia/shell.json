@@ -77,6 +77,10 @@
             },
             {
                 "enabled": true,
+                "id": "widgets"
+            },
+            {
+                "enabled": true,
                 "id": "tray"
             },
             {

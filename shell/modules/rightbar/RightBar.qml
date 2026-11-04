@@ -7,6 +7,7 @@ import qs.components
 import qs.components.controls
 import qs.services
 import qs.utils
+import qs.modules.widgets as WidgetsModule
 
 // The right bar: as thick as the left one, with action buttons at the top
 // (Config.rightBar.actions, see services/BarActions) and the volume at the
@@ -107,6 +108,15 @@ Item {
                 }
             }
         }
+    }
+
+    // Widgets docked in the bar (the performance dials), under the buttons
+    WidgetsModule.BarWidgets {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: actionsGroup.visible ? actionsGroup.bottom : parent.top
+        anchors.topMargin: actionsGroup.visible ? Tokens.spacing.medium : Tokens.padding.large
+        screen: root.screen
+        side: "right"
     }
 
     // Brightness and volume, always there

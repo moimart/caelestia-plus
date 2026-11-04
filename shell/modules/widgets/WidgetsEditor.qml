@@ -79,7 +79,19 @@ Scope {
 
         // Add a widget of a plugin type ("eyes") to a monitor ("DP-1"), centred
         function add(type: string, screen: string): void {
-            Widgets.add(type, Quickshell.screens.find(s => s.name === screen) ?? null);
+            Widgets.add(type, Quickshell.screens.find(s => s.name === screen) ?? null, "");
+        }
+
+        // Add one into a bar ("left" or "right") of a monitor, for plugins
+        // that can be in one (the performance dials)
+        function addToBar(type: string, screen: string, bar: string): void {
+            Widgets.add(type, Quickshell.screens.find(s => s.name === screen) ?? null, bar);
+        }
+
+        // Move a widget into a bar ("left"/"right", at its end) or, with "",
+        // back to the desktop
+        function dock(uid: string, bar: string): void {
+            Widgets.dock(uid, bar, -1);
         }
 
         function remove(uid: string): void {

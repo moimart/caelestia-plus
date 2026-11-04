@@ -13,6 +13,8 @@ Item {
 
     required property string uid
     required property ShellScreen screen
+    // The editor it's in, for docking into the bars (EditView.dockAt)
+    property Item view
 
     readonly property var instance: Widgets.instances.find(i => i.uid === uid) ?? null
     readonly property var plugin: Widgets.pluginFor(instance?.type ?? "")
@@ -75,8 +77,25 @@ Item {
                 return;
             root.x = Math.max(0, Math.min(root.screen.width - root.width, root.snap(root.x + e.x - start.x)));
             root.y = Math.max(0, Math.min(root.screen.height - root.height, root.snap(root.y + e.y - start.y)));
+            // Over a bar's dock, for a widget that can be in a bar
+            if (root.view)
+                root.view.dropSide = root.view.dockAt(root.instance?.type ?? "", mapToItem(root.view, e.x, e.y));
         }
-        onReleased: root.commit()
+        onReleased: e => {
+            const side = root.view?.dropSide ?? "";
+            if (side) {
+                root.view.dropSide = "";
+                root.busy = false;
+                Widgets.dock(root.uid, side, root.view.dockIndexAt(side, mapToItem(root.view, e.x, e.y).y));
+                return;
+            }
+            root.commit();
+        }
+        onCanceled: {
+            if (root.view)
+                root.view.dropSide = "";
+            root.commit();
+        }
     }
 
     // Name and size, top-left

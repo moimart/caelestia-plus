@@ -13,6 +13,12 @@ import qs.utils
 // the QML file it names; built-in ones ship in modules/widgets/builtin, your
 // own go in ~/.config/caelestia/plugins/widgets. Placed widgets are kept in
 // ~/.local/state/caelestia/widgets.json.
+//
+// A plugin with "bar": true in its manifest can also sit inside a bar: such a
+// widget has dock "left" or "right" and lives in that bar on its screen, in
+// the order of the list (its x, y, width and height are kept for when it goes
+// back to the desktop). Its root item gets bar ("left"/"right", "" on the
+// desktop) if it declares it, and the bar's width to draw in.
 Singleton {
     id: root
 
@@ -21,9 +27,9 @@ Singleton {
     readonly property string statePath: `${Paths.state}/widgets.json`
 
     // [{ id, name, description, icon, author, version, dir, url, builtin,
-    //    defaultSize: [w, h], minSize: [w, h], keepAspect, needsCursor }]
+    //    defaultSize: [w, h], minSize: [w, h], keepAspect, needsCursor, bar }]
     property var plugins: []
-    // [{ uid, type, screen, x, y, width, height, settings }] in screen-local logical px
+    // [{ uid, type, screen, x, y, width, height, settings, dock? }] in screen-local logical px
     property var instances: []
     // The placed widget Settings → Plugins is editing (its uid)
     property string settingsUid
@@ -40,8 +46,52 @@ Singleton {
         return plugins.find(p => p.id === type) ?? null;
     }
 
+    // The widgets on a screen's desktop
     function instancesOn(screen: string): var {
-        return instances.filter(i => i.screen === screen);
+        return instances.filter(i => i.screen === screen && !i.dock);
+    }
+
+    // The widgets in one of a screen's bars ("left" or "right"), top to bottom
+    function dockedOn(screen: string, side: string): var {
+        return instances.filter(i => i.screen === screen && i.dock === side);
+    }
+
+    function canDock(type: string): bool {
+        return pluginFor(type)?.bar ?? false;
+    }
+
+    // Into a bar ("left"/"right") on its screen, before the index-th widget
+    // already there (or last); "" takes it back to the desktop where it was
+    function dock(uid: string, side: string, index: int): void {
+        const inst = instances.find(i => i.uid === uid);
+        if (!inst || (side && !canDock(inst.type)))
+            return;
+        const moved = Object.assign({}, inst);
+        if (side)
+            moved.dock = side;
+        else
+            delete moved.dock;
+        const rest = instances.filter(i => i.uid !== uid);
+        // Where in the list: before the index-th one in that bar
+        const there = rest.filter(i => i.screen === inst.screen && i.dock === side);
+        let at = rest.length;
+        if (side && index >= 0 && index < there.length)
+            at = rest.indexOf(there[index]);
+        rest.splice(at, 0, moved);
+        save(rest);
+    }
+
+    // Back on the desktop, at a point (screen-local), at the size it had there
+    function undock(uid: string, x: real, y: real): void {
+        const inst = instances.find(i => i.uid === uid);
+        if (!inst)
+            return;
+        const moved = Object.assign({}, inst, {
+            x: Math.round(x),
+            y: Math.round(y)
+        });
+        delete moved.dock;
+        save(instances.map(i => i.uid === uid ? moved : i));
     }
 
     // A widget that shows nothing until it's told what (a Home Assistant
@@ -58,8 +108,9 @@ Singleton {
         settingsRequested(uid);
     }
 
-    // Places a widget; its uid, or "" if it couldn't be
-    function add(type: string, screen: ShellScreen): string {
+    // Places a widget on the desktop, or in a bar ("left"/"right") if the
+    // plugin can be in one; its uid, or "" if it couldn't be
+    function add(type: string, screen: ShellScreen, side: string): string {
         const p = pluginFor(type);
         if (!p || !screen)
             return "";
@@ -67,18 +118,19 @@ Singleton {
         // Centre it, nudged so repeated adds don't stack exactly
         const n = instancesOn(screen.name).length % 6;
         const uid = `${type}-${Date.now().toString(36)}`;
-        save([...instances,
-            {
-                uid: uid,
-                type: type,
-                screen: screen.name,
-                x: Math.round((screen.width - w) / 2 + n * 32),
-                y: Math.round((screen.height - h) / 2 + n * 32),
-                width: w,
-                height: h,
-                settings: {}
-            }
-        ]);
+        const inst = {
+            uid: uid,
+            type: type,
+            screen: screen.name,
+            x: Math.round((screen.width - w) / 2 + n * 32),
+            y: Math.round((screen.height - h) / 2 + n * 32),
+            width: w,
+            height: h,
+            settings: {}
+        };
+        if (side && p.bar)
+            inst.dock = side;
+        save([...instances, inst]);
         return uid;
     }
 
@@ -227,6 +279,8 @@ Singleton {
                             minSize: m.minSize ?? [64, 64],
                             keepAspect: m.keepAspect ?? false,
                             needsCursor: m.needsCursor ?? false,
+                            // Can sit inside the left or right bar as well
+                            bar: m.bar ?? false,
                             // [{ key, type, label, ... }]: the form Settings → Plugins shows
                             schema: Array.isArray(m.settings) ? m.settings : []
                         });

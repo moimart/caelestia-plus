@@ -1,0 +1,44 @@
+{
+    "id": "perf-memory",
+    "name": "Memory dial",
+    "description": "How much memory is in use. Also fits in a bar",
+    "icon": "memory_alt",
+    "author": "caelestia",
+    "version": "1.0",
+    "main": "MemoryDial.qml",
+    "defaultSize": [
+        200,
+        230
+    ],
+    "minSize": [
+        100,
+        115
+    ],
+    "keepAspect": true,
+    "bar": true,
+    "settings": [
+        {
+            "key": "background",
+            "type": "bool",
+            "label": "Background",
+            "description": "On the desktop",
+            "default": true
+        },
+        {
+            "key": "backgroundOpacity",
+            "type": "number",
+            "label": "Background opacity (%)",
+            "min": 10,
+            "max": 100,
+            "step": 5,
+            "default": 85
+        },
+        {
+            "key": "animate",
+            "type": "bool",
+            "label": "Animate",
+            "description": "Move smoothly between readings. Costs a little: the window it's in is redrawn for every frame",
+            "default": false
+        }
+    ]
+}

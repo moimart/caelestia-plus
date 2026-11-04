@@ -1,0 +1,51 @@
+{
+    "id": "perf-storage",
+    "name": "Storage dial",
+    "description": "How full a disk is. Also fits in a bar",
+    "icon": "hard_drive",
+    "author": "caelestia",
+    "version": "1.0",
+    "main": "StorageDial.qml",
+    "defaultSize": [
+        200,
+        230
+    ],
+    "minSize": [
+        100,
+        115
+    ],
+    "keepAspect": true,
+    "bar": true,
+    "settings": [
+        {
+            "key": "disk",
+            "type": "string",
+            "label": "Disk",
+            "placeholder": "The dashboard's",
+            "description": "A mount point, like /home"
+        },
+        {
+            "key": "background",
+            "type": "bool",
+            "label": "Background",
+            "description": "On the desktop",
+            "default": true
+        },
+        {
+            "key": "backgroundOpacity",
+            "type": "number",
+            "label": "Background opacity (%)",
+            "min": 10,
+            "max": 100,
+            "step": 5,
+            "default": 85
+        },
+        {
+            "key": "animate",
+            "type": "bool",
+            "label": "Animate",
+            "description": "Move smoothly between readings. Costs a little: the window it's in is redrawn for every frame",
+            "default": false
+        }
+    ]
+}

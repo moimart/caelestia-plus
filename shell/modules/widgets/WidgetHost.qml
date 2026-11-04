@@ -2,21 +2,26 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import qs.components.ha
+import qs.components.perf
 import qs.services
 
-// qs.components.ha isn't used here: it's imported so Quickshell registers the
-// module, for widget plugins (loaded by path) to import (the Home Assistant ones)
+// qs.components.ha and qs.components.perf aren't used here: they're imported so
+// Quickshell registers the modules, for widget plugins (loaded by path) to
+// import (the Home Assistant ones, the performance dials)
 
 // Runs one placed widget: loads its plugin's QML and hands it what it can use.
 // A plugin's root item may declare any of these properties to receive them:
 //   cursor (point, pointer relative to the widget; needs "needsCursor" in
-//   widget.json), editing (bool), screen (ShellScreen), settings (object)
+//   widget.json), editing (bool), screen (ShellScreen), settings (object),
+//   bar (string: "left"/"right" inside that bar, "" on the desktop)
 Loader {
     id: root
 
     required property var instance
     required property ShellScreen screen
     property bool editing
+    // In a bar: which one. Its width is the bar's; its height, the widget's own
+    property string bar
     // Where the widget sits on its screen, for the pointer maths
     property real screenX: instance.x
     property real screenY: instance.y
@@ -38,7 +43,15 @@ Loader {
         cursor: "cursor" in item,
         editing: "editing" in item,
         screen: "screen" in item,
-        settings: "settings" in item
+        settings: "settings" in item,
+        bar: "bar" in item
+    }
+
+    Binding {
+        target: root.item
+        property: "bar"
+        value: root.bar
+        when: root.status === Loader.Ready && root.accepts.bar === true
     }
 
     Binding {
