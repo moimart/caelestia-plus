@@ -53,7 +53,8 @@ desktop, above the wallpaper:
   size, or **inside the left or right bar**: in the editor each bar has a dock
   along its edge, so drag a dial onto it (and along it to reorder, or back out
   onto the desktop), or pick the bar in the dial's settings. Each one can show
-  its percentage or only its ring; storage can watch any disk. They cost next
+  its percentage or only its ring; storage picks any of your drives, from
+  the same list as the dashboard. They cost next
   to nothing: their readings only run while a dial shows them, and they don't
   animate between readings unless you ask (four in a bar: under 1% of one
   core for the whole shell).

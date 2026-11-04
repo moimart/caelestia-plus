@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
 import Caelestia.I18n
+import Caelestia.Services
 import qs.components
 import qs.components.controls
 import qs.services
@@ -14,7 +15,8 @@ import qs.modules.nexus.common
 // ("settings" in widget.json: [{ key, type, label, ... }]). Types: string,
 // number (min, max, step, default), bool, enum (options: [{ value, label }]),
 // haInstance, haEntity (domains), haCard (a dashboard card: sets dashboard,
-// cardPath and card).
+// cardPath and card), disk (a drive, as the dashboard's storage card lists
+// them: its name, like nvme0n1; "" for the dashboard's own).
 PageBase {
     id: root
 
@@ -103,7 +105,8 @@ PageBase {
                         enum: enumField,
                         haInstance: instanceField,
                         haEntity: entityField,
-                        haCard: cardField
+                        haCard: cardField,
+                        disk: diskField
                     })[modelData.type] ?? stringField
 
                 Component {
@@ -197,6 +200,53 @@ PageBase {
 
                                 text: modelData.name
                                 value: modelData.id
+                            }
+                        }
+                    }
+                }
+
+                Component {
+                    id: diskField
+
+                    SelectRow {
+                        id: diskRow
+
+                        // The drives the dashboard lists, plus its own choice
+                        readonly property var choices: [dashboardDisk, ...diskItems.instances]
+
+                        first: field.index === 0
+                        last: field.index === root.schema.length - 1
+                        label: field.modelData.label ?? Tr.tr("Drive")
+                        subtext: field.modelData.description ?? ""
+                        menuItems: choices
+                        active: choices.find(i => i.value === (root.settings[field.modelData.key] ?? "")) ?? dashboardDisk
+                        onSelected: item => root.set(field.modelData.key, item.value)
+
+                        // The list is only kept while something uses it
+                        ServiceRef {
+                            service: Storage
+                        }
+
+                        MenuItem {
+                            id: dashboardDisk
+
+                            text: Storage.primaryDisk ? Tr.tr("The dashboard's (%1)").arg(Storage.primaryDisk.mount) : Tr.tr("The dashboard's")
+                            activeText: Tr.tr("The dashboard's")
+                            icon: "dashboard"
+                            value: ""
+                        }
+
+                        Variants {
+                            id: diskItems
+
+                            model: Storage.disks
+
+                            MenuItem {
+                                required property var modelData
+
+                                text: modelData.mount
+                                icon: "hard_drive"
+                                value: modelData.mount
                             }
                         }
                     }

@@ -129,7 +129,8 @@ Plugins → (the placed widget) draws a form for them:
       "options": [{ "value": "orbit", "label": "Orbit" }, { "value": "dots", "label": "Dots" }] },
     { "key": "instance", "type": "haInstance", "label": "Home Assistant" },
     { "key": "entity", "type": "haEntity", "label": "Light", "domains": ["light"] },
-    { "key": "card", "type": "haCard", "label": "Dashboard card" }
+    { "key": "card", "type": "haCard", "label": "Dashboard card" },
+    { "key": "disk", "type": "disk", "label": "Drive" }
 ]
 ```
 
@@ -138,7 +139,10 @@ Any field can have a `description`, shown under its label; keep
 `haInstance` picks one of your Home Assistant instances (Settings → Home
 Assistant), `haEntity` searches its entities (only the `domains` given, if
 any), and `haCard` picks a card from one of its dashboards: it sets
-`dashboard`, `cardPath` and `card` (the card's config).
+`dashboard`, `cardPath` and `card` (the card's config). `disk` picks one of
+the drives the dashboard's storage card lists: it stores the drive's name
+(`nvme0n1`, `sda`), and `""` means the dashboard's own; read it from
+`Storage.disks`, matching each one's `mount`.
 
 Without the form, set them with any of:
 - the IPC call: `caelestia shell widgets configure <uid> '{"format": "hh:mm:ss"}'`;

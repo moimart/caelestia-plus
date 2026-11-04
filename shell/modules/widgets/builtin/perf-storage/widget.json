@@ -19,10 +19,9 @@
     "settings": [
         {
             "key": "disk",
-            "type": "string",
-            "label": "Disk",
-            "placeholder": "The dashboard's",
-            "description": "A mount point, like /home"
+            "type": "disk",
+            "label": "Drive",
+            "description": "Which drive it shows, as in the dashboard's Performance tab"
         },
         {
             "key": "showPercentage",

@@ -20,7 +20,8 @@ import qs.utils
 // whole for every frame of an animation.
 //
 // Settings: showPercentage, animate, background, backgroundOpacity (%), disk
-// (storage: a mount point, the dashboard's disk otherwise)
+// (storage: a drive by name, like nvme0n1, as the dashboard lists them; the
+// dashboard's own otherwise)
 Item {
     id: root
 
@@ -32,8 +33,12 @@ Item {
 
     readonly property bool inBar: bar !== ""
     readonly property var disk: {
-        const mount = settings.disk ?? "";
-        return (mount ? Storage.disks.find(d => d.mount === mount) : null) ?? Storage.primaryDisk ?? null;
+        const name = settings.disk ?? "";
+        const disks = Storage.disks;
+        for (let i = 0; name && i < disks.length; i++)
+            if (disks[i].mount === name)
+                return disks[i];
+        return Storage.primaryDisk ?? null;
     }
     readonly property bool hasGpu: Gpu.type !== GpuType.None
 

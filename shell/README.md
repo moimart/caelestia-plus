@@ -61,7 +61,8 @@ widget to move it, drag a corner to resize it, add more from the palette.
   Performance tab. On the desktop at any size, or inside the left or right
   bar: the editor has a dock along each bar's edge to drag them onto (and
   along, to reorder, or back out); their settings have a Where row too. Each
-  can hide its percentage; storage can follow any mount point. Their services
+  can hide its percentage; storage picks its drive from the same list as the
+  dashboard's storage card. Their services
   only poll while a dial shows them, and they don't animate between readings
   unless asked, as every frame of an animation redraws the whole window.
 
