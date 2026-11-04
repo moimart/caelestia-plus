@@ -70,6 +70,7 @@ them; leave out the ones you don't need:
 | `screen` | `ShellScreen` | The monitor the widget is on |
 | `settings` | `var` | This widget's own settings object, `{}` until set |
 | `bar` | `string` | `"left"` or `"right"` while it's inside that bar, `""` on the desktop. In a bar, set `implicitHeight` and draw something compact: it's only as wide as the bar. Needs `"bar": true`. |
+| `tooltip` | `string` | Not given but read: declare it and set it, and hovering the widget shows it after a moment (first line as the title, the rest under it), beside the bar or above the widget. Not while editing. |
 
 Mind what an animation costs: the window a widget is in (the desktop, or the
 bar's) is redrawn whole for every frame of it. Something that only changes

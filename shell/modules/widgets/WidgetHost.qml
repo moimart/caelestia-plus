@@ -14,6 +14,8 @@ import qs.services
 //   cursor (point, pointer relative to the widget; needs "needsCursor" in
 //   widget.json), editing (bool), screen (ShellScreen), settings (object),
 //   bar (string: "left"/"right" inside that bar, "" on the desktop)
+// and it may declare tooltip (string): shown on hover, its first line as the
+// title (not while editing)
 Loader {
     id: root
 
@@ -36,6 +38,7 @@ Loader {
 
     // Which of those the plugin takes, read once when it loads
     property var accepts: ({})
+    readonly property string tooltip: accepts.tooltip === true ? (item?.tooltip ?? "") : ""
 
     asynchronous: true
     source: plugin?.url ?? ""
@@ -44,7 +47,20 @@ Loader {
         editing: "editing" in item,
         screen: "screen" in item,
         settings: "settings" in item,
-        bar: "bar" in item
+        bar: "bar" in item,
+        tooltip: "tooltip" in item
+    }
+
+    HoverHandler {
+        id: hover
+
+        enabled: !root.editing && root.tooltip !== ""
+    }
+
+    WidgetTooltip {
+        host: root
+        text: root.tooltip
+        hovered: hover.hovered
     }
 
     Binding {

@@ -99,6 +99,23 @@ Item {
     }
     readonly property string figure: isNaN(value) ? (resource === "gpu" && !hasGpu && !Gpu.detecting ? Tr.trCtx("None", "GPU name") : "…") : Strings.percentOne(value)
     readonly property bool hot: temperature > 90
+    // On hover (WidgetHost): what it is, then its reading in full
+    readonly property string tooltip: {
+        const pct = isNaN(value) ? "" : Strings.percentOne(value);
+        switch (resource) {
+        case "cpu":
+            return [Cpu.name ? Tr.tr("CPU · %1").arg(Cpu.name) : Tr.tr("CPU"), [pct && Tr.tr("%1 busy").arg(pct), detail].filter(s => s).join(" · ")].join("\n");
+        case "gpu":
+            if (!hasGpu)
+                return Tr.tr("GPU\nNo GPU found");
+            return [Gpu.name ? Tr.tr("GPU · %1").arg(Gpu.name) : Tr.tr("GPU"), [pct && Tr.tr("%1 busy").arg(pct), detail].filter(s => s).join(" · ")].join("\n");
+        case "memory":
+            return [Tr.tr("Memory"), [pct && Tr.tr("%1 used").arg(pct), detail].filter(s => s).join(" · ")].join("\n");
+        case "storage":
+            return [disk ? Tr.tr("Storage · %1").arg(disk.mount) : Tr.tr("Storage"), [pct && Tr.tr("%1 used").arg(pct), detail].filter(s => s).join(" · "), (settings.disk ?? "") ? "" : Tr.tr("The dashboard's drive")].filter(s => s).join("\n");
+        }
+        return "";
+    }
     readonly property bool animate: settings.animate ?? false
     // The figure, or only the ring (in the dial, its icon instead)
     readonly property bool showPercentage: settings.showPercentage ?? true
