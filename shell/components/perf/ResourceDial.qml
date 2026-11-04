@@ -19,8 +19,8 @@ import qs.utils
 // here animates between readings unless asked: the window it's in is redrawn
 // whole for every frame of an animation.
 //
-// Settings: animate, background, backgroundOpacity (%), disk (storage: a mount
-// point, the dashboard's disk otherwise)
+// Settings: showPercentage, animate, background, backgroundOpacity (%), disk
+// (storage: a mount point, the dashboard's disk otherwise)
 Item {
     id: root
 
@@ -95,6 +95,8 @@ Item {
     readonly property string figure: isNaN(value) ? (resource === "gpu" && !hasGpu && !Gpu.detecting ? Tr.trCtx("None", "GPU name") : "…") : Strings.percentOne(value)
     readonly property bool hot: temperature > 90
     readonly property bool animate: settings.animate ?? false
+    // The figure, or only the ring (in the dial, its icon instead)
+    readonly property bool showPercentage: settings.showPercentage ?? true
 
     // Fits the desktop face into the widget's box, like the clock
     readonly property real fitScale: Math.max(0.1, Math.min(width / Math.max(1, measure.implicitWidth), height / Math.max(1, measure.implicitHeight)))
@@ -143,6 +145,7 @@ Item {
 
         StyledText {
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.showPercentage
             // Short, to fit the bar: "42%"
             text: isNaN(root.value) ? "–" : `${Math.round(root.value * 100)}%`
             color: Colours.palette.m3onSurface
@@ -227,6 +230,8 @@ Item {
                 ColumnLayout {
                     id: figureColumn
 
+                    // Hidden, not gone: the ring keeps its size
+                    opacity: root.showPercentage ? 1 : 0
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: Tokens.padding.extraSmall * face.faceScale
                     spacing: 0
@@ -244,6 +249,17 @@ Item {
                         font: Tokens.font.body.builders.small.scale(face.faceScale).build()
                         color: Colours.palette.m3onSurfaceVariant
                     }
+                }
+
+                // Without the figure, the icon fills the dial
+                MaterialIcon {
+                    anchors.centerIn: parent
+                    anchors.verticalCenterOffset: Tokens.padding.extraSmall * face.faceScale
+                    visible: !root.showPercentage
+                    text: root.spec.icon
+                    fill: 1
+                    color: ring.fgColour
+                    fontStyle: Tokens.font.icon.builders.extraLarge.scale(1.3 * face.faceScale).build()
                 }
             }
 

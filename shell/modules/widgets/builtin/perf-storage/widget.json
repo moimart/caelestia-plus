@@ -25,6 +25,13 @@
             "description": "A mount point, like /home"
         },
         {
+            "key": "showPercentage",
+            "type": "bool",
+            "label": "Percentage",
+            "description": "The figure, or only the ring",
+            "default": true
+        },
+        {
             "key": "background",
             "type": "bool",
             "label": "Background",
