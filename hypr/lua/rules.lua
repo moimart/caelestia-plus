@@ -155,6 +155,21 @@ _G.__browserPopupSub = hl.on("window.open", function(w)
   hl.dispatch(hl.dsp.window.move({ x = x, y = y, window = addr }))
 end)
 
+-- ----- At the pointer -----
+-- mpv floats, centred on the pointer (kept on its monitor), at the size it
+-- asks for
+hl.window_rule({ match = { class = "mpv" }, float = true, tag = "+at-pointer" })
+
+if _G.__atPointerSub then pcall(function() _G.__atPointerSub:remove() end) end
+_G.__atPointerSub = hl.on("window.open", function(w)
+  if not w or not w.floating then return end
+  local tags = type(w.tags) == "table" and table.concat(w.tags, " ") or tostring(w.tags or "")
+  if not tags:find("at-pointer", 1, true) then return end
+  local x, y = require("pointer").spot(w.size.x or w.size[1], w.size.y or w.size[2])
+  if not x then return end
+  hl.dispatch(hl.dsp.window.move({ x = x, y = y, window = "address:" .. w.address }))
+end)
+
 -- ----- Picture-in-picture -----
 -- Initial move so the PiP doesn't shoot in from the center
 hl.window_rule({
