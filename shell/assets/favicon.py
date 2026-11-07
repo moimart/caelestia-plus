@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """The favicon of the page a browser window shows, for the bar.
 
-    favicon.py <window class> <window title>
+    favicon.py [--media] <window class> <window title>
 
-For web app windows (chrome-web.whatsapp.com__-Default) it's the site's icon.
+With --media the title is what the browser says is playing (MPRIS), as the
+audio popout's app volumes use it: the page is found by its title with the
+site's name after it ("<video> - YouTube"). For web app windows (chrome-web.whatsapp.com__-Default) it's the site's icon.
 Prints the path of a PNG (cached in ~/.cache/caelestia/favicons), or nothing.
 
 No browser tells other programs which page a window shows, but its window
@@ -52,6 +54,15 @@ def site_prefix(url: str) -> str:
     return f"{u.scheme}://{u.netloc}/"
 
 
+# The page playing a media title: sites put their name after it ("<video> -
+# YouTube"), and some an unread count before it ("(7) <video> - YouTube")
+MEDIA_PAGE = "(title LIKE ?1 || ' - %' ESCAPE '\\' OR title LIKE '(%) ' || ?1 || ' - %' ESCAPE '\\' OR title LIKE '(%) ' || ?1 ESCAPE '\\')"
+
+
+def like_escape(title: str) -> str:
+    return re.sub(r"([\\%_])", r"\\\1", title)
+
+
 def best(rows):
     """The bitmap to use from [(width, png bytes)]: 32 px if there is one,
     else the smallest bigger one, else the biggest."""
@@ -62,7 +73,7 @@ def best(rows):
     return (bigger[0] if bigger else max(rows, key=lambda r: r[0]))[1]
 
 
-def chromium(root: Path, suffix: str, title: str):
+def chromium(root: Path, suffix: str, title: str, media: bool = False):
     title = re.sub(rf" - {re.escape(suffix)}( - .*)?$", "", title)
     found = None  # (last visit, profile, url)
     for profile in [root / "Default", *sorted(root.glob("Profile *"))]:
@@ -73,6 +84,10 @@ def chromium(root: Path, suffix: str, title: str):
                 row = db.execute(
                     "SELECT last_visit_time, url FROM urls WHERE title = ? ORDER BY last_visit_time DESC LIMIT 1",
                     (title,)).fetchone()
+                if not row and media:
+                    row = db.execute(
+                        f"SELECT last_visit_time, url FROM urls WHERE {MEDIA_PAGE} "
+                        "ORDER BY last_visit_time DESC LIMIT 1", (like_escape(title),)).fetchone()
         except sqlite3.Error:
             continue
         if row and (not found or row[0] > found[0]):
@@ -109,7 +124,7 @@ def chromium_site(root: Path, host: str):
     return None
 
 
-def firefox(roots, title: str):
+def firefox(roots, title: str, media: bool = False):
     title = re.sub(r" [—-] Mozilla Firefox( Private Browsing)?$", "", title)
     for root in roots:
         for profile in sorted(root.glob("*"), key=lambda p: -(p / "places.sqlite").stat().st_mtime if (p / "places.sqlite").exists() else 0):
@@ -119,6 +134,9 @@ def firefox(roots, title: str):
                 with connect(profile / "places.sqlite") as db:
                     row = db.execute("SELECT url FROM moz_places WHERE title = ? ORDER BY last_visit_date DESC LIMIT 1",
                                      (title,)).fetchone()
+                    if not row and media:
+                        row = db.execute(f"SELECT url FROM moz_places WHERE {MEDIA_PAGE} "
+                                         "ORDER BY last_visit_date DESC LIMIT 1", (like_escape(title),)).fetchone()
                 if not row:
                     continue
                 with connect(profile / "favicons.sqlite") as db:
@@ -135,16 +153,21 @@ def firefox(roots, title: str):
 
 
 def main():
-    if len(sys.argv) != 3:
-        sys.exit("usage: favicon.py <window class> <window title>")
-    cls, title = sys.argv[1], sys.argv[2]
+    args = sys.argv[1:]
+    # --media: the title is what's playing (MPRIS), not a window's
+    media = args[:1] == ["--media"]
+    if media:
+        args = args[1:]
+    if len(args) != 2:
+        sys.exit("usage: favicon.py [--media] <window class> <window title>")
+    cls, title = args
     webapp = WEBAPP.match(cls)
     if webapp:
         png = chromium_site(CHROMIUM[WEBAPP_BROWSER[webapp[1]]][0], webapp[2])
     elif cls in CHROMIUM:
-        png = chromium(*CHROMIUM[cls], title)
+        png = chromium(*CHROMIUM[cls], title, media)
     elif cls in FIREFOX:
-        png = firefox(FIREFOX[cls], title)
+        png = firefox(FIREFOX[cls], title, media)
     else:
         return
     # Only real images: PNG, or an ICO/SVG Firefox might store

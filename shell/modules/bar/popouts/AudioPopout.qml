@@ -177,10 +177,11 @@ Item {
                     Layout.fillWidth: true
                     spacing: Tokens.spacing.small
 
-                    AppIcon {
+                    // A browser's shows the playing page's favicon
+                    StreamIcon {
                         Layout.alignment: Qt.AlignVCenter
                         implicitSize: Math.round(Tokens.font.icon.large.pointSize * 1.4)
-                        entry: DesktopEntries.heuristicLookup(app.modelData?.properties["application.process.binary"] || Audio.getStreamName(app.modelData))
+                        stream: app.modelData
                         opacity: app.muted ? 0.5 : 1
                     }
 
