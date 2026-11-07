@@ -18,6 +18,8 @@ Singleton {
     property list<PwNode> sinks: []
     property list<PwNode> sources: []
     property list<PwNode> streams: []
+    // Whether the bar's audio popout shows each app's volume (kept between openings)
+    property bool popoutAppsExpanded
 
     readonly property PwNode sink: Pipewire.defaultAudioSink
     readonly property PwNode source: Pipewire.defaultAudioSource
