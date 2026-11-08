@@ -62,6 +62,12 @@ QtObject {
 
         // System
         {
+            label: Tr.tr("Power"),
+            icon: "bolt",
+            description: Tr.tr("Keep awake, locking, screen off and sleep when idle"),
+            category: "system"
+        },
+        {
             label: Tr.tr("Updates"),
             icon: "update",
             description: Tr.tr("System updates through your package manager"),

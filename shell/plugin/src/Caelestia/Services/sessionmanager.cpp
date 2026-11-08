@@ -60,6 +60,33 @@ SessionManager::SessionManager(QObject* parent)
         qCWarning(lcSessionManager) << "Failed to connect to Unlock signal:" << bus->lastError().message();
 }
 
+bool SessionManager::holdSleep() const {
+    return m_holdSleep;
+}
+
+void SessionManager::setHoldSleep(bool hold) {
+    if (m_holdSleep == hold)
+        return;
+
+    m_holdSleep = hold;
+    // Closing the descriptor is what releases it
+    m_sleepHold = {};
+
+    if (hold) {
+        if (auto bus = getSystemBus()) {
+            auto msg = QDBusMessage::createMethodCall(k_loginService, k_loginPath, k_loginIface, u"Inhibit"_s);
+            msg.setArguments({ u"idle:sleep"_s, u"Caelestia"_s, u"Keep awake"_s, u"block"_s });
+            const QDBusReply<QDBusUnixFileDescriptor> reply = bus->call(msg);
+            if (reply.isValid())
+                m_sleepHold = reply.value();
+            else
+                qCWarning(lcSessionManager) << "Failed to hold off sleep:" << reply.error().message();
+        }
+    }
+
+    emit holdSleepChanged();
+}
+
 bool SessionManager::exec(const QStringList& command) {
     if (command.isEmpty()) {
         return false;

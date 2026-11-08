@@ -26,6 +26,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Camera](#camera)
 - [Lock screen](#lock-screen)
 - [The daruma](#the-daruma)
+- [Power](#power)
 - [Settings](#settings)
 - [Control from scripts and agents](#control-from-scripts-and-agents)
 - [Shortcuts](#shortcuts)
@@ -270,6 +271,14 @@ the session menu, and it turns on its axis in the media card while music plays.
 The artwork lives in my dotfiles and is set through the shell's own options
 (`general.logo`, `paths.sessionGif`, `paths.mediaGif`); the fork shows image
 logos in their own colours instead of tinting them.
+
+## Power
+
+Settings → Power sets when the screen locks, dims or turns off and when the
+computer sleeps (or never), and what holds those off. It also shows what
+outside the shell could put the computer to sleep: logind's idle action,
+hypridle's config, other power managers. Keep awake holds off the shell's own
+steps and logind's idle sleep.
 
 ## Settings
 

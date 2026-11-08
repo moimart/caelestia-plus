@@ -237,6 +237,14 @@ toast, and levels in the shell's own OSD.
   Assistant entities only while the dial is awake. A udev rule gives your
   session the dial (pair it once in Bluetooth settings).
 
+### Power
+
+Settings → Power sets when the screen locks, dims or turns off and when the
+computer sleeps (or never), and what holds those off. It also shows what
+outside the shell could put the computer to sleep: logind's idle action,
+hypridle's config, other power managers. Keep awake holds off the shell's own
+steps and logind's idle sleep.
+
 ### Chrome in your colours
 
 Settings → Wallpaper & style → **Let Chrome follow the colour scheme**: Google

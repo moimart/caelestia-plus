@@ -128,6 +128,14 @@ QtObject {
 
         // System
         Component {
+            // Power
+            StackPage {
+                Component {
+                    PowerPage {}
+                }
+            }
+        },
+        Component {
             // Updates
             StackPage {
                 Component {

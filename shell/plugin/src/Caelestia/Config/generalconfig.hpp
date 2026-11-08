@@ -53,10 +53,6 @@ class GeneralIdle : public settings::ObjectNode {
                 { u"idleAction"_s, u"dpms off"_s },
                 { u"returnAction"_s, u"dpms on"_s },
             }),
-            vmap({
-                { u"timeout"_s, 600 },
-                { u"idleAction"_s, QStringList{ u"suspendThenHibernate"_s } },
-            }),
         }))
 };
 
