@@ -160,7 +160,7 @@ PageBase {
                     last: true
                     icon: "delete"
                     text: Tr.tr("Remove %1").arg(instance.modelData.name)
-                    subtext: Tr.tr("Cards and widgets using it stop updating; its token file stays")
+                    subtext: HomeAssistant.ownsToken(instance.modelData) ? Tr.tr("Cards and widgets using it stop updating; its saved token is deleted") : Tr.tr("Cards and widgets using it stop updating; its token file stays")
                     onClicked: HomeAssistant.removeInstance(instance.modelData.id)
                 }
             }

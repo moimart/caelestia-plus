@@ -240,8 +240,26 @@ Singleton {
         connection(id)?.restart();
     }
 
+    // Removing an instance deletes its token, unless another instance uses the
+    // same file. Only the tokens saved here: a file you pointed it at is yours.
     function removeInstance(id: string): void {
-        save(instances.filter(i => i.id !== id));
+        const inst = instances.find(i => i.id === id);
+        const rest = instances.filter(i => i.id !== id);
+        save(rest);
+        if (!inst || !ownsToken(inst))
+            return;
+        const path = Paths.absolutePath(inst.tokenFile);
+        if (rest.some(i => Paths.absolutePath(i.tokenFile) === path))
+            return;
+        tokenWriter.pending.push({
+            path: path
+        });
+        tokenWriter.next();
+    }
+
+    function ownsToken(inst: var): bool {
+        const path = Paths.absolutePath(inst.tokenFile ?? "");
+        return path.startsWith(`${tokenDir}/`) && !path.includes("/../");
     }
 
     // A token goes to its file through stdin, never on a command line, and
@@ -368,13 +386,15 @@ Singleton {
             if (running || pending.length === 0)
                 return;
             current = pending.shift();
-            command = ["sh", "-c", 'umask 077 && mkdir -p "$(dirname "$1")" && cat > "$1"', "sh", current.path];
+            // In one queue, so removing and re-adding an instance can't cross
+            command = current.token === undefined ? ["rm", "-f", "--", current.path] : ["sh", "-c", 'umask 077 && mkdir -p "$(dirname "$1")" && cat > "$1"', "sh", current.path];
             running = true;
         }
 
         stdinEnabled: true
         onStarted: {
-            write(current.token + "\n");
+            if (current.token !== undefined)
+                write(current.token + "\n");
             stdinEnabled = false;
         }
         onExited: {
