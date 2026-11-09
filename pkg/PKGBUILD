@@ -84,7 +84,7 @@ package_caelestia-shell-moimart() {
         # Brightness
         'ddcutil' 'brightnessctl'
         # Services
-        'libcava' 'networkmanager' 'lm_sensors' 'aubio' 'libpipewire' 'libqalculate' 'power-profiles-daemon'
+        'libcava' 'networkmanager' 'lm_sensors' 'aubio' 'libpipewire' 'libqalculate' 'power-profiles-daemon' 'python-websockets'
         # Fonts
         'ttf-material-symbols-variable' 'ttf-rubik-vf' 'ttf-cascadia-code-nerd'
         # Qt modules
@@ -98,7 +98,6 @@ package_caelestia-shell-moimart() {
         'ffmpeg: video wallpaper posters and thumbnails, camera recordings'
         'onnxruntime-cpu: camera presence, gestures (caelestia-camerad)'
         'howdy: face unlock on the lock screen'
-        'python-websockets: Home Assistant (lock screen cards, desktop widgets, right bar shortcuts)'
         'pacman-contrib: checking for system updates (checkupdates), Settings → Updates'
         'chromium: Home Assistant custom (HACS) cards on the desktop, drawn headless'
     )

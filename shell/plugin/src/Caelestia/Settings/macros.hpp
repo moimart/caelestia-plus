@@ -1,8 +1,11 @@
 #pragma once
 
+#include <qjsvalue.h>
 #include <qmetatype.h>
 #include <qobject.h>
 #include <qvariant.h>
+
+#include <algorithm>
 
 #include "listnode.hpp" // IWYU pragma: keep
 #include "schema.hpp"   // IWYU pragma: keep
@@ -43,6 +46,25 @@ template <std::floating_point T> bool compare(const QList<T>& a, const QList<T>&
         if (!compare(a.at(i), b.at(i)))
             return false;
     return true;
+}
+
+// What QML hands an option that takes a list: a QJSValue, or a QVariantList from
+// inside an object. Options declare string lists as QStringList.
+template <typename T> const T& fromQml(const T& value) {
+    return value;
+}
+
+inline QVariant fromQml(const QVariant& value) {
+    const auto plain =
+        value.metaType() == QMetaType::fromType<QJSValue>() ? value.value<QJSValue>().toVariant() : value;
+    if (plain.typeId() != QMetaType::QVariantList)
+        return plain;
+
+    const auto list = plain.toList();
+    const auto strings = std::ranges::all_of(list, [](const QVariant& v) {
+        return v.typeId() == QMetaType::QString;
+    });
+    return strings ? QVariant(plain.toStringList()) : plain;
 }
 
 } // namespace detail
@@ -87,7 +109,9 @@ public:                                                                         
         return m_##name;                                                                                               \
     }                                                                                                                  \
                                                                                                                        \
-    void set_##name(const Type& value) {                                                                               \
+    void set_##name(const Type& rawValue) {                                                                            \
+        const Type value = caelestia::settings::detail::fromQml(rawValue);                                             \
+                                                                                                                       \
         if (!true /* TODO: validation */)                                                                              \
             return;                                                                                                    \
                                                                                                                        \

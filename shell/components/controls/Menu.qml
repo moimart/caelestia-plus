@@ -79,7 +79,10 @@ MouseArea {
             let off = root.attachSideY === Menu.Top ? 0 : item.height;
             if (root.thisSideY === Menu.Bottom)
                 off -= height;
-            return item.mapToItem(root.parent, 0, off).y + root.marginY;
+            // Kept in the window: a long menu near the bottom would run out of it
+            const edge = Tokens.spacing.small;
+            const wanted = item.mapToItem(root.parent, 0, off).y + root.marginY;
+            return Math.max(edge, Math.min(root.parent.height - height - edge, wanted));
         }
 
         radius: Tokens.rounding.large

@@ -1,6 +1,7 @@
 #include "node.hpp"
 
 #include "util/i18n.hpp"
+#include "macros.hpp"
 
 namespace caelestia::settings {
 
@@ -100,11 +101,13 @@ bool Node::setValue(const QString& key, const QVariant& value) {
         return false;
     }
 
+    const auto converted = detail::fromQml(value);
+
     // Type mismatch, conversion should happen before this function is called
-    if (rejectInvalidWrite(key, value))
+    if (rejectInvalidWrite(key, converted))
         return false;
 
-    return metaObject()->property(desc->metaIndex).write(this, value);
+    return metaObject()->property(desc->metaIndex).write(this, converted);
 }
 
 void Node::resetToDefaults() {
