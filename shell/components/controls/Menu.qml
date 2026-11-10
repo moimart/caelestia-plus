@@ -47,6 +47,9 @@ MouseArea {
     onClicked: expanded = false
 
     opacity: expanded ? 1 : 0
+    // Gone once faded out: a closed menu sits, squashed and transparent, over
+    // the buttons around it and would take their clicks
+    visible: opacity > 0
     layer.enabled: opacity < 1
 
     Behavior on opacity {
@@ -102,6 +105,7 @@ MouseArea {
 
         MouseArea {
             anchors.fill: parent
+            enabled: root.expanded
             hoverEnabled: true
             onWheel: e => e.accepted = true
         }
