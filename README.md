@@ -475,3 +475,11 @@ on every push. To work on it: [DEVELOPMENT.md](docs/DEVELOPMENT.md).
 [Caelestia](https://github.com/caelestia-dots) by soramane and its
 contributors, on [Quickshell](https://quickshell.outfoxxed.me) and
 [Hyprland](https://hypr.land).
+
+## License
+
+[GPL-3.0](LICENSE), the whole repository: Caelestia's shell and CLI are
+GPL-3.0, and everything built around them here is under the same license.
+The fonts in [`shell/assets/google-sans-flex`](shell/assets/google-sans-flex)
+keep their SIL Open Font License, and
+[`rgbcx`](shell/plugin/3rdparty/rgbcx) its own terms.
