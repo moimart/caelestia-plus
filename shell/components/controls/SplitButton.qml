@@ -4,7 +4,7 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
-Row {
+Item {
     id: root
 
     enum Type {
@@ -36,107 +36,117 @@ Row {
     property color disabledColour: Qt.alpha(Colours.palette.m3onSurface, 0.1)
     property color disabledTextColour: Qt.alpha(Colours.palette.m3onSurface, 0.38)
 
-    spacing: Math.floor(Tokens.spacing.extraSmall / 2)
+    implicitWidth: row.implicitWidth
+    implicitHeight: row.implicitHeight
 
-    StyledRect {
-        radius: implicitHeight / 2 * Math.min(1, Tokens.rounding.scale)
-        topRightRadius: Tokens.rounding.medium / 2
-        bottomRightRadius: Tokens.rounding.medium / 2
-        color: root.disabled ? root.disabledColour : root.colour
+    // The menu is beside the Row, not in it: with Qt 6.12, an item that starts
+    // in a positioner (Row, Column) and is then moved to the window, as Menu
+    // moves itself, gets no clicks
+    Row {
+        id: row
 
-        implicitWidth: Math.max(root.minLeftWidth, textRow.implicitWidth + root.horizontalPadding * 2)
-        implicitHeight: expandBtn.implicitHeight
+        spacing: Math.floor(Tokens.spacing.extraSmall / 2)
 
-        StateLayer {
-            id: stateLayer
+        StyledRect {
+            radius: implicitHeight / 2 * Math.min(1, Tokens.rounding.scale)
+            topRightRadius: Tokens.rounding.medium / 2
+            bottomRightRadius: Tokens.rounding.medium / 2
+            color: root.disabled ? root.disabledColour : root.colour
 
-            topRightRadius: parent.topRightRadius
-            bottomRightRadius: parent.bottomRightRadius
-            color: root.textColour
-            disabled: root.disabled
-            onClicked: root.active?.clicked()
-        }
+            implicitWidth: Math.max(root.minLeftWidth, textRow.implicitWidth + root.horizontalPadding * 2)
+            implicitHeight: expandBtn.implicitHeight
 
-        RowLayout {
-            id: textRow
+            StateLayer {
+                id: stateLayer
 
-            anchors.centerIn: parent
-            anchors.horizontalCenterOffset: Math.floor(root.verticalPadding / 4)
-            spacing: Tokens.spacing.small
-
-            MaterialIcon {
-                id: iconLabel
-
-                Layout.alignment: Qt.AlignVCenter
-                animate: true
-                text: root.active?.activeIcon ?? root.fallbackIcon
-                color: root.disabled ? root.disabledTextColour : root.textColour
-                fill: 1
+                topRightRadius: parent.topRightRadius
+                bottomRightRadius: parent.bottomRightRadius
+                color: root.textColour
+                disabled: root.disabled
+                onClicked: root.active?.clicked()
             }
 
-            StyledText {
-                id: label
+            RowLayout {
+                id: textRow
 
-                Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: implicitWidth
-                animate: true
-                text: root.active?.activeText ?? root.fallbackText
-                color: root.disabled ? root.disabledTextColour : root.textColour
-                clip: true
+                anchors.centerIn: parent
+                anchors.horizontalCenterOffset: Math.floor(root.verticalPadding / 4)
+                spacing: Tokens.spacing.small
 
-                Behavior on Layout.preferredWidth {
-                    Anim {
-                        type: Anim.Emphasized
+                MaterialIcon {
+                    id: iconLabel
+
+                    Layout.alignment: Qt.AlignVCenter
+                    animate: true
+                    text: root.active?.activeIcon ?? root.fallbackIcon
+                    color: root.disabled ? root.disabledTextColour : root.textColour
+                    fill: 1
+                }
+
+                StyledText {
+                    id: label
+
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: implicitWidth
+                    animate: true
+                    text: root.active?.activeText ?? root.fallbackText
+                    color: root.disabled ? root.disabledTextColour : root.textColour
+                    clip: true
+
+                    Behavior on Layout.preferredWidth {
+                        Anim {
+                            type: Anim.Emphasized
+                        }
                     }
                 }
             }
         }
-    }
 
-    StyledRect {
-        id: expandBtn
+        StyledRect {
+            id: expandBtn
 
-        property real rad: root.expanded ? implicitHeight / 2 * Math.min(1, Tokens.rounding.scale) : Tokens.rounding.medium / 2
+            property real rad: root.expanded ? implicitHeight / 2 * Math.min(1, Tokens.rounding.scale) : Tokens.rounding.medium / 2
 
-        radius: implicitHeight / 2 * Math.min(1, Tokens.rounding.scale)
-        topLeftRadius: rad
-        bottomLeftRadius: rad
-        color: root.disabled ? root.disabledColour : root.colour
+            radius: implicitHeight / 2 * Math.min(1, Tokens.rounding.scale)
+            topLeftRadius: rad
+            bottomLeftRadius: rad
+            color: root.disabled ? root.disabledColour : root.colour
 
-        implicitWidth: implicitHeight
-        implicitHeight: expandIcon.implicitHeight + root.verticalPadding * 2
+            implicitWidth: implicitHeight
+            implicitHeight: expandIcon.implicitHeight + root.verticalPadding * 2
 
-        StateLayer {
-            id: expandStateLayer
+            StateLayer {
+                id: expandStateLayer
 
-            rect.topLeftRadius: parent.topLeftRadius
-            rect.bottomLeftRadius: parent.bottomLeftRadius
-            color: root.textColour
-            disabled: root.disabled
-            onClicked: root.expanded = !root.expanded
-        }
-
-        MaterialIcon {
-            id: expandIcon
-
-            anchors.centerIn: parent
-            anchors.horizontalCenterOffset: root.expanded ? 0 : -Math.floor(root.verticalPadding / 4)
-
-            text: "expand_more"
-            color: root.disabled ? root.disabledTextColour : root.textColour
-            rotation: root.expanded ? 180 : 0
-
-            Behavior on anchors.horizontalCenterOffset {
-                Anim {}
+                rect.topLeftRadius: parent.topLeftRadius
+                rect.bottomLeftRadius: parent.bottomLeftRadius
+                color: root.textColour
+                disabled: root.disabled
+                onClicked: root.expanded = !root.expanded
             }
 
-            Behavior on rotation {
+            MaterialIcon {
+                id: expandIcon
+
+                anchors.centerIn: parent
+                anchors.horizontalCenterOffset: root.expanded ? 0 : -Math.floor(root.verticalPadding / 4)
+
+                text: "expand_more"
+                color: root.disabled ? root.disabledTextColour : root.textColour
+                rotation: root.expanded ? 180 : 0
+
+                Behavior on anchors.horizontalCenterOffset {
+                    Anim {}
+                }
+
+                Behavior on rotation {
+                    Anim {}
+                }
+            }
+
+            Behavior on rad {
                 Anim {}
             }
-        }
-
-        Behavior on rad {
-            Anim {}
         }
     }
 
