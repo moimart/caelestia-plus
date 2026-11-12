@@ -108,6 +108,45 @@ Singleton {
         return stream.properties["application.name"] || stream.description || stream.name || Tr.trCtx("Unknown application", "unknown application audio stream");
     }
 
+    // A device's short name: its nickname ("DENON-AVR") over the long description
+    function deviceName(node: PwNode): string {
+        if (!node)
+            return Tr.trCtx("Nothing", "audio stream routed to no device");
+        return node.nickname || node.properties["node.nick"] || node.description || node.name;
+    }
+
+    // A Material Symbol for a device, by what it is
+    function deviceIcon(node: PwNode): string {
+        if (!node)
+            return "block";
+        const p = node.properties;
+        const kind = `${p["device.form-factor"] ?? ""} ${p["device.profile.name"] ?? ""} ${p["device.bus"] ?? ""} ${node.name}`.toLowerCase();
+        if (!node.isSink)
+            return kind.includes("headset") ? "headset_mic" : "mic";
+        if (kind.includes("headset") || kind.includes("headphone"))
+            return "headphones";
+        if (kind.includes("hdmi") || kind.includes("displayport"))
+            return "tv";
+        if (kind.includes("bluetooth") || kind.includes("bluez"))
+            return "bluetooth";
+        return "speaker";
+    }
+
+    // An app's stream that records (a microphone's) rather than plays. Not
+    // isSink: Quickshell calls a playback stream a sink, as it feeds one.
+    function isRecording(stream: PwNode): bool {
+        return (stream?.properties["media.class"] ?? "").startsWith("Stream/Input");
+    }
+
+    // Sends an app's stream to another device: playback to a sink, recording
+    // from a source. pipewire-pulse knows streams by their object serial.
+    function moveStream(stream: PwNode, device: PwNode): void {
+        const serial = stream?.properties["object.serial"];
+        if (!serial || !device?.name)
+            return;
+        Quickshell.execDetached(["pactl", isRecording(stream) ? "move-source-output" : "move-sink-input", String(serial), device.name]);
+    }
+
     function refreshNodes(): void {
         const newSinks = [];
         const newSources = [];

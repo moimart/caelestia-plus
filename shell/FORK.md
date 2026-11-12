@@ -50,6 +50,14 @@ package, which replaces the AUR `caelestia-shell`.
   Settings are in Nexus → Keyboard shortcuts (`keybinds.*` in shell.json).
   Sizes are under `sizes.keybinds` in the tokens.
 
+- **Audio mixer** (`modules/mixer/`): Super+V (`caelestia:mixer`, IPC
+  `mixer`) opens a channel strip per app over the focused monitor, after the
+  default output and microphone. Each strip's device chip is where its links
+  go (`Pipewire.linkGroups`); picking another device moves the stream with
+  `pactl move-sink-input` / `move-source-output` by its `object.serial`,
+  which pipewire-pulse uses as the stream index. Note Quickshell's `isSink`
+  is true for a playback stream, so `Audio.isRecording()` reads
+  `media.class` instead.
 - **Emoji picker** (`modules/emoji/`, `services/Emoji.qml`): like macOS's
   Ctrl+Cmd+Space. Ctrl+Super+Space (`caelestia:emoji`) opens it next to the
   pointer; pick an emoji and it goes into the window that had focus

@@ -120,6 +120,7 @@ hl.bind("SUPER + K",             hl.dsp.global("caelestia:showall"))
 hl.bind("SUPER + L",             hl.dsp.global("caelestia:lock"))
 hl.bind("SUPER + slash",         hl.dsp.global("caelestia:keybinds"))  -- keyboard shortcuts panel
 hl.bind("CTRL + SUPER + Space",  hl.dsp.global("caelestia:emoji"))     -- emoji picker, like macOS
+hl.bind("SUPER + V",             hl.dsp.global("caelestia:mixer"))     -- audio mixer: each app's volume and output
 hl.bind("SHIFT + SUPER + Space", hl.dsp.global("caelestia:launchpad")) -- Launchpad: every app in a grid
 
 -- Restore lockscreen if it crashed

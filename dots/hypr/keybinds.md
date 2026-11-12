@@ -153,6 +153,7 @@
 | `XF86AudioMute` | Mute speakers. Instant silence. |
 | `XF86AudioMicMute` | Mute microphone. "Sorry, I was on mute." |
 | `Super + Shift + M` | Toggle mute. For keyboards without media keys. |
+| `Super + V` | Audio mixer. Every app's volume, and where it plays. |
 | `XF86AudioRaise/Lower` | Volume up/down. The basics. |
 | `Ctrl + Super + Space` | Play/pause media. The universal remote. |
 | `Ctrl + Super + =/- ` | Next/previous track. Skip the bad songs. |

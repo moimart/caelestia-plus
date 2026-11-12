@@ -22,6 +22,7 @@ developed and kept in sync is in [FORK.md](FORK.md).
 - [Surface Dial](#surface-dial)
 - [Launchpad](#launchpad)
 - [Emoji picker](#emoji-picker)
+- [Audio mixer](#audio-mixer)
 - [Window cards](#window-cards)
 - [Camera](#camera)
 - [Lock screen](#lock-screen)
@@ -203,6 +204,22 @@ typing in, in Chrome, Discord, a terminal or anywhere else.
   virtual keyboard. Whatever you had copied is put back afterwards.
 - All of Unicode's emoji, with CLDR's keywords; also `>Emoji` in the launcher.
 
+## Audio mixer
+
+![The audio mixer: the output and microphone, then a channel for each app, with the device it plays to](docs/screenshots/mixer.png)
+
+**Super+V** opens a mixer over the focused monitor: a channel for each app
+using sound, after the default output and microphone.
+
+- **A fader per app**, with its mute; scroll over one to nudge it. Browsers
+  show the favicon of the page that's playing, and each channel shows what's
+  playing when the app says.
+- **Where it goes**: the chip at the bottom of each channel is the device the
+  app plays to (or records from). Click it to send just that app somewhere
+  else; on the Output and Microphone channels it changes the default.
+- Apps that record get a red mic badge and list microphones instead. Esc, or
+  a click outside, closes it.
+
 ## Window cards
 
 ![A browser and Steam paired into one card, flipping over in 3D](docs/screenshots/cards.webp)
@@ -324,12 +341,13 @@ without a way to take photos).
 | Shift+Super+Space | Launchpad |
 | Super, Super (double tap) | The focused window's preview, from the bar |
 | Ctrl+Super+Space | Emoji picker |
+| Super+V | Audio mixer |
 | Super+Alt+Tab · Super+Tab · Super+Shift+Tab | Pair a window card · flip it · split it |
 | Super+Alt+C | Camera panel |
 | Super+Alt+G | Hand gestures on/off |
 
 These are bound in the Hyprland config; the shell registers them as global
-shortcuts (`caelestia:keybinds`, `caelestia:launchpad`, `caelestia:windowPreview`, `caelestia:emoji`, `caelestia:widgets`, `caelestia:cardPair`,
+shortcuts (`caelestia:keybinds`, `caelestia:launchpad`, `caelestia:windowPreview`, `caelestia:emoji`, `caelestia:mixer`, `caelestia:widgets`, `caelestia:cardPair`,
 `caelestia:cardFlip`, `caelestia:cardUnpair`, `caelestia:camera`,
 `caelestia:cameraGestures`), so you can bind them to anything.
 

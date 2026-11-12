@@ -15,6 +15,7 @@ import qs.modules.cards
 import qs.modules.displays
 import qs.modules.drawers
 import qs.modules.emoji
+import qs.modules.mixer
 import qs.modules.keybinds
 import qs.modules.launchpad
 import qs.modules.lock
@@ -62,6 +63,7 @@ ShellRoot {
     AreaPicker {}
     KeybindsPanel {}
     EmojiPanel {}
+    MixerPanel {}
     Launchpad {}
     WindowCards {}
     WidgetsEditor {}
