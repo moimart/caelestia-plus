@@ -9,11 +9,13 @@ import Quickshell.Services.Pipewire
 // Panning an app's sound to the left or right.
 //
 // An app plays as it is (stereo, 5.1, 7.1) while centred. Panned, it plays
-// into a one-channel virtual output of its own, which mixes it down to mono,
-// and a loopback plays that on the real device's front left and right, at the
-// pan's gains. Centred again, the app goes back to the device and the
-// loopback goes away. The loopbacks are the shell's processes: if the shell
-// quits, PipeWire puts their apps back on the default output.
+// into a one-channel virtual output of its own, which mixes it down to mono.
+// Two loopbacks play that mono on the real device: one on its front left,
+// one on its front right, each at the pan's gain for that side. (One
+// loopback can't: it copies channels by number, so a mono input only ever
+// reaches the left.) Centred again, the app goes back to the device and the
+// loopbacks go away. They're the shell's processes: if the shell quits,
+// PipeWire puts their apps back on the default output.
 Singleton {
     id: root
 
@@ -78,7 +80,9 @@ Singleton {
                 device: current.device
             });
         } else {
-            const device = Audio.streamDevice(stream);
+            // A paused app (Chrome between videos) may be linked to nothing:
+            // pan it on the default output, where it'll play
+            const device = Audio.streamDevice(stream) ?? Audio.sink;
             if (!device)
                 return;
             update(serial, {
@@ -92,16 +96,17 @@ Singleton {
     // Sends a panned stream's loopback to another device
     function moveTo(stream: PwNode, device: PwNode): void {
         const serial = serialOf(stream);
-        const out = node(`${prefix}${serial}.out`);
         if (!pans[serial] || !device?.name)
             return;
         update(serial, {
             pan: pans[serial].pan,
             device: device.name
         });
-        const outSerial = out?.properties["object.serial"];
-        if (outSerial)
-            Quickshell.execDetached(["pactl", "move-sink-input", String(outSerial), device.name]);
+        for (const side of ["left", "right"]) {
+            const outSerial = node(`${prefix}${serial}.${side}`)?.properties["object.serial"];
+            if (outSerial)
+                Quickshell.execDetached(["pactl", "move-sink-input", String(outSerial), device.name]);
+        }
     }
 
     function update(serial: string, value: var): void {
@@ -137,14 +142,15 @@ Singleton {
             const sink = nodes.find(n => n.name === `${prefix}${serial}`);
             if (sink && Audio.linkedTo(stream) !== sink)
                 Quickshell.execDetached(["pactl", "move-sink-input", serial, sink.name]);
-            const out = nodes.find(n => n.name === `${prefix}${serial}.out`);
-            const audio = out?.audio;
-            if (audio && audio.channels.length === 2) {
-                // Full on the side it's panned to, fading on the other
-                const left = p.pan > 0 ? 1 - p.pan : 1;
-                const right = p.pan < 0 ? 1 + p.pan : 1;
-                if (Math.abs(audio.volumes[0] - left) > 0.001 || Math.abs(audio.volumes[1] - right) > 0.001)
-                    audio.volumes = [left, right];
+            // Full on the side it's panned to, fading on the other
+            const gains = {
+                left: p.pan > 0 ? 1 - p.pan : 1,
+                right: p.pan < 0 ? 1 + p.pan : 1
+            };
+            for (const side of ["left", "right"]) {
+                const audio = nodes.find(n => n.name === `${prefix}${serial}.${side}`)?.audio;
+                if (audio && audio.volumes.length === 1 && Math.abs(audio.volumes[0] - gains[side]) > 0.001)
+                    audio.volumes = [gains[side]];
             }
         }
         syncing = false;
@@ -152,8 +158,10 @@ Singleton {
 
     function ensureLoop(serial: string, device: string): void {
         for (let i = 0; i < loops.count; i++)
-            if (loops.get(i).serial === serial)
+            if (loops.get(i).serial === serial) {
+                loops.setProperty(i, "device", device);
                 return;
+            }
         loops.append({
             serial: serial,
             device: device
@@ -205,8 +213,8 @@ Singleton {
         }
     }
 
-    // One loopback per panned stream. A ListModel, so adding or removing one
-    // leaves the others running
+    // The loopbacks of each panned stream. A ListModel, so adding or removing
+    // one stream's leaves the others running
     ListModel {
         id: loops
     }
@@ -214,13 +222,26 @@ Singleton {
     Instantiator {
         model: loops
 
-        Process {
+        QtObject {
+            id: loop
+
             required property string serial
             required property string device
             readonly property string name: `${root.prefix}${serial}`
+            // Not restored by WirePlumber: a remembered volume would undo the pan
+            readonly property string common: "node.description=Panning state.restore-props=false"
 
-            running: true
-            command: ["pw-loopback", "-n", name, "--capture-props", `media.class=Audio/Sink node.name=${name} node.description=Panning audio.channels=1 audio.position=[MONO] node.virtual=true`, "--playback-props", `node.name=${name}.out node.description=Panning audio.channels=2 audio.position=[FL FR] target.object=${device} stream.dont-remix=true`]
+            // The virtual output, and its left side
+            readonly property Process left: Process {
+                running: true
+                command: ["pw-loopback", "-n", loop.name, "--capture-props", `media.class=Audio/Sink node.name=${loop.name} audio.channels=1 audio.position=[MONO] node.virtual=true ${loop.common}`, "--playback-props", `node.name=${loop.name}.left audio.channels=1 audio.position=[FL] target.object=${loop.device} stream.dont-remix=true ${loop.common}`]
+            }
+
+            // The right side, from the virtual output's monitor once it's there
+            readonly property Process right: Process {
+                running: Pipewire.nodes.values.some(n => n.name === loop.name)
+                command: ["pw-loopback", "-n", `${loop.name}-right`, "--capture-props", `node.name=${loop.name}.rin audio.channels=1 audio.position=[MONO] stream.capture.sink=true target.object=${loop.name} ${loop.common}`, "--playback-props", `node.name=${loop.name}.right audio.channels=1 audio.position=[FR] target.object=${loop.device} stream.dont-remix=true ${loop.common}`]
+            }
         }
     }
 }

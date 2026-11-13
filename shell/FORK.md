@@ -60,8 +60,10 @@ package, which replaces the AUR `caelestia-shell`.
   `media.class` instead.
   - **Panning** (`services/Panning.qml`): a panned app plays into its own
     one-channel virtual sink (`caelestia-pan-<serial>`, so PipeWire mixes it
-    down to mono), and a `pw-loopback` plays that on the device's FL and FR
-    with the pan as its channel volumes. Centring moves the app back to the
+    down to mono), and two `pw-loopback`s play that on the device: one on
+    FL, one (from the sink's monitor) on FR, each at its side's gain. One
+    loopback with a mono input and an FL+FR output copies by channel index,
+    so the right would get nothing. Centring moves the app back to the
     device, then stops the loopback. The loopbacks are shell processes, so if
     the shell quits their apps fall back to the default output. The service's
     own nodes are hidden from `Audio.sinks`/`streams`.
