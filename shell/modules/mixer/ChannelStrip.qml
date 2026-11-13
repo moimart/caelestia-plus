@@ -25,18 +25,7 @@ StyledRect {
     readonly property real volume: node?.audio?.volume ?? 0
     readonly property bool muted: !!node?.audio?.muted
     // Where it plays to (or records from): the device at the other end of its links
-    readonly property PwNode device: {
-        if (master)
-            return node;
-        for (const g of Pipewire.linkGroups.values) {
-            if (g.source !== node && g.target !== node)
-                continue;
-            const other = g.source === node ? g.target : g.source;
-            if (other && !other.isStream)
-                return other;
-        }
-        return null;
-    }
+    readonly property PwNode device: master ? node : Audio.streamDevice(node)
     readonly property string title: master ? masterTitle : Audio.getStreamName(node)
     // What it's playing: a tab's or a track's title, when it says
     readonly property string subtitle: {
@@ -144,6 +133,15 @@ StyledRect {
                 to: GlobalConfig.services.maxVolume
                 onMoved: Audio.setStreamVolume(root.node, value)
             }
+        }
+
+        // Left or right; kept in place on the other channels so they line up
+        PanControl {
+            Layout.fillWidth: true
+            opacity: root.master || root.recording ? 0 : 1
+            enabled: !root.master && !root.recording
+            value: root.master ? 0 : Panning.panOf(root.node)
+            onMoved: value => Panning.setPan(root.node, value)
         }
 
         StyledText {

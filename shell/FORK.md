@@ -58,6 +58,13 @@ package, which replaces the AUR `caelestia-shell`.
   which pipewire-pulse uses as the stream index. Note Quickshell's `isSink`
   is true for a playback stream, so `Audio.isRecording()` reads
   `media.class` instead.
+  - **Panning** (`services/Panning.qml`): a panned app plays into its own
+    one-channel virtual sink (`caelestia-pan-<serial>`, so PipeWire mixes it
+    down to mono), and a `pw-loopback` plays that on the device's FL and FR
+    with the pan as its channel volumes. Centring moves the app back to the
+    device, then stops the loopback. The loopbacks are shell processes, so if
+    the shell quits their apps fall back to the default output. The service's
+    own nodes are hidden from `Audio.sinks`/`streams`.
 - **Emoji picker** (`modules/emoji/`, `services/Emoji.qml`): like macOS's
   Ctrl+Cmd+Space. Ctrl+Super+Space (`caelestia:emoji`) opens it next to the
   pointer; pick an emoji and it goes into the window that had focus

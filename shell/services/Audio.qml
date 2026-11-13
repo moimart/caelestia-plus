@@ -138,12 +138,37 @@ Singleton {
         return (stream?.properties["media.class"] ?? "").startsWith("Stream/Input");
     }
 
+    // The node at the other end of a stream's links: a device, or Panning's
+    // virtual output when it's panned
+    function linkedTo(stream: PwNode): PwNode {
+        for (const g of Pipewire.linkGroups.values) {
+            if (g.source !== stream && g.target !== stream)
+                continue;
+            const other = g.source === stream ? g.target : g.source;
+            if (other && !other.isStream)
+                return other;
+        }
+        return null;
+    }
+
+    // The device an app plays to (or records from), through Panning's loopback
+    // when it's panned
+    function streamDevice(stream: PwNode): PwNode {
+        if (Panning.isPanned(stream))
+            return Panning.deviceOf(stream);
+        return linkedTo(stream);
+    }
+
     // Sends an app's stream to another device: playback to a sink, recording
     // from a source. pipewire-pulse knows streams by their object serial.
     function moveStream(stream: PwNode, device: PwNode): void {
         const serial = stream?.properties["object.serial"];
         if (!serial || !device?.name)
             return;
+        if (Panning.isPanned(stream)) {
+            Panning.moveTo(stream, device);
+            return;
+        }
         Quickshell.execDetached(["pactl", isRecording(stream) ? "move-source-output" : "move-sink-input", String(serial), device.name]);
     }
 
@@ -153,6 +178,9 @@ Singleton {
         const newStreams = [];
 
         for (const node of Pipewire.nodes.values) {
+            // Panning's virtual outputs and loopbacks are plumbing, not devices or apps
+            if (Panning.isOwn(node))
+                continue;
             if (!node.isStream) {
                 if (node.isSink)
                     newSinks.push(node);

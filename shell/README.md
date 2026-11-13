@@ -217,6 +217,12 @@ using sound, after the default output and microphone.
 - **Where it goes**: the chip at the bottom of each channel is the device the
   app plays to (or records from). Click it to send just that app somewhere
   else; on the Output and Microphone channels it changes the default.
+- **Panning**: the L–R control under each app's fader sends it to the left
+  or right. Centred, the app plays as it is, in stereo, 5.1 or 7.1. Panned,
+  it's mixed down to mono and played on the front left and right at the
+  pan's balance, so one app can be on the left speaker and another on the
+  right while a third plays normally. Double-click it to centre it again.
+  Pans last while the app's stream does, and while the shell runs.
 - Apps that record get a red mic badge and list microphones instead. Esc, or
   a click outside, closes it.
 

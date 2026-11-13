@@ -70,7 +70,7 @@ Item {
 
         anchors.centerIn: parent
         width: Math.min(root.width - margin * 2, Tokens.padding.large * 2 + channels * 168 + (channels - 1) * Tokens.spacing.medium + Tokens.spacing.large * 2 + 1)
-        height: Math.min(root.height - margin * 2, 520)
+        height: Math.min(root.height - margin * 2, 560)
         radius: Tokens.rounding.extraLarge
         color: Colours.tPalette.m3surfaceContainerLow
 
